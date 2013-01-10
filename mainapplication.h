@@ -10,10 +10,13 @@ class MainApplication
 public:
     explicit MainApplication(QStringList options);
     ~MainApplication();
-
+    void begin();
 
 private:
+
+    // Command Line Paramter functions
     bool parseOptions(QStringList options);
+    void showUsage();
 
     QTextStream* console;
 

@@ -12,10 +12,11 @@ int main(int argc, char *argv[])
     try
     {
         MainApplication main(a.arguments());
+        main.begin();
     }
     catch(InvalidArgumentsException *e)
     {
-        qFatal("Invalid Arguments");
+        //qFatal("Invalid Arguments");
     }
 
     return a.exec();
