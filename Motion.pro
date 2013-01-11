@@ -16,24 +16,26 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    videoprocessor.cpp \
-    video.cpp \
-    frame.cpp \
     player.cpp \
     MatToQImage.cpp
 
-INCLUDEPATH += /usr/local/include/
-
 HEADERS  += mainwindow.h \
-    videoprocessor.h \
-    video.h \
-    frame.h \
     player.h \
     MatToQImage.h
 
 FORMS    += mainwindow.ui
 
+INCLUDEPATH += /usr/local/include/
 macx: LIBS += -lopencv_core
 macx: LIBS += -lopencv_highgui
 macx: LIBS += -lopencv_video
 macx: LIBS += -lopencv_imgproc
+macx: LIBS += -lopencv_features2d
+
+
+macx: LIBS += -L$$PWD/../MotionCore-build-Desktop_Qt_5_0_0_clang_64bit_SDK-Debug/ -lMotionCore
+
+INCLUDEPATH += $$PWD/../MotionCore
+DEPENDPATH += $$PWD/../MotionCore
+
+macx: PRE_TARGETDEPS += $$PWD/../MotionCore-build-Desktop_Qt_5_0_0_clang_64bit_SDK-Debug/libMotionCore.a

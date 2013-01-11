@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
-#include "video.h"
-#include "frame.h"
+#include <video.h>
+#include <frame.h>
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
@@ -25,8 +25,10 @@ private:
     Video* video;
     int frameNumber;
 
+    void showImage(int frameNumber);
+
 signals:
-    void processedImage(const QImage &image);
+    void processedImage(const QImage &image, int frameNumber);
 protected:
     void run();
     void msleep(int ms);
@@ -35,8 +37,9 @@ public:
     ~Player();
     void setVideo(Video* video);
     void play();
+    void step();
     void stop();
-    void backToStart();
+    void rewind();
     bool isStopped() const;
 };
 

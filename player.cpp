@@ -1,6 +1,6 @@
-#include "player.h"
-#include "video.h"
-#include "frame.h"
+#include <player.h>
+#include <video.h>
+#include <frame.h>
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
@@ -34,22 +34,36 @@ void Player::play()
     }
 }
 
+void Player::step()
+{
+    if (!isStopped())
+        return;
+    if (frameNumber == video->getFrameCount()) {
+        stop();
+        rewind();
+    }
+    showImage(frameNumber);
+    frameNumber++;
+}
+
+void Player::showImage(int frameNumber)
+{
+    frame = video->getImageAt(frameNumber);
+    image = MatToQImage(frame);
+    emit processedImage(image, frameNumber);
+}
+
 void Player::run()
 {
     int delay = (1000/frameRate);
     while (!stopped) {
         if (frameNumber == video->getFrameCount()) {
             stop();
-            backToStart();
+            rewind();
         }
         else {
             qDebug() << "Player::run - playing frame " << frameNumber;
-            frame = video->getImageAt(frameNumber);
-//            cv::namedWindow("window", CV_WINDOW_AUTOSIZE);
-//            cv::imshow("window", frame);
-//            waitKey(50);
-            image = MatToQImage(frame);
-            emit processedImage(image);
+            showImage(frameNumber);
             frameNumber++;
             this->msleep(delay);
         }
@@ -70,9 +84,10 @@ bool Player::isStopped() const
     return stopped;
 }
 
-void Player::backToStart()
+void Player::rewind()
 {
     frameNumber = 0;
+    showImage(0);
 }
 
 void Player::stop()
