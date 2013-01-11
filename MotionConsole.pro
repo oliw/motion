@@ -23,13 +23,16 @@ HEADERS += \
     mainapplication.h \
     invalidargumentsexception.h
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../MotionCore/release/ -lMotionCore
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../MotionCore/debug/ -lMotionCore
-else:unix: LIBS += -L$$PWD/../MotionCore/ -lMotionCore
+macx: LIBS += -L$$PWD/../MotionCore-build-Desktop_Qt_5_0_0_clang_64bit_SDK-Debug/ -lMotionCore
 
 INCLUDEPATH += $$PWD/../MotionCore
 DEPENDPATH += $$PWD/../MotionCore
 
-win32:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../MotionCore/release/MotionCore.lib
-else:win32:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../MotionCore/debug/MotionCore.lib
-else:unix: PRE_TARGETDEPS += $$PWD/../MotionCore/libMotionCore.a
+macx: PRE_TARGETDEPS += $$PWD/../MotionCore-build-Desktop_Qt_5_0_0_clang_64bit_SDK-Debug/libMotionCore.a
+INCLUDEPATH += /usr/local/include/
+
+unix|win32: LIBS += -lopencv_core
+unix|win32: LIBS += -lopencv_highgui
+unix|win32: LIBS += -lopencv_imgproc
+unix|win32: LIBS += -lopencv_video
+unix|win32: LIBS += -lopencv_features2d

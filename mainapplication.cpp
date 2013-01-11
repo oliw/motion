@@ -27,11 +27,11 @@ void MainApplication::begin()
 {
     *console << "Processing " << inputFilePath << endl;
     //Load video
-
+    vp.loadVideo(inputFilePath.toStdString());
     //Do step 1
-
+    vp.detectFeatures();
     //Do step 2
-
+    vp.trackFeatures();
     //Save video
     *console << "Saving result to " << outputFilePath << endl;
     //Finish

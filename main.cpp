@@ -5,6 +5,7 @@
 #include <QStringList>
 #include <QTextStream>
 #include <iostream>
+#include <videoprocessor.h>
 
 int main(int argc, char *argv[])
 {
