@@ -2,6 +2,7 @@
 #define FRAME_H
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include "feature.h"
 using namespace std;
 using namespace cv;
 
@@ -9,20 +10,24 @@ class Frame
 {
 public:
     Frame();
-    Frame(const Mat& originalData);
+    Frame(const Mat& image);
 
-    Mat const& getOriginalData() const {return originalData;}
+    Mat const& getOriginalData() const {return image;}
 
-    const vector<KeyPoint>& getKeyPoints() const {return detectedSalientPoints;}
-    void setKeyPoints(const vector<KeyPoint>& detectedSalientPoints);
+    vector<Point2f>& accessFeatures() {return features;}
+    const vector<Point2f>& getFeatures() const {return features;}
 
-
-    void setDetectedPointsFromPreviousFrame(const vector<Point2f>& points);
+    void registerOpticalFlow(const Point2f& feature, float dx, float dy);
 
 private:
-    Mat originalData;
-    vector<KeyPoint> detectedSalientPoints;
-    vector<Point2f> detectedPointsFromPreviousFrame;
+    Mat image;
+
+    // Detected features
+    vector<Point2f> features;
+
+    // Optical flow matrices
+    Mat featureMatrix;
+    Mat dx,dy;
 };
 
 #endif // FRAME_H

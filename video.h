@@ -20,8 +20,12 @@ public:
     Mat getImageAt(int frameNumber);
     int getFrameCount();
 
+    int getWidth() const {return width;}
+    int getHeight() const {return height;}
+
 private:
     QList<Frame> frames;
+    int width,height;
 };
 
 #endif // VIDEO_H

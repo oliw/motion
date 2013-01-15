@@ -1,16 +1,19 @@
 #ifndef VIDEOPROCESSOR_H
 #define VIDEOPROCESSOR_H
 
+#include <QObject>
 #include "video.h"
 #include "opencv2/features2d/features2d.hpp"
+#include "opencv2/video/video.hpp"
 #include <string>
 using namespace std;
 
-class VideoProcessor
+class VideoProcessor : public QObject
 {
+    Q_OBJECT
 
 public:
-    VideoProcessor();
+    explicit VideoProcessor(QObject *parent = 0);
     ~VideoProcessor();
 
     void reset();
@@ -20,7 +23,6 @@ public:
     bool detectFeatures();
     bool trackFeatures();
     bool outlierRejection();
-
 
 private:
     Video video;

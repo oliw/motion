@@ -10,10 +10,12 @@
 #include "video.h"
 #include <stdio.h>
 #include <QDebug>
+#include <QObject>
+#include <vector>
 
 using namespace std;
 
-VideoProcessor::VideoProcessor() {
+VideoProcessor::VideoProcessor(QObject *parent):QObject(parent) {
 }
 
 VideoProcessor::~VideoProcessor() {
@@ -54,8 +56,8 @@ bool VideoProcessor::detectFeatures() {
         qDebug() << "VideoProcessor::detectFeatures - Detecting features in frame " << i <<"/"<<frameCount-1;
         Frame& frame = video.accessFrameAt(i);
         featureDetector->detect(frame.getOriginalData(), bufferPoints);
+        KeyPoint::convert(bufferPoints, frame.accessFeatures());
         qDebug() << "VideoProcessor::detectFeatures - Detected " << bufferPoints.size() << " features";
-        frame.setKeyPoints(bufferPoints);
     }
     delete featureDetector;
     return true;
@@ -63,44 +65,52 @@ bool VideoProcessor::detectFeatures() {
 
 bool VideoProcessor::trackFeatures() {
     qDebug() << "VideoProcessor::trackFeatures - Feature Tracking started";
-    for (int i = 1; i < video.getFrameCount(); i++) {
-        Frame& prevFrame = video.accessFrameAt(i-1);
-        Frame& nextFrame = video.accessFrameAt(i);
-        int featuresToTrack = prevFrame.getKeyPoints().size();
+    for (int i = 0; i < video.getFrameCount()-1; i++) {
+        Frame& prevFrame = video.accessFrameAt(i);
+        Frame& nextFrame = video.accessFrameAt(i+1);
+        const vector<Point2f>& features = prevFrame.getFeatures();
+        int featuresToTrack = prevFrame.getFeatures().size();
         qDebug() << "VideoProcessor::trackFeatures - Tracking " << featuresToTrack << " features from frame " << i-1 << " to frame "<<i;
-        vector<KeyPoint> prevKeyPts = prevFrame.getKeyPoints();
-        vector<Point2f> prevPts, nextPtsBuffer;
-        cv::KeyPoint::convert(prevKeyPts, prevPts);
+        vector<Point2f> nextPositions;
         vector<uchar> status;
         vector<float> err;
         // Initiate optical flow tracking
         calcOpticalFlowPyrLK(prevFrame.getOriginalData(),
                              nextFrame.getOriginalData(),
-                             prevPts,
-                             nextPtsBuffer,
+                             features,
+                             nextPositions,
                              status,
                              err);
         // Remove features that were not tracked correctly
         int featuresCorrectlyTracked = 0;
-        vector<KeyPoint>::iterator keyPointIt = prevKeyPts.begin();
-        vector<Point2f>::iterator pointIt = nextPtsBuffer.begin();
-        vector<uchar>::iterator statusIt = status.begin();
-        while (statusIt != status.end()) {
-            if (*statusIt == 0) {
-                statusIt = status.erase(statusIt);
-                keyPointIt = prevKeyPts.erase(keyPointIt);
-                pointIt = nextPtsBuffer.erase(pointIt);
+        for (uint j = 0; j < features.size(); j++) {
+            if (status[j] == 0) {
+                // Feature could not be tracked
             } else {
-                ++statusIt;
-                ++keyPointIt;
-                ++pointIt;
+                // Feature was tracked
                 featuresCorrectlyTracked++;
+                prevFrame.registerOpticalFlow(features[j], nextPositions[j].x - features[j].x, nextPositions[j].y - features[j].y);
             }
         }
-        // Update Frames with new information
-        prevFrame.setKeyPoints(prevKeyPts);
-        nextFrame.setDetectedPointsFromPreviousFrame(nextPtsBuffer);
         qDebug() << "VideoProcessor::trackFeatures - " << featuresCorrectlyTracked << "/" << featuresToTrack << "successfully tracked";
+    }
+    return true;
+}
+
+bool VideoProcessor::outlierRejection() {
+    qDebug() << "VideoProcessor::outlierRejection - Outlier rejection started";
+    // Divide each frame into grids
+    Rect r(0,0,50,50);
+    for (int i=0; i<video.getWidth()/50; i++)
+    {
+        for (int j=0; j<video.getHeight()/50; j++)
+        {
+           int minX = i*50;
+           int maxX = ((i+1)*50 < video.getWidth()) ? (i+1)*50-1 : video.getWidth()-1;
+           int minY = j*50;
+           int maxY = ((j+1)*50 < video.getWidth()) ? (j+1)*50-1 : video.getHeight()-1;
+
+        }
     }
     return true;
 }

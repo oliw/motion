@@ -13,6 +13,12 @@ Video::Video()
 
 Video::Video(const QList<Frame>& frames) : frames(frames)
 {
+    const Frame& frame = frames.at(1);
+    const Mat& data = frame.getOriginalData();
+    Size size = data.size();
+    height = size.height;
+    width = size.width;
+    qDebug() << "New video object created with " << frames.size() << " frames. Frame size " << width << "x" << height;
 }
 
 Mat Video::getImageAt(int frameNumber)

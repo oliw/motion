@@ -4,15 +4,16 @@ Frame::Frame()
 {
 }
 
-Frame::Frame(const Mat& originalData):originalData(originalData)
+Frame::Frame(const Mat& originalData):image(originalData)
 {
-
+    dx = Mat(originalData.rows, originalData.cols, DataType<float>::type);
+    dy = Mat(originalData.rows, originalData.cols, DataType<float>::type);
+    featureMatrix = Mat(originalData.rows, originalData.cols, DataType<float>::type);
 }
 
-void Frame::setKeyPoints(const vector<KeyPoint>& keypoints) {
-    detectedSalientPoints = keypoints;
+void Frame::registerOpticalFlow(const Point2f& feature, float dx, float dy ) {
+    this->dx.at<float>(feature) = dx;
+    this->dy.at<float>(feature) = dy;
+    featureMatrix.at<float>(feature) = 1;
 }
 
-void Frame::setDetectedPointsFromPreviousFrame(const vector<Point2f>& points) {
-    detectedPointsFromPreviousFrame = points;
-}
