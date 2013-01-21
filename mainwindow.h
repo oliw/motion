@@ -19,32 +19,55 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    Player* getPlayer() {return player;}
 
 signals:
     
 private slots:
 
-    void updatePlayerUI(QImage img,int frameNumber);
-
     void on_actionReset_triggered();
-
-    void on_stepButton_clicked();
 
     void on_actionOpen_Video_triggered();
 
-    void on_playButton_clicked();
+    // VP UI Slots
+    void on_pushButton_2_clicked();
 
+    // Player UI Slots
+    void on_playButton_clicked();
     void on_rewindButton_clicked();
+    void on_stepButton_clicked();
+    void on_checkBox_stateChanged(int arg1);
+    void on_checkBox_2_stateChanged(int arg1);
+    void on_checkBox_3_stateChanged(int arg1);
+    void on_frameRate_editingFinished();
+
+    //// Slots for VP activity
+    // When the processor has finished working on something
+    void processStarted(int processCode);
+    void processFinished(int processCode);
+    void newVideoLoaded(const Video& video);
+
+    //// Slots for player activity
+    void player_stopped();
+    void updatePlayerUI(QImage img,int frameNumber);
+
+signals:
+   void signalResize(QResizeEvent *);
+   void videoChosen(QString path);
+   void globalMotionButtonPressed();
+
+protected:
+   void resizeEvent(QResizeEvent *);  // virtual
 
 private:
-    VideoProcessor* videoProcessor;
     Ui::MainWindow* ui;
     Player* player;
 
     bool playing;
+    bool featuresDetected, featuresTracked, outliersRejected;
     int currentFrameNumber;
 
-    void newVideoLoaded();
+    void togglePlayControls(bool show);
 
 };
 

@@ -22,25 +22,38 @@ private:
     int frameRate;
     Mat RGBframe;
     QImage image;
-    Video* video;
+    Video video;
     int frameNumber;
+
+    bool featuresEnabled;
+    bool trackedEnabled;
+    bool outliersEnabled;
 
     void showImage(int frameNumber);
 
 signals:
     void processedImage(const QImage &image, int frameNumber);
+    void playerStopped();
 protected:
     void run();
     void msleep(int ms);
+public slots:
+    void setVideo(const Video& video);
 public:
     Player(QObject *parent = 0);
     ~Player();
-    void setVideo(Video* video);
     void play();
     void step();
     void stop();
     void rewind();
+    void refresh();
     bool isStopped() const;
+    void setFrameRate(int frameRate);
+    const int getFrameRate() const;
+
+    void setFeaturesEnabled(bool enabled);
+    void setTrackingEnabled(bool enabled);
+    void setOutliersEnabled(bool enabled);
 };
 
 #endif // PLAYER_H
