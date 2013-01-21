@@ -42,7 +42,7 @@ Frame& Video::accessFrameAt(int frameNumber)
     return frames[frameNumber];
 }
 
-int Video::getFrameCount()
+int Video::getFrameCount() const
 {
     return frames.size();
 }

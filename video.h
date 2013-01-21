@@ -18,7 +18,7 @@ public:
     const Frame& getFrameAt(int frameNumber) const;
     Frame& accessFrameAt(int frameNumber);
     Mat getImageAt(int frameNumber);
-    int getFrameCount();
+    int getFrameCount() const;
 
     int getWidth() const {return width;}
     int getHeight() const {return height;}

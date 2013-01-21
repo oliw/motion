@@ -1,19 +1,89 @@
 #include "frame.h"
+#include "displacement.h"
 #include <opencv2/core/core.hpp>
+#include <QDebug>
 Frame::Frame()
 {
 }
 
 Frame::Frame(const Mat& originalData):image(originalData)
 {
-    dx = Mat(originalData.rows, originalData.cols, DataType<float>::type);
-    dy = Mat(originalData.rows, originalData.cols, DataType<float>::type);
-    featureMatrix = Mat(originalData.rows, originalData.cols, DataType<float>::type);
+    dx = Mat::zeros(originalData.rows, originalData.cols, DataType<float>::type);
+    dy = Mat::zeros(originalData.rows, originalData.cols, DataType<float>::type);
+    displacements.clear();
+    displacementMask = Mat::zeros(originalData.rows, originalData.cols, DataType<int>::type);
+    outlierMask = Mat::zeros(originalData.rows, originalData.cols, DataType<int>::type);
 }
 
-void Frame::registerOpticalFlow(const Point2f& feature, float dx, float dy ) {
-    this->dx.at<float>(feature) = dx;
-    this->dy.at<float>(feature) = dy;
-    featureMatrix.at<float>(feature) = 1;
+void Frame::registerDisplacement(const Displacement& displacement) {
+    const Point2f& feature = displacement.getFrom();
+    assert(displacementMask.at<int>(feature) == 0);
+    displacementMask.at<int>(feature) = 1;
+    dx.at<float>(feature) = displacement.getDisplacement().x;
+    dy.at<float>(feature) = displacement.getDisplacement().y;
+    displacements.push_back(displacement);
+    assert(cv::countNonZero(displacementMask) == displacements.size());
 }
+
+const vector<Displacement>& Frame::getDisplacements() const {
+    assert(cv::countNonZero(displacementMask) == displacements.size());
+    return displacements;
+}
+
+vector<Displacement> Frame::getDisplacements(int ox, int oy, int gridSize) const {
+    vector<Displacement> displacements;
+    Size size = image.size();
+    for (int x = ox; x < ox+gridSize && x < size.width; x++) {
+        for (int y = oy; y < oy+gridSize && y < size.height; y++) {
+            if (displacementMask.at<int>(Point2f(x,y)) == 1) {
+                Point2f from = Point2f(x,y);
+                Point2f to = from + Point2f(dx.at<float>(x,y), dy.at<float>(x,y));
+                displacements.push_back(Displacement(from, to));
+            }
+        }
+    }
+    return displacements;
+}
+
+void Frame::registerOutliers(const vector<Displacement>& outliers)
+{
+    for (uint i = 0; i < outliers.size(); i++) {
+        outlierMask.at<int>(outliers[i].getFrom()) = 1;
+    }
+}
+
+const Mat& Frame::getOutlierMask()
+{
+    return outlierMask;
+}
+
+vector<Point2f> Frame::getOutliers() const
+{
+    vector<Point2f> outliers;
+    for (uint i = 0; i < displacements.size(); i++)
+    {
+        Displacement disp = displacements[i];
+        const Point2f& from = disp.getFrom();
+        if (outlierMask.at<int>(from) == 1) {
+            outliers.push_back(from);
+        }
+    }
+    return outliers;
+}
+
+vector<Point2f> Frame::getInliers() const
+{
+    vector<Point2f> inliers;
+    for (uint i = 0; i < displacements.size(); i++)
+    {
+        Displacement disp = displacements[i];
+        const Point2f& from = disp.getFrom();
+        if (outlierMask.at<int>(from) != 1) {
+            inliers.push_back(from);
+        }
+    }
+    return inliers;
+}
+
+
 

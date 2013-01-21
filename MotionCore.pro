@@ -12,11 +12,17 @@ CONFIG += staticlib
 
 SOURCES += videoprocessor.cpp \
     video.cpp \
-    frame.cpp
+    frame.cpp \
+    displacement.cpp \
+    ransacmodel.cpp \
+    tools.cpp
 
 HEADERS += videoprocessor.h \
     video.h \
-    frame.h
+    frame.h \
+    displacement.h \
+    ransacmodel.h \
+    tools.h
 
 INCLUDEPATH += /usr/local/include/
 
