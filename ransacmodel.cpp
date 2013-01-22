@@ -32,3 +32,4 @@ const vector<Displacement>& RansacModel::getInliers() const
 {
     return inliers;
 }
+

@@ -5,6 +5,7 @@
 #include "video.h"
 #include "opencv2/features2d/features2d.hpp"
 #include "opencv2/video/video.hpp"
+#include "localransacrejector.h"
 #include "ransacmodel.h"
 #include <string>
 using namespace std;
@@ -41,6 +42,8 @@ private:
     Video video;
     Video originalVideo;
     QString videoPath;
+
+    LocalRANSACRejector outlierRejector;
 
     static RansacModel localRansac(const std::vector<Displacement>& points);
 

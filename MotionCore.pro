@@ -15,14 +15,16 @@ SOURCES += videoprocessor.cpp \
     frame.cpp \
     displacement.cpp \
     ransacmodel.cpp \
-    tools.cpp
+    tools.cpp \
+    localransacrejector.cpp
 
 HEADERS += videoprocessor.h \
     video.h \
     frame.h \
     displacement.h \
     ransacmodel.h \
-    tools.h
+    tools.h \
+    localransacrejector.h
 
 INCLUDEPATH += /usr/local/include/
 
