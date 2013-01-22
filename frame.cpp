@@ -47,7 +47,7 @@ vector<Displacement> Frame::getDisplacements(int ox, int oy, int gridSize) const
 
 void Frame::registerOutliers(const vector<Displacement>& outliers)
 {
-    for (uint i = 0; i < outliers.size(); i++) {
+    for (int i = 0; i < outliers.size(); i++) {
         outlierMask.at<int>(outliers[i].getFrom()) = 1;
     }
 }

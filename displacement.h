@@ -10,7 +10,6 @@ class Displacement
 public:
     Displacement(const Point2f& from, const Point2f& to);
 
-    static float similarity(const Displacement& a, const Displacement& b);
     const Point2f getDisplacement() const;
     const Point2f& getFrom() const;
     const Point2f& getTo() const;
