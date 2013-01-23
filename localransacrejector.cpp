@@ -1,5 +1,6 @@
 #include "localransacrejector.h"
 #include "tools.h"
+#include <QDebug>
 
 LocalRANSACRejector::LocalRANSACRejector(QObject *parent) :
     QObject(parent)
@@ -18,6 +19,7 @@ LocalRANSACRejector::LocalRANSACRejector(int gridSize, int localRansacTolerance,
 void LocalRANSACRejector::execute(Video& video) {
     // Divide each frame into grids
     for (int f=0; f<video.getFrameCount()-1; f++) {
+        emit progressMade(f,video.getFrameCount()-2);
         Frame& frame = video.accessFrameAt(f);
         uint actualNum = frame.getDisplacements().size();
         uint numDisplacements = 0;
@@ -25,13 +27,10 @@ void LocalRANSACRejector::execute(Video& video) {
         {
             for (int y=0; y < video.getHeight(); y+=gridSize)
             {
-                //qDebug() << "VideoProcessor::outlierRejection - Detecting outliers in grid at "<<x<<","<<y;
                 vector<Displacement> displacements = frame.getDisplacements(x,y, gridSize);
                 numDisplacements += displacements.size();
-                //qDebug() << "VideoProcessor::outlierRejection - Feature count in grid: "<< displacements.size();
                 if (!displacements.empty()) {
                     RansacModel model = localRansac(displacements);
-                    //qDebug() << "VideoProcessor::outlierRejection - Outliers:" << model.getOutliers().size() << " Inliers:" << model.getInliers().size();
                     frame.registerOutliers(model.getOutliers());
                 }
             }

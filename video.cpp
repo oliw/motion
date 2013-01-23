@@ -13,12 +13,16 @@ Video::Video()
 
 Video::Video(const QList<Frame>& frames) : frames(frames)
 {
-    const Frame& frame = frames.at(1);
+    if (frames.size() > 0) {
+    const Frame& frame = frames.at(0);
     const Mat& data = frame.getOriginalData();
     Size size = data.size();
     height = size.height;
     width = size.width;
     qDebug() << "New video object created with " << frames.size() << " frames. Frame size " << width << "x" << height;
+    } else {
+        qWarning() << "Empty video created";
+    }
 }
 
 Mat Video::getImageAt(int frameNumber)

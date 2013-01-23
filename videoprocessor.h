@@ -28,8 +28,9 @@ public:
 signals:
     void videoLoaded(const Video& video);
     void videoUpdated(const Video& video);
-    void processStarted(int processCode);
-    void processFinished(int processCode);
+    void processStarted(int processCode = -1);
+    void processFinished(int processCode = -1);
+    void progressMade(int current, int total);
 
 public slots:
     void loadVideo(QString path);

@@ -14,6 +14,7 @@ public:
     void execute(Video& video);
     
 signals:
+    void progressMade(int current, int total);
     
 public slots:
 

@@ -35,9 +35,10 @@ vector<Displacement> Frame::getDisplacements(int ox, int oy, int gridSize) const
     Size size = image.size();
     for (int x = ox; x < ox+gridSize && x < size.width; x++) {
         for (int y = oy; y < oy+gridSize && y < size.height; y++) {
-            if (displacementMask.at<int>(Point2f(x,y)) == 1) {
-                Point2f from = Point2f(x,y);
-                Point2f to = from + Point2f(dx.at<float>(x,y), dy.at<float>(x,y));
+            Point2f from = Point2f(x,y);
+            if (displacementMask.at<int>(from) == 1) {
+                assert(dy.size().width >= x && dy.size().height >= y);
+                Point2f to = from + Point2f(dx.at<float>(from), dy.at<float>(from));
                 displacements.push_back(Displacement(from, to));
             }
         }

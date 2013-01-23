@@ -19,6 +19,7 @@
 using namespace std;
 
 VideoProcessor::VideoProcessor(QObject *parent):QObject(parent) {
+    QObject::connect(&outlierRejector, SIGNAL(progressMade(int, int)), this, SIGNAL(progressMade(int, int)));
 }
 
 VideoProcessor::~VideoProcessor() {
@@ -47,15 +48,20 @@ void VideoProcessor::loadVideo(QString path) {
     qDebug() << "VideoProcessor::loadVideo - Video opened";
     Mat buffer;
     Mat bAndWBuffer;
+    int numFrames = vc.get(CV_CAP_PROP_FRAME_COUNT);
+    int currentFrame = 0;
     while (vc.read(buffer)) {
-        originalFrames.append(Frame(buffer.clone()));
+        emit progressMade(currentFrame, numFrames-1);
+        //originalFrames.append(Frame(buffer.clone()));
         cvtColor(buffer, bAndWBuffer, CV_BGR2GRAY);
         frames.append(Frame(bAndWBuffer.clone()));
+        currentFrame++;
     }
     qDebug() << "VideoProcessor::loadVideo - "<< frames.size() << " Video frames grabbed";
     video = Video(frames);
     originalVideo = Video(originalFrames);
     emit videoLoaded(video);
+    emit processFinished();
     return;
 }
 
@@ -67,6 +73,7 @@ void VideoProcessor::detectFeatures() {
     vector<KeyPoint> bufferPoints;
     for (int i = 0; i < frameCount; i++) {
         qDebug() << "VideoProcessor::detectFeatures - Detecting features in frame " << i <<"/"<<frameCount-1;
+        emit progressMade(i, frameCount-1);
         Frame& frame = video.accessFrameAt(i);
         featureDetector->detect(frame.getOriginalData(), bufferPoints);
         KeyPoint::convert(bufferPoints, frame.accessFeatures());
@@ -87,6 +94,7 @@ void VideoProcessor::trackFeatures() {
         const vector<Point2f>& features = prevFrame.getFeatures();
         int featuresToTrack = prevFrame.getFeatures().size();
         qDebug() << "VideoProcessor::trackFeatures - Tracking " << featuresToTrack << " features from frame " << i << " to frame "<<i+1;
+        emit progressMade(i, video.getFrameCount()-2);
         vector<Point2f> nextPositions;
         vector<uchar> status;
         vector<float> err;
