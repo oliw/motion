@@ -3,8 +3,10 @@
 #include <QFileDialog>
 #include <iostream>
 #include <QtGui>
+#include <QStatusBar>
 #include <QDebug>
 #include <QObjectList>
+#include <QProgressBar>
 #include <player.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -18,6 +20,13 @@ MainWindow::MainWindow(QWidget *parent) :
     player(new Player)
 {
     ui->setupUi(this);
+
+    // Initialise Progress bar
+    progress = new QProgressBar(this);
+    ui->statusBar->addPermanentWidget(progress);
+    progress->setTextVisible(false);
+    progress->hide();
+
     ui->label->setText(tr("No video loaded"));
     featuresDetected = false;
     featuresTracked = false;
@@ -86,8 +95,13 @@ void MainWindow::newVideoLoaded(const Video& video)
 void MainWindow::player_stopped()
 {
     togglePlayControls(true);
+    toggleActionControls(true);
 }
 
+void MainWindow::toggleActionControls(bool show)
+{
+    ui->groupBox_2->setEnabled(show);
+}
 
 void MainWindow::on_actionOpen_Video_triggered()
 {
@@ -104,19 +118,20 @@ void MainWindow::on_playButton_clicked()
     bool play = player->isStopped();
     if (play) {
         player->play();
+        toggleActionControls(false);
     } else {
         player->stop();
     }
-    togglePlayControls(false);
+    togglePlayControls(!play);
+    ui->playButton->setEnabled(true);
 }
 
 void MainWindow::togglePlayControls(bool show)
 {
-//    QList<QWidget*> list = ui->playerControlsBox->findChildren<QWidget*>();
-//    foreach(QWidget* w, list) {
-//        w->setEnabled(show);
-//    }
-    ui->playerControlsBox->setEnabled(show);
+    QList<QWidget*> list = ui->playerControlsBox->findChildren<QWidget*>();
+    foreach(QWidget* w, list) {
+        w->setEnabled(show);
+    }
     bool play = player->isStopped();
     if (!play) {
         ui->playButton->setText(tr("Stop"));
@@ -193,11 +208,31 @@ void MainWindow::on_checkBox_3_stateChanged(int checked)
 
 void MainWindow::processStarted(int processCode)
 {
-    ui->playerControlsBox->setDisabled(true);
+    togglePlayControls(false);
+    progress->show();
+    QString processMessage;
+    switch (processCode){
+        case VideoProcessor::FEATURE_DETECTION:
+            processMessage = "Detecting Features";
+            break;
+        case VideoProcessor::FEATURE_TRACKING:
+        processMessage = "Tracking Features";
+            break;
+        case VideoProcessor::OUTLIER_REJECTION:
+        processMessage = "Detecting Outliers";
+            break;
+        default:
+        processMessage = "Busy";
+            break;
+    }
+    ui->statusBar->showMessage(processMessage);
 }
 
 void MainWindow::processFinished(int processCode)
 {
+    progress->reset();
+    progress->hide();
+    ui->statusBar->clearMessage();
     switch (processCode){
         case VideoProcessor::FEATURE_DETECTION:
             featuresDetected = true;
@@ -211,6 +246,12 @@ void MainWindow::processFinished(int processCode)
         default:
             break;
     }
-    qDebug() << "Enabling play controls";
     togglePlayControls(true);
 }
+
+void MainWindow::showProgress(int current, int outof)
+{
+    progress->setMaximum(outof);
+    progress->setValue(current);
+}
+
