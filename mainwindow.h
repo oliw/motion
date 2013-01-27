@@ -60,6 +60,7 @@ signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
    void globalMotionButtonPressed();
+   void showOriginalPath(int x, int y);
 
 protected:
    void resizeEvent(QResizeEvent *);  // virtual

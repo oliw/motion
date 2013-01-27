@@ -33,7 +33,8 @@ int main(int argc, char *argv[])
     QObject::connect(&vp, SIGNAL(videoUpdated(const Video*)),player, SLOT(setVideo(const Video*)));
     // Link Video Processor to Graph Drawer
     QObject::connect(&vp, SIGNAL(videoLoaded(const Video*)),&gd, SLOT(setVideo(const Video*)));
-
+    // Link Main Window to Graph Drawer
+    QObject::connect(&w, SIGNAL(showOriginalPath(int,int)), &gd, SLOT(drawOriginalMotionGraph(int,int)));
 
     videoProcessorThread->start();
 

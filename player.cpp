@@ -18,6 +18,7 @@ Player::Player(QObject *parent):QThread(parent)
     featuresEnabled = false;
     trackedEnabled = false;
     outliersEnabled = false;
+    video = NULL;
 }
 
 void Player::setVideo(const Video* video)

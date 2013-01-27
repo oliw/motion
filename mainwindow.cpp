@@ -223,6 +223,9 @@ void MainWindow::processStarted(int processCode)
         case VideoProcessor::ORIGINAL_MOTION:
         processMessage = "Detecting Original Movement";
             break;
+        case VideoProcessor::VIDEO_LOADING:
+        processMessage = "Loading Video";
+            break;
         default:
         processMessage = "Busy";
             break;
@@ -264,4 +267,5 @@ void MainWindow::showProgress(int current, int outof)
 
 void MainWindow::on_pushButton_clicked()
 {
+    emit showOriginalPath(0,0);
 }
