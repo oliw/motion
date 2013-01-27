@@ -11,7 +11,7 @@ class LocalRANSACRejector : public QObject
 public:
     explicit LocalRANSACRejector(QObject *parent = 0);
     LocalRANSACRejector(int gridSize, int localRansacTolerance, QObject *parent = 0);
-    void execute(Video& video);
+    void execute(Video* video);
     
 signals:
     void progressMade(int current, int total);

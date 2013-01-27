@@ -1,6 +1,9 @@
 #ifndef VIDEO_H
 #define VIDEO_H
+#include <QObject>
 #include <QList>
+#include <QMutex>
+#include <QMutexLocker>
 #include "frame.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -8,24 +11,29 @@
 
 using namespace cv;
 
-class Video
+class Video : public QObject
 {
+    Q_OBJECT
+
 public:
-    Video();
-    Video(const QList<Frame>& frames);
+    Video(QObject *parent = 0);
     QList<Frame>& getFrames();
 
-    const Frame& getFrameAt(int frameNumber) const;
-    Frame& accessFrameAt(int frameNumber);
-    Mat getImageAt(int frameNumber);
+    void appendFrame(Frame* frame);
+
+    const Frame* getFrameAt(int frameNumber) const;
+    Frame* accessFrameAt(int frameNumber);
+    const Mat& getImageAt(int frameNumber) const;
     int getFrameCount() const;
 
-    int getWidth() const {return width;}
-    int getHeight() const {return height;}
+    int getWidth() const;
+    int getHeight() const;
+
+    vector<Mat> getAffineTransforms();
 
 private:
-    QList<Frame> frames;
-    int width,height;
+    mutable QMutex mutex;
+    QList<Frame*> frames;
 };
 
 #endif // VIDEO_H

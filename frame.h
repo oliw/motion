@@ -3,19 +3,24 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include "displacement.h"
+#include <QObject>
+#include <QMutex>
+#include <QMutexLocker>
 using namespace std;
 using namespace cv;
 
-class Frame
+class Frame : public QObject
 {
+    Q_OBJECT
+
 public:
-    Frame();
-    Frame(const Mat& image);
+    Frame(QObject *parent = 0);
+    Frame(const Mat& image, QObject *parent = 0);
 
-    Mat const& getOriginalData() const {return image;}
+    const Mat& getOriginalData() const {QMutexLocker locker(&mutex); return image;}
 
-    vector<Point2f>& accessFeatures() {return features;}
-    const vector<Point2f>& getFeatures() const {return features;}
+    void setFeatures (const vector<Point2f>& features);
+    const vector<Point2f>& getFeatures() const {QMutexLocker locker(&mutex); return features;}
 
     void registerDisplacement(const Displacement& displacement);
     vector<Displacement> getDisplacements(int x, int y, int gridSize) const;
@@ -27,8 +32,15 @@ public:
     vector<Point2f> getOutliers() const;
     vector<Point2f> getInliers() const;
 
+    void getInliers(vector<Point2f>& srcPoints, vector<Point2f>& destPoints) const;
+
+    void setAffineTransform(const Mat& affine);
+    const Mat& getAffineTransform() const {QMutexLocker locker(&mutex); return affine;}
 
 private:
+
+    mutable QMutex mutex;
+
     Mat image;
 
     // Detected features
@@ -41,6 +53,9 @@ private:
 
     // Outlier Rejection
     Mat outlierMask; // Set to 1 if feature at this point is an outlier
+
+    // Affine Transformation
+    Mat affine;
 };
 
 #endif // FRAME_H

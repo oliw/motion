@@ -6,27 +6,21 @@
 
 using namespace cv;
 
-Video::Video()
+Video::Video(QObject *parent):QObject(parent),mutex()
 {
 
 }
 
-Video::Video(const QList<Frame>& frames) : frames(frames)
+void Video::appendFrame(Frame* frame)
 {
-    if (frames.size() > 0) {
-    const Frame& frame = frames.at(0);
-    const Mat& data = frame.getOriginalData();
-    Size size = data.size();
-    height = size.height;
-    width = size.width;
-    qDebug() << "New video object created with " << frames.size() << " frames. Frame size " << width << "x" << height;
-    } else {
-        qWarning() << "Empty video created";
-    }
+    QMutexLocker locker(&mutex);
+    frames.append(frame);
 }
 
-Mat Video::getImageAt(int frameNumber)
+
+const Mat& Video::getImageAt(int frameNumber) const
 {
+    QMutexLocker locker(&mutex);
     const Frame& f = frames.at(frameNumber);
     const Mat& img = f.getOriginalData();
     if (!img.data)
@@ -36,17 +30,48 @@ Mat Video::getImageAt(int frameNumber)
     return img;
 }
 
-const Frame& Video::getFrameAt(int frameNumber) const
+const Frame* Video::getFrameAt(int frameNumber) const
 {
+    QMutexLocker locker(&mutex);
     return frames.at(frameNumber);
 }
 
-Frame& Video::accessFrameAt(int frameNumber)
+Frame* Video::accessFrameAt(int frameNumber)
 {
+    QMutexLocker locker(&mutex);
     return frames[frameNumber];
 }
 
 int Video::getFrameCount() const
 {
+    QMutexLocker locker(&mutex);
     return frames.size();
+}
+
+//TODO This shouldnt be here
+vector<Mat> Video::getAffineTransforms()
+{
+    QMutexLocker locker(&mutex);
+    vector<Mat> transforms;
+    for (int i = 0; i < frames.size() -1; i++) {
+        const Mat& transform = frames[i]->getAffineTransform();
+        transforms.push_back(transform);
+    }
+    return transforms;
+}
+
+int Video::getWidth() const {
+    QMutexLocker locker(&mutex);
+    if (frames.size() == 0) {
+        return 0;
+    }
+    return frames.at(0)->getOriginalData().size().width;
+
+}
+int Video::getHeight() const {
+    QMutexLocker locker(&mutex);
+    if (frames.size() == 0) {
+        return 0;
+    }
+    return frames.at(0)->getOriginalData().size().height;
 }

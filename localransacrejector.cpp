@@ -16,22 +16,22 @@ LocalRANSACRejector::LocalRANSACRejector(int gridSize, int localRansacTolerance,
 }
 
 
-void LocalRANSACRejector::execute(Video& video) {
+void LocalRANSACRejector::execute(Video* video) {
     // Divide each frame into grids
-    for (int f=0; f<video.getFrameCount()-1; f++) {
-        emit progressMade(f,video.getFrameCount()-2);
-        Frame& frame = video.accessFrameAt(f);
-        uint actualNum = frame.getDisplacements().size();
+    for (int f=0; f<video->getFrameCount()-1; f++) {
+        emit progressMade(f,video->getFrameCount()-2);
+        Frame* frame = video->accessFrameAt(f);
+        uint actualNum = frame->getDisplacements().size();
         uint numDisplacements = 0;
-        for (int x=0; x < video.getWidth(); x+=gridSize)
+        for (int x=0; x < video->getWidth(); x+=gridSize)
         {
-            for (int y=0; y < video.getHeight(); y+=gridSize)
+            for (int y=0; y < video->getHeight(); y+=gridSize)
             {
-                vector<Displacement> displacements = frame.getDisplacements(x,y, gridSize);
+                vector<Displacement> displacements = frame->getDisplacements(x,y, gridSize);
                 numDisplacements += displacements.size();
                 if (!displacements.empty()) {
                     RansacModel model = localRansac(displacements);
-                    frame.registerOutliers(model.getOutliers());
+                    frame->registerOutliers(model.getOutliers());
                 }
             }
         }

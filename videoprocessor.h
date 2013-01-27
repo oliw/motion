@@ -19,15 +19,17 @@ public:
     ~VideoProcessor();
 
     void reset();
-    Video& getVideo() {return video;}
+    const Video * getVideo() {return video;}
 
     const static int FEATURE_DETECTION = 1;
     const static int FEATURE_TRACKING = 2;
     const static int OUTLIER_REJECTION = 3;
+    const static int ORIGINAL_MOTION = 4;
+
 
 signals:
-    void videoLoaded(const Video& video);
-    void videoUpdated(const Video& video);
+    void videoLoaded(const Video* video);
+    void videoUpdated(const Video* video);
     void processStarted(int processCode = -1);
     void processFinished(int processCode = -1);
     void progressMade(int current, int total);
@@ -38,16 +40,15 @@ public slots:
     void detectFeatures();
     void trackFeatures();
     void outlierRejection();
+    void calculateMotionModel();
 
 private:
-    Video video;
-    Video originalVideo;
+    Video* video;
     QString videoPath;
 
     LocalRANSACRejector outlierRejector;
 
     static RansacModel localRansac(const std::vector<Displacement>& points);
-
 };
 
 #endif // VIDEOPROCESSOR_H

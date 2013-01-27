@@ -9,6 +9,7 @@ class Tools
 public:
     Tools();
     static float eucDistance(Point2f a, Point2f b);
+    static void applyAffineTransformations(Point2f start, vector<Mat> trans, vector<double>& time, vector<double>& xs, vector<double>& ys);
 };
 
 #endif // TOOLS_H
