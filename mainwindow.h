@@ -6,6 +6,7 @@
 #include <QProgressBar>
 #include <opencv2/core/core.hpp>
 #include "videoprocessor.h"
+#include "graphdrawer.h"
 #include <video.h>
 #include <player.h>
 
@@ -46,12 +47,14 @@ private slots:
     // When the processor has finished working on something
     void processStarted(int processCode);
     void processFinished(int processCode);
-    void newVideoLoaded(const Video& video);
+    void newVideoLoaded(const Video* video);
     void showProgress(int current, int outof);
 
     //// Slots for player activity
     void player_stopped();
     void updatePlayerUI(QImage img,int frameNumber);
+
+    void on_pushButton_clicked();
 
 signals:
    void signalResize(QResizeEvent *);
@@ -67,7 +70,7 @@ private:
     QProgressBar* progress;
 
     bool playing;
-    bool featuresDetected, featuresTracked, outliersRejected;
+    bool featuresDetected, featuresTracked, outliersRejected,originalMotion;
     int currentFrameNumber;
 
     void togglePlayControls(bool show);

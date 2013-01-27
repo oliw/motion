@@ -22,7 +22,7 @@ private:
     int frameRate;
     Mat RGBframe;
     QImage image;
-    Video video;
+    const Video* video;
     int frameNumber;
 
     bool featuresEnabled;
@@ -38,7 +38,7 @@ protected:
     void run();
     void msleep(int ms);
 public slots:
-    void setVideo(const Video& video);
+    void setVideo(const Video* video);
 public:
     Player(QObject *parent = 0);
     ~Player();

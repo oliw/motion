@@ -20,7 +20,7 @@ Player::Player(QObject *parent):QThread(parent)
     outliersEnabled = false;
 }
 
-void Player::setVideo(const Video& video)
+void Player::setVideo(const Video* video)
 {
     this->video = video;
     frameNumber = 0;
@@ -41,7 +41,7 @@ void Player::step()
 {
     if (!isStopped())
         return;
-    if (frameNumber >= video.getFrameCount()-1) {
+    if (frameNumber >= video->getFrameCount()-1) {
         stop();
         rewind();
     } else {
@@ -52,23 +52,24 @@ void Player::step()
 
 void Player::showImage(int frameNumber)
 {
-    if (video.getFrameCount() == 0)
+    if (video->getFrameCount() == 0)
     {
         return;
     }
     qDebug() << "Player::showImage - Showing frameNumber:"<<frameNumber;
-    const Frame& frame = video.getFrameAt(frameNumber);
-    const Mat& originalData = frame.getOriginalData();
+    const Frame* frame = video->getFrameAt(frameNumber);
+    const Mat& originalData = frame->getOriginalData();
     Mat image;
     if (featuresEnabled) {
         // Draw Features
         vector<KeyPoint> features;
-        KeyPoint::convert(frame.getFeatures(), features);
+        KeyPoint::convert(frame->getFeatures(), features);
         cv::drawKeypoints(originalData, features, image);
-    } else if (trackedEnabled && frameNumber < video.getFrameCount()-1) {
+    } else if (trackedEnabled && frameNumber < video->getFrameCount()-1) {
         // Draw Tracked Features
-        const vector<Displacement>& disps = frame.getDisplacements();
-        const Mat& nextFrameImg = video.getImageAt(frameNumber+1);
+        const vector<Displacement>& disps = frame->getDisplacements();
+        const Frame* nextFrame = video->getFrameAt(frameNumber+1);
+        const Mat& nextFrameImg = nextFrame->getOriginalData();
         vector<Point2f> features1, features2;
         vector<KeyPoint> featuresk1, featuresk2;
         vector<DMatch> matches;
@@ -84,9 +85,9 @@ void Player::showImage(int frameNumber)
     } else if (outliersEnabled) {
         // Draw outliers
         vector<KeyPoint> outliers, inliers;
-        KeyPoint::convert(frame.getOutliers(), outliers);
-        KeyPoint::convert(frame.getInliers(), inliers);
-        assert(outliers.size() + inliers.size() == frame.getDisplacements().size());
+        KeyPoint::convert(frame->getOutliers(), outliers);
+        KeyPoint::convert(frame->getInliers(), inliers);
+        assert(outliers.size() + inliers.size() == frame->getDisplacements().size());
         cv::drawKeypoints(originalData, outliers, image, Scalar(0,0,100));
         cv::drawKeypoints(image, inliers, image, Scalar(0,100,0));
     } else {
@@ -99,7 +100,7 @@ void Player::run()
 {
     int delay = (1000/frameRate);
     while (!stopped) {
-        if (frameNumber == video.getFrameCount()) {
+        if (frameNumber == video->getFrameCount()) {
             stop();
             rewind();
         }
@@ -114,7 +115,9 @@ void Player::run()
 
 void Player::refresh()
 {
-    showImage(frameNumber);
+    if (video != NULL) {
+        showImage(frameNumber);
+    }
 }
 
 Player::~Player()

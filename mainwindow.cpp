@@ -8,6 +8,7 @@
 #include <QObjectList>
 #include <QProgressBar>
 #include <player.h>
+#include "tools.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -31,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     featuresDetected = false;
     featuresTracked = false;
     outliersRejected = false;
+    originalMotion = false;
 
     // Setup SIGNALS and SLOTS
     QObject::connect(player, SIGNAL(processedImage(QImage, int)),this, SLOT(updatePlayerUI(QImage, int)));
@@ -43,9 +45,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->playerControlsBox->setDisabled(true);
 
     ui->frameRate->setText(QString::number(player->getFrameRate()));
-
-    // TODO Simulate open video action is executed
-    //on_actionOpen_Video_triggered(); BREAKS EVENT LOOP
 
 }
 
@@ -77,7 +76,7 @@ void MainWindow::on_stepButton_clicked()
     }
 }
 
-void MainWindow::newVideoLoaded(const Video& video)
+void MainWindow::newVideoLoaded(const Video* video)
 {
     ui->label->setText(tr("Video loaded"));
     // Set-up player
@@ -87,7 +86,7 @@ void MainWindow::newVideoLoaded(const Video& video)
     ui->checkBox->setDisabled(true);
     ui->checkBox_2->setDisabled(true);
     ui->checkBox_3->setDisabled(true);
-    ui->frameCountLabel->setText(QString::number(video.getFrameCount()-1));
+    ui->frameCountLabel->setText(QString::number(video->getFrameCount()-1));
     // Enable 1st Processing Step Button
     ui->pushButton_2->setEnabled(true);
 }
@@ -221,6 +220,9 @@ void MainWindow::processStarted(int processCode)
         case VideoProcessor::OUTLIER_REJECTION:
         processMessage = "Detecting Outliers";
             break;
+        case VideoProcessor::ORIGINAL_MOTION:
+        processMessage = "Detecting Original Movement";
+            break;
         default:
         processMessage = "Busy";
             break;
@@ -243,6 +245,10 @@ void MainWindow::processFinished(int processCode)
         case VideoProcessor::OUTLIER_REJECTION:
             outliersRejected = true;
             break;
+        case VideoProcessor::ORIGINAL_MOTION:
+            originalMotion = true;
+            ui->pushButton->setEnabled(true);
+            break;
         default:
             break;
     }
@@ -255,3 +261,7 @@ void MainWindow::showProgress(int current, int outof)
     progress->setValue(current);
 }
 
+
+void MainWindow::on_pushButton_clicked()
+{
+}
