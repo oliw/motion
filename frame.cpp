@@ -7,7 +7,7 @@ Frame::Frame(QObject *parent):QObject(parent),mutex()
 {
 }
 
-Frame::Frame(const Mat& originalData,QObject *parent):QObject(parent),image(originalData),mutex()
+Frame::Frame(const Mat& originalData,QObject *parent):QObject(parent),mutex(),image(originalData)
 {
     dx = Mat::zeros(originalData.rows, originalData.cols, DataType<float>::type);
     dy = Mat::zeros(originalData.rows, originalData.cols, DataType<float>::type);

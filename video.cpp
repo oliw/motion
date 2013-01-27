@@ -49,7 +49,7 @@ int Video::getFrameCount() const
 }
 
 //TODO This shouldnt be here
-vector<Mat> Video::getAffineTransforms()
+vector<Mat> Video::getAffineTransforms() const
 {
     QMutexLocker locker(&mutex);
     vector<Mat> transforms;

@@ -25,6 +25,7 @@ public:
     const static int FEATURE_TRACKING = 2;
     const static int OUTLIER_REJECTION = 3;
     const static int ORIGINAL_MOTION = 4;
+    const static int VIDEO_LOADING = 5;
 
 
 signals:

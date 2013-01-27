@@ -21,7 +21,7 @@ signals:
     
 public slots:
     void setVideo(const Video* video) {this->video = video;}
-    void drawOriginalMotionGraph(Point2f start);
+    void drawOriginalMotionGraph(int x, int y);
 
 private:
     Engine* mEngine;

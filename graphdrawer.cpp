@@ -1,4 +1,5 @@
 #include "graphdrawer.h"
+#include <QDebug>
 #include "engine.h"
 #include "tools.h"
 
@@ -25,9 +26,10 @@ mxArray* GraphDrawer::vectorToMatlabFormat(const vector<double>& original)
     return arr;
 }
 
-void GraphDrawer::drawOriginalMotionGraph(Point2f start) {
-    //const vector<Mat>& transforms = video->getAffineTransforms();
-    //showMotionGraph(start,transforms);
+void GraphDrawer::drawOriginalMotionGraph(int x, int y) {
+    qDebug() << "GraphDrawer::drawOriginalMotionGraph - Drawing graphs starting at ("<<x<<","<<y<<")";
+    const vector<Mat>& transforms = video->getAffineTransforms();
+    showMotionGraph(Point2f(x,y),transforms);
 }
 
 
@@ -44,6 +46,6 @@ void GraphDrawer::showMotionGraph(Point2f start, const vector<Mat>& transforms) 
     engPutVariable(mEngine, "xs", xs);
     engPutVariable(mEngine, "ys", ys);
     // Draw two graphs
-    engEvalString(mEngine, "figure; plot(xs)");
-    engEvalString(mEngine, "figure; plot(ys)");
+    engEvalString(mEngine, "figure; plot(xs,time); xlabel('x'); ylabel('Time /frame')");
+    engEvalString(mEngine, "figure; plot(ys,time); xlabel('y'); ylabel('Time /frame')");
 }

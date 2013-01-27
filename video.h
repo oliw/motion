@@ -29,7 +29,7 @@ public:
     int getWidth() const;
     int getHeight() const;
 
-    vector<Mat> getAffineTransforms();
+    vector<Mat> getAffineTransforms() const;
 
 private:
     mutable QMutex mutex;

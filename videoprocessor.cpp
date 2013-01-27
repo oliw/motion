@@ -42,10 +42,12 @@ void VideoProcessor::calculateGlobalMotion() {
 
 void VideoProcessor::loadVideo(QString path) {
     qDebug() << "Loading video";
+    emit processStarted(VIDEO_LOADING);
     cv::VideoCapture vc;
     bool videoOpened = vc.open(path.toStdString());
     if (!videoOpened) {
         qDebug() << "VideoProcessor::loadVideo - Video could not be opened";
+        emit processFinished(VIDEO_LOADING);
         return;
     }
     videoPath = path;
@@ -62,7 +64,7 @@ void VideoProcessor::loadVideo(QString path) {
         currentFrame++;
     }
     emit videoLoaded(video);
-    emit processFinished();
+    emit processFinished(VIDEO_LOADING);
     return;
 }
 
@@ -146,6 +148,10 @@ void VideoProcessor::calculateMotionModel() {
         vector<Point2f> srcPoints, destPoints;
         frame->getInliers(srcPoints,destPoints);
         Mat affineTransform = estimateRigidTransform(srcPoints, destPoints, true);
+        //Mat affineTransform = (Mat_<double>(2,3) << 1, 0, 10, 0, 1, 0);
+        stringstream ss;
+        ss << affineTransform;
+        qDebug() << QString::fromStdString(ss.str());
         frame->setAffineTransform(affineTransform);
     }
     qDebug() << "VideoProcessor::calculateMotionModel - Original motion detected";

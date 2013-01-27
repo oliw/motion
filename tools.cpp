@@ -35,7 +35,7 @@ void Tools::applyAffineTransformations(Point2f start, vector<Mat> trans, vector<
     Point2f currentLoc = start;
     for (int i = 0; i < timeSteps; i++) {
         time.push_back(i+1);
-        currentLoc = applyAffineTransformation(trans[i],start);
+        currentLoc = applyAffineTransformation(trans[i],currentLoc);
         xs.push_back(currentLoc.x);
         ys.push_back(currentLoc.y);
     }
