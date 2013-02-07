@@ -25,17 +25,34 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui
 
-INCLUDEPATH += /usr/local/include/
-macx: LIBS += -lopencv_core
-macx: LIBS += -lopencv_highgui
-macx: LIBS += -lopencv_video
-macx: LIBS += -lopencv_imgproc
-macx: LIBS += -lopencv_features2d
+
+unix|macx: LIBS += -lopencv_core
+unix|macx: LIBS += -lopencv_features2d
+unix|macx: LIBS += -lopencv_highgui
+unix|macx: LIBS += -lopencv_video
+unix|macx: LIBS += -lopencv_imgproc
+
+macx {
+    INCLUDEPATH += /usr/local/include/
+
+    # Link to Core Lib
+    LIBS += -L$$PWD/../MotionCore-build-Desktop_Qt_5_0_0_clang_64bit_SDK-Debug/ -lMotionCore
+    INCLUDEPATH += $$PWD/../MotionCore
+    DEPENDPATH += $$PWD/../MotionCore
+    PRE_TARGETDEPS += $$PWD/../MotionCore-build-Desktop_Qt_5_0_0_clang_64bit_SDK-Debug/libMotionCore.a
+}
 
 
-macx: LIBS += -L$$PWD/../MotionCore-build-Desktop_Qt_5_0_0_clang_64bit_SDK-Debug/ -lMotionCore
+unix {
+    INCLUDEPATH += /usr/include/
 
-INCLUDEPATH += $$PWD/../MotionCore
-DEPENDPATH += $$PWD/../MotionCore
+    # Link to OpenCV Using Package Manager
+    CONFIG += link_pkgconfig
+    PKGCONFIG += opencv
 
-macx: PRE_TARGETDEPS += $$PWD/../MotionCore-build-Desktop_Qt_5_0_0_clang_64bit_SDK-Debug/libMotionCore.a
+    # Link to Core Lib
+    LIBS += -L$$PWD/../MotionCore-build/ -lMotionCore
+    INCLUDEPATH += $$PWD/../Core
+    DEPENDPATH += $$PWD/../Core
+    PRE_TARGETDEPS += $$PWD/../MotionCore-build/libMotionCore.a
+}
