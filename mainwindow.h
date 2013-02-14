@@ -1,6 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
+#include "cropwindowdialog.h"
 #include <QMainWindow>
 #include <QImage>
 #include <QProgressBar>
@@ -47,20 +47,23 @@ private slots:
     // When the processor has finished working on something
     void processStarted(int processCode);
     void processFinished(int processCode);
-    void newVideoLoaded(const Video* video);
+    void newVideoLoaded(Video* video);
     void showProgress(int current, int outof);
 
     //// Slots for player activity
     void player_stopped();
     void updatePlayerUI(QImage img,int frameNumber);
-
     void on_pushButton_clicked();
+    void on_calcStillPathButton_clicked();
+    void on_actionCrop_Box_triggered();
 
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
    void globalMotionButtonPressed();
+   void stillMotionButtonPressed();
    void showOriginalPath(int x, int y);
+   void cropBoxChosen(int,int,int,int);
 
 protected:
    void resizeEvent(QResizeEvent *);  // virtual
@@ -69,6 +72,8 @@ private:
     Ui::MainWindow* ui;
     Player* player;
     QProgressBar* progress;
+
+    Video* video;
 
     bool playing;
     bool featuresDetected, featuresTracked, outliersRejected,originalMotion;

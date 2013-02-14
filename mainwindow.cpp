@@ -9,6 +9,7 @@
 #include <QProgressBar>
 #include <player.h>
 #include "tools.h"
+#include "MatToQImage.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -37,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Setup SIGNALS and SLOTS
     QObject::connect(player, SIGNAL(processedImage(QImage, int)),this, SLOT(updatePlayerUI(QImage, int)));
     QObject::connect(player, SIGNAL(playerStopped()),this, SLOT(player_stopped()));
+   // QObject::connect(&cropDialog, SIGNAL(cropBoxChosen(int,int,int,int)), this, SIGNAL(cropBoxChosen(int,int,int,int)));
 
     // Disable Button Areas
     ui->pushButton_2->setDisabled(true);
@@ -76,8 +78,9 @@ void MainWindow::on_stepButton_clicked()
     }
 }
 
-void MainWindow::newVideoLoaded(const Video* video)
+void MainWindow::newVideoLoaded(Video* video)
 {
+    this->video = video;
     ui->label->setText(tr("Video loaded"));
     // Set-up player
     player->setVideo(video);
@@ -89,6 +92,8 @@ void MainWindow::newVideoLoaded(const Video* video)
     ui->frameCountLabel->setText(QString::number(video->getFrameCount()-1));
     // Enable 1st Processing Step Button
     ui->pushButton_2->setEnabled(true);
+    // Enable Crop Box Dialog
+    ui->actionCrop_Box->setEnabled(true);
 }
 
 void MainWindow::player_stopped()
@@ -268,4 +273,16 @@ void MainWindow::showProgress(int current, int outof)
 void MainWindow::on_pushButton_clicked()
 {
     emit showOriginalPath(0,0);
+}
+
+void MainWindow::on_calcStillPathButton_clicked()
+{
+    emit stillMotionButtonPressed();
+}
+
+void MainWindow::on_actionCrop_Box_triggered()
+{
+    CropWindowDialog cropDialog(video);
+    cropDialog.setModal(true);
+    cropDialog.exec();
 }

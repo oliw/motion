@@ -38,7 +38,7 @@ protected:
     void run();
     void msleep(int ms);
 public slots:
-    void setVideo(const Video* video);
+    void setVideo(Video* video);
 public:
     Player(QObject *parent = 0);
     ~Player();

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>761</width>
-    <height>527</height>
+    <width>897</width>
+    <height>619</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -108,6 +108,13 @@
            <widget class="QPushButton" name="pushButton_3">
             <property name="text">
              <string>Calculate Optimal Path</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="calcStillPathButton">
+            <property name="text">
+             <string>Calculate Still Path</string>
             </property>
            </widget>
           </item>
@@ -307,7 +314,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>761</width>
+     <width>897</width>
      <height>22</height>
     </rect>
    </property>
@@ -318,7 +325,14 @@
     <addaction name="actionOpen_Video"/>
     <addaction name="actionReset"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionCrop_Box"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionReset">
@@ -335,6 +349,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionCrop_Box">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Crop Box</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
    </property>
   </action>
  </widget>

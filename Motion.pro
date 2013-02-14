@@ -17,13 +17,18 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     player.cpp \
-    MatToQImage.cpp
+    MatToQImage.cpp \
+    cropwindowdialog.cpp \
+    subselectimage.cpp
 
 HEADERS  += mainwindow.h \
     player.h \
-    MatToQImage.h
+    MatToQImage.h \
+    cropwindowdialog.h \
+    subselectimage.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    cropwindowdialog.ui
 
 # OPENCV Library
 INCLUDEPATH += /usr/local/include/
@@ -39,10 +44,13 @@ DEPENDPATH += /Applications/MATLAB_R2012b.app/extern/include
 macx: LIBS += -L/Applications/MATLAB_R2012b.app/bin/maci64 -leng -lmx
 QMAKE_RPATHDIR += /Applications/MATLAB_R2012b.app/bin/maci64
 
+macx: LIBS += -L$$PWD/../coin-Clp/lib/ -lOsi -lCoinUtils -lOsiClp -lClp
+INCLUDEPATH += $$PWD/../coin-Clp/include
+DEPENDPATH += $$PWD/../coin-Clp/include
+
 # Motion Backend Library (Static)
 INCLUDEPATH += $$PWD/../MotionCore
 DEPENDPATH += $$PWD/../MotionCore
 macx: LIBS += -L$$PWD/../MotionCore-build-Desktop_Qt_5_0_0_clang_64bit_SDK-Debug/ -lMotionCore
 macx: PRE_TARGETDEPS += $$PWD/../MotionCore-build-Desktop_Qt_5_0_0_clang_64bit_SDK-Debug/libMotionCore.a
-
 

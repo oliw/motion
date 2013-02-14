@@ -21,7 +21,7 @@ Player::Player(QObject *parent):QThread(parent)
     video = NULL;
 }
 
-void Player::setVideo(const Video* video)
+void Player::setVideo(Video* video)
 {
     this->video = video;
     frameNumber = 0;
