@@ -17,7 +17,7 @@ class Video : public QObject
     Q_OBJECT
 
 public:
-    Video(int frameCount, QObject *parent = 0);
+    Video(int frameCount, int fps = 27, QObject *parent = 0);
     ~Video();
 
     QList<Frame>& getFrames();
@@ -28,8 +28,10 @@ public:
     const Mat& getImageAt(int frameNumber) const;
     int getFrameCount() const;
 
+    Size getSize() const;
     int getWidth() const;
     int getHeight() const;
+    int getOrigFps() const {return originalFps;}
 
     vector<Mat> getAffineTransforms() const;
 
@@ -37,13 +39,14 @@ public:
     const QList<Mat>& getStillPath() const;
 
     void setCropBox(int x, int y, int width, int height);
+    Rect_<int> getCropBox() {return cropBox;}
 
 private:
     mutable QMutex mutex;
 
     QList<Frame*> frames;
-
-    Rect_<int>* cropBox; // The starting crop box
+    int originalFps;
+    Rect_<int> cropBox; // The starting crop box
     QList<Mat> stillPath;
 
     void initCropBox();

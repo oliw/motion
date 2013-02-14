@@ -5,6 +5,7 @@
 #include <opencv2/video/video.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <coin/ClpSimplex.hpp>
 #include <coin/ClpModel.hpp>
 #include <coin/OsiSolverInterface.hpp>
@@ -59,12 +60,13 @@ void VideoProcessor::loadVideo(QString path) {
     Mat buffer;
     Mat bAndWBuffer;
     int numFrames = vc.get(CV_CAP_PROP_FRAME_COUNT);
-    video = new Video(numFrames);
+    int fps = vc.get(CV_CAP_PROP_FPS);
+    video = new Video(numFrames,fps);
     int currentFrame = 0;
     while (vc.read(buffer)) {
         emit progressMade(currentFrame, numFrames-1);
-        cvtColor(buffer, bAndWBuffer, CV_BGR2GRAY);
-        Frame* newFrame = new Frame(bAndWBuffer.clone(),video);
+        //cvtColor(buffer, bAndWBuffer, CV_BGR2GRAY);
+        Frame* newFrame = new Frame(buffer.clone(),video);
         video->appendFrame(newFrame);
         currentFrame++;
     }
@@ -195,5 +197,52 @@ void VideoProcessor::calculateIdealPath() {
     qDebug() << "VideoProcessor::calculateIdealPath - Ideal Path Calculated";
     emit processFinished(STILL_MOTION);
 }
+
+void VideoProcessor::applyCropTransform()
+{
+    qDebug() << "VideoProcessor::applyCropTransform() - Started";
+    emit processStarted(CROP_TRANSFORM);
+    croppedVideo = new Video(video->getFrameCount());
+    Rect cropWindow = video->getCropBox();
+    qDebug() << cropWindow.x << "," << cropWindow.y << " width:" << cropWindow.width << " height: " << cropWindow.height;
+    for (int f = 0; f < video->getFrameCount(); f++) {
+        emit progressMade(f, video->getFrameCount());
+        const Frame* frame = video->getFrameAt(f);
+        const Mat& img = frame->getOriginalData();
+        //Move cropWindow from current position to next position using frame's update transform
+        //Extract rectangle
+        cv::Mat croppedImage = img(cropWindow);
+        Frame* croppedF = new Frame(croppedImage, croppedVideo);
+        croppedVideo->appendFrame(croppedF);
+    }
+    emit processFinished(CROP_TRANSFORM);
+    qDebug() << "VideoProcessor::applyCropTransform() - Finished";
+}
+
+void VideoProcessor::saveCroppedVideo()
+{
+    qDebug() << "VideoProcessor::saveCroppedVideo() - Started";
+    saveVideo(croppedVideo);
+    qDebug() << "VideoProcessor::saveCroppedVideo() - Finished";
+}
+
+void VideoProcessor::saveVideo(const Video* videoToSave)
+{
+    qDebug() << "VideoProcessor::saveVideo() - Started";
+    emit processStarted(SAVING_VIDEO);
+    String fp = "/Users/Oli/Desktop/video.avi";
+    Size frameSize = videoToSave->getSize();
+    VideoWriter record(fp, CV_FOURCC('I','Y','U','V'),video->getOrigFps(), videoToSave->getSize());
+    assert(record.isOpened());
+    for (int f = 0; f < videoToSave->getFrameCount(); f++) {
+        emit progressMade(f, videoToSave->getFrameCount());
+        const Frame* frame = videoToSave->getFrameAt(f);
+        const Mat& img = frame->getOriginalData();
+        record << img;
+    }
+    emit processFinished(SAVING_VIDEO);
+    qDebug() << "VideoProcessor::saveVideo() - Finished";
+}
+
 
 

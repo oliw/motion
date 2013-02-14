@@ -28,7 +28,8 @@ public:
     const static int ORIGINAL_MOTION = 4;
     const static int VIDEO_LOADING = 5;
     const static int STILL_MOTION = 6;
-
+    const static int CROP_TRANSFORM = 10;
+    const static int SAVING_VIDEO = 11;
 
 
 signals:
@@ -46,13 +47,18 @@ public slots:
     void outlierRejection();
     void calculateMotionModel();
     void calculateIdealPath();
+    void applyCropTransform();
+    void saveCroppedVideo();
 
 private:
     Video* video;
+    Video* croppedVideo;
     QString videoPath;
     LocalRANSACRejector outlierRejector;
 
     static RansacModel localRansac(const std::vector<Displacement>& points);
+
+    void saveVideo(const Video* videoToSave);
 };
 
 #endif // VIDEOPROCESSOR_H

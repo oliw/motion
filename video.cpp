@@ -6,28 +6,25 @@
 
 using namespace cv;
 
-Video::Video(int frameCount, QObject *parent):QObject(parent),mutex()
+Video::Video(int frameCount, int fps, QObject *parent):QObject(parent),mutex(QMutex::Recursive),originalFps(fps)
 {
     frames.reserve(frameCount);
 }
 
 Video::~Video()
 {
-    delete cropBox;
 }
 
 
 void Video::initCropBox()
 {
-    const Frame& f = frames.at(0);
-    const Mat& img = f.getOriginalData();
     // default cropbox in the centre 50x50
-    Size_<int> imgSize = img.size();
+    int width = 100;
     int x,y;
-    x = (imgSize.height/2)-(50/2);
-    y = (imgSize.width/2)-(50/2);
-    cropBox = new Rect_<int>(x,y,50,50);
-    qDebug() << "Cropbox initialised";
+    qDebug() << getWidth() << "," << getHeight();
+    x = (getWidth()/2)-(width/2);
+    y = (getHeight()/2)-(width/2);
+    cropBox = Rect_<int>(x,y,width,width);
 }
 
 void Video::appendFrame(Frame* frame)
@@ -81,6 +78,12 @@ vector<Mat> Video::getAffineTransforms() const
     return transforms;
 }
 
+Size Video::getSize() const {
+    QMutexLocker locker(&mutex);
+    assert (frames.size() > 0);
+    return frames.at(0)->getOriginalData().size();
+}
+
 int Video::getWidth() const {
     QMutexLocker locker(&mutex);
     if (frames.size() == 0) {
@@ -111,5 +114,6 @@ void Video::setCropBox(int x, int y, int width, int height) {
     QString msg = QString("Video::setCropBox - Setting Crop Box in current video to %1,%2 width: %3 height %4")
             .arg(QString::number(x),QString::number(y),QString::number(width),QString::number(height));
     qDebug() << msg;
+    cropBox = Rect_<int>(x,y,width,height);
 }
 
