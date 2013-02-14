@@ -100,35 +100,28 @@
           <item>
            <widget class="QPushButton" name="pushButton_2">
             <property name="text">
-             <string>Calculate Global Motion</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_3">
-            <property name="text">
-             <string>Calculate Optimal Path</string>
+             <string>Calculate Existing Motion</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="calcStillPathButton">
             <property name="text">
-             <string>Calculate Still Path</string>
+             <string>Calculate Update Transforms</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_4">
+           <widget class="QPushButton" name="cropTransformButton">
             <property name="text">
-             <string>Warp &amp; Crop</string>
+             <string>Crop And Transform</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton">
             <property name="text">
-             <string>View Original Path</string>
+             <string>View Existing Motion</string>
             </property>
            </widget>
           </item>
@@ -323,6 +316,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen_Video"/>
+    <addaction name="actionSave_Result"/>
     <addaction name="actionReset"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -360,6 +354,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionSave_Result">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Save Result</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>

@@ -42,8 +42,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Disable Button Areas
     ui->pushButton_2->setDisabled(true);
-    ui->pushButton_3->setDisabled(true);
-    ui->pushButton_4->setDisabled(true);
     ui->playerControlsBox->setDisabled(true);
 
     ui->frameRate->setText(QString::number(player->getFrameRate()));
@@ -231,6 +229,8 @@ void MainWindow::processStarted(int processCode)
         case VideoProcessor::VIDEO_LOADING:
         processMessage = "Loading Video";
             break;
+        case VideoProcessor::SAVING_VIDEO:
+        processMessage = "Saving Video";
         default:
         processMessage = "Busy";
             break;
@@ -256,6 +256,9 @@ void MainWindow::processFinished(int processCode)
         case VideoProcessor::ORIGINAL_MOTION:
             originalMotion = true;
             ui->pushButton->setEnabled(true);
+            break;
+        case VideoProcessor::CROP_TRANSFORM:
+            ui->actionSave_Result->setEnabled(true);
             break;
         default:
             break;
@@ -285,4 +288,14 @@ void MainWindow::on_actionCrop_Box_triggered()
     CropWindowDialog cropDialog(video);
     cropDialog.setModal(true);
     cropDialog.exec();
+}
+
+void MainWindow::on_cropTransformButton_clicked()
+{
+    emit cropTransformButtonPressed();
+}
+
+void MainWindow::on_actionSave_Result_triggered()
+{
+    emit saveResultPressed();
 }

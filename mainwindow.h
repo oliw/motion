@@ -56,6 +56,9 @@ private slots:
     void on_pushButton_clicked();
     void on_calcStillPathButton_clicked();
     void on_actionCrop_Box_triggered();
+    void on_cropTransformButton_clicked();
+
+    void on_actionSave_Result_triggered();
 
 signals:
    void signalResize(QResizeEvent *);
@@ -63,7 +66,8 @@ signals:
    void globalMotionButtonPressed();
    void stillMotionButtonPressed();
    void showOriginalPath(int x, int y);
-   void cropBoxChosen(int,int,int,int);
+   void cropTransformButtonPressed();
+   void saveResultPressed();
 
 protected:
    void resizeEvent(QResizeEvent *);  // virtual
