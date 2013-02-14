@@ -20,7 +20,7 @@ public:
 signals:
     
 public slots:
-    void setVideo(const Video* video) {this->video = video;}
+    void setVideo(Video* video) {this->video = video;}
     void drawOriginalMotionGraph(int x, int y);
 
 private:

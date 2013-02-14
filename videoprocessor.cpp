@@ -5,6 +5,10 @@
 #include <opencv2/video/video.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <coin/ClpSimplex.hpp>
+#include <coin/ClpModel.hpp>
+#include <coin/OsiSolverInterface.hpp>
+#include <coin/OsiClpSolverInterface.hpp>
 #include <QList>
 #include "frame.h"
 #include "video.h"
@@ -12,6 +16,7 @@
 #include "ransacmodel.h"
 #include "tools.h"
 #include "graphdrawer.h"
+#include "l1model.h"
 #include <stdio.h>
 #include <iostream>
 #include <QDebug>
@@ -53,8 +58,8 @@ void VideoProcessor::loadVideo(QString path) {
     videoPath = path;
     Mat buffer;
     Mat bAndWBuffer;
-    video = new Video();
     int numFrames = vc.get(CV_CAP_PROP_FRAME_COUNT);
+    video = new Video(numFrames);
     int currentFrame = 0;
     while (vc.read(buffer)) {
         emit progressMade(currentFrame, numFrames-1);
@@ -93,19 +98,19 @@ void VideoProcessor::detectFeatures() {
 void VideoProcessor::trackFeatures() {
     emit processStarted(FEATURE_TRACKING);
     qDebug() << "VideoProcessor::trackFeatures - Feature Tracking started";
-    for (int i = 0; i < video->getFrameCount()-1; i++) {
-        Frame* prevFrame = video->accessFrameAt(i);
-        const Frame* nextFrame = video->accessFrameAt(i+1);
-        const vector<Point2f>& features = prevFrame->getFeatures();
-        int featuresToTrack = prevFrame->getFeatures().size();
-        qDebug() << "VideoProcessor::trackFeatures - Tracking " << featuresToTrack << " features from frame " << i << " to frame "<<i+1;
-        emit progressMade(i, video->getFrameCount()-2);
+    for (int i = video->getFrameCount()-1; i > 0; i--) {
+        Frame* frameT = video->accessFrameAt(i);
+        const Frame* framePrev = video->accessFrameAt(i-1);
+        const vector<Point2f>& features = frameT->getFeatures();
+        int featuresToTrack = frameT->getFeatures().size();
+        qDebug() << "VideoProcessor::trackFeatures - Tracking " << featuresToTrack << " features from frame " << i << " to frame "<<i-1;
+        emit progressMade(video->getFrameCount()-i, video->getFrameCount());
         vector<Point2f> nextPositions;
         vector<uchar> status;
         vector<float> err;
         // Initiate optical flow tracking
-        calcOpticalFlowPyrLK(prevFrame->getOriginalData(),
-                             nextFrame->getOriginalData(),
+        calcOpticalFlowPyrLK(frameT->getOriginalData(),
+                             framePrev->getOriginalData(),
                              features,
                              nextPositions,
                              status,
@@ -119,7 +124,7 @@ void VideoProcessor::trackFeatures() {
                 // Feature was tracked
                 featuresCorrectlyTracked++;
                 Displacement d = Displacement(features[j], nextPositions[j]);
-                prevFrame->registerDisplacement(d);
+                frameT->registerDisplacement(d);
             }
         }
         qDebug() << "VideoProcessor::trackFeatures - " << featuresCorrectlyTracked << "/" << featuresToTrack << "successfully tracked";
@@ -142,20 +147,53 @@ void VideoProcessor::outlierRejection() {
 void VideoProcessor::calculateMotionModel() {
     emit processStarted(ORIGINAL_MOTION);
     qDebug() << "VideoProcessor::calculateMotionModel - Calculating original motion";
-    for (int i = 0; i < video->getFrameCount()-1; i++) {
+    for (int i = 1; i < video->getFrameCount(); i++) {
         emit progressMade(i, video->getFrameCount()-2);
         Frame* frame = video->accessFrameAt(i);
         vector<Point2f> srcPoints, destPoints;
         frame->getInliers(srcPoints,destPoints);
         Mat affineTransform = estimateRigidTransform(srcPoints, destPoints, true);
-        //Mat affineTransform = (Mat_<double>(2,3) << 1, 0, 10, 0, 1, 0);
-        stringstream ss;
-        ss << affineTransform;
-        qDebug() << QString::fromStdString(ss.str());
         frame->setAffineTransform(affineTransform);
     }
     qDebug() << "VideoProcessor::calculateMotionModel - Original motion detected";
     emit processFinished(ORIGINAL_MOTION);
+}
+
+int getParamIndex(int frameCount, int frame, int paramCount, int parameter) {
+    return frame*frameCount*paramCount*2 + parameter;
+}
+
+int getSlackIndex(int frameCount, int frame, int paramCount, int parameter) {
+    return frame*frameCount*paramCount*2 + parameter*2;
+}
+
+void VideoProcessor::calculateIdealPath() {
+    emit processStarted(STILL_MOTION);
+    QList<Mat> stillPath;
+    qDebug() << "VideoProcessor::calculateIdealPath - Start";
+    OsiSolverInterface* osi = new OsiClpSolverInterface();
+    // Build model
+    L1Model model(osi,video);
+    emit progressMade(1,3);
+    // Solve model
+    model.solve();
+    emit progressMade(2,3);
+    // Extract Original Path
+    int frameCount = video->getFrameCount();
+    stillPath.reserve(frameCount-1);
+    for (int i = 0; i < frameCount-1 ; i++)
+    {
+        Mat m(2,3,DataType<float>::type);
+        for (char letter = 'a'; letter <= 'e'; letter++) {
+            m.at<float>(L1Model::toRow(letter),L1Model::toCol(letter)) = model.getVariableSolution(i, letter);
+        }
+        stillPath.push_back(m);
+    }
+    delete(osi);
+    video->setStillPath(stillPath);
+    emit progressMade(3,3);
+    qDebug() << "VideoProcessor::calculateIdealPath - Ideal Path Calculated";
+    emit processFinished(STILL_MOTION);
 }
 
 

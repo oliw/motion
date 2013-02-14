@@ -26,17 +26,32 @@ Point2f applyAffineTransformation(Mat affine, Point2f src)
     return Point2f(dstMat.at<float>(0,0),dstMat.at<float>(1,0));
 }
 
-void Tools::applyAffineTransformations(Point2f start, vector<Mat> trans, vector<double>& time, vector<double>& xs, vector<double>& ys)
+void Tools::applyAffineTransformations(Point2f start, vector<Mat> trans, vector<double>& time, vector<double>& x, vector<double>& y)
 {
-    int timeSteps = trans.size();
-    time.push_back(0);
-    xs.push_back(start.x);
-    ys.push_back(start.y);
-    Point2f currentLoc = start;
-    for (int i = 0; i < timeSteps; i++) {
-        time.push_back(i+1);
-        currentLoc = applyAffineTransformation(trans[i],currentLoc);
-        xs.push_back(currentLoc.x);
-        ys.push_back(currentLoc.y);
+    // Work Backwards
+    time.reserve(trans.size()+1);
+    x.reserve(trans.size()+1);
+    y.reserve(trans.size()+1);
+    time.push_back(trans.size());
+    x.push_back(0);
+    y.push_back(0);
+    Point2f curr(start);
+    for (int i = trans.size()-1; i >= 0; i--) {
+        time.push_back(i);
+        std::stringstream str;
+        str << "Applying transformation " << trans[i] << " to " << curr;
+        curr = applyAffineTransformation(trans[i], curr);
+        x.push_back(curr.x);
+        y.push_back(curr.y);
+    }
+    std::reverse(time.begin(), time.end());
+    std::reverse(x.begin(), x.end());
+    std::reverse(y.begin(), y.end());
+    // Shift everything
+    int shiftX = x[0];
+    int shiftY = y[0];
+    for (uint i = 0; i <= trans.size(); i++) {
+        x[i] = x[i] - shiftX;
+        y[i] = y[i] - shiftY;
     }
 }

@@ -17,7 +17,8 @@ SOURCES += videoprocessor.cpp \
     ransacmodel.cpp \
     tools.cpp \
     localransacrejector.cpp \
-    graphdrawer.cpp
+    graphdrawer.cpp \
+    l1model.cpp
 
 HEADERS += videoprocessor.h \
     video.h \
@@ -26,7 +27,8 @@ HEADERS += videoprocessor.h \
     ransacmodel.h \
     tools.h \
     localransacrejector.h \
-    graphdrawer.h
+    graphdrawer.h \
+    l1model.h
 
 INCLUDEPATH += /usr/local/include/
 
@@ -40,3 +42,7 @@ macx: LIBS += -L/Applications/MATLAB_R2012b.app/bin/maci64/ -leng
 macx: LIBS += -L/Applications/MATLAB_R2012b.app/bin/maci64/ -lmx
 INCLUDEPATH += /Applications/MATLAB_R2012b.app/extern/include
 DEPENDPATH += /Applications/MATLAB_R2012b.app/extern/include
+
+macx: LIBS += -L$$PWD/../coin-Clp/lib/ -lClp
+INCLUDEPATH += $$PWD/../coin-Clp/include
+DEPENDPATH += $$PWD/../coin-Clp/include

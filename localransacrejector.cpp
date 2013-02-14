@@ -18,7 +18,7 @@ LocalRANSACRejector::LocalRANSACRejector(int gridSize, int localRansacTolerance,
 
 void LocalRANSACRejector::execute(Video* video) {
     // Divide each frame into grids
-    for (int f=0; f<video->getFrameCount()-1; f++) {
+    for (int f=1; f<video->getFrameCount()-1; f++) {
         emit progressMade(f,video->getFrameCount()-2);
         Frame* frame = video->accessFrameAt(f);
         uint actualNum = frame->getDisplacements().size();

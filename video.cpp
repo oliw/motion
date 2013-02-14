@@ -6,17 +6,38 @@
 
 using namespace cv;
 
-Video::Video(QObject *parent):QObject(parent),mutex()
+Video::Video(int frameCount, QObject *parent):QObject(parent),mutex()
 {
+    frames.reserve(frameCount);
+}
 
+Video::~Video()
+{
+    delete cropBox;
+}
+
+
+void Video::initCropBox()
+{
+    const Frame& f = frames.at(0);
+    const Mat& img = f.getOriginalData();
+    // default cropbox in the centre 50x50
+    Size_<int> imgSize = img.size();
+    int x,y;
+    x = (imgSize.height/2)-(50/2);
+    y = (imgSize.width/2)-(50/2);
+    cropBox = new Rect_<int>(x,y,50,50);
+    qDebug() << "Cropbox initialised";
 }
 
 void Video::appendFrame(Frame* frame)
 {
     QMutexLocker locker(&mutex);
     frames.append(frame);
+    if (frames.size() == 1) {
+        initCropBox();
+    }
 }
-
 
 const Mat& Video::getImageAt(int frameNumber) const
 {
@@ -53,7 +74,7 @@ vector<Mat> Video::getAffineTransforms() const
 {
     QMutexLocker locker(&mutex);
     vector<Mat> transforms;
-    for (int i = 0; i < frames.size() -1; i++) {
+    for (int i = 1; i < frames.size(); i++) {
         const Mat& transform = frames[i]->getAffineTransform();
         transforms.push_back(transform);
     }
@@ -75,3 +96,20 @@ int Video::getHeight() const {
     }
     return frames.at(0)->getOriginalData().size().height;
 }
+
+void Video::setStillPath(QList<Mat>& stillPath)
+{
+    this->stillPath = stillPath;
+}
+
+const QList<Mat>& Video::getStillPath() const {
+    return stillPath;
+}
+
+void Video::setCropBox(int x, int y, int width, int height) {
+    QMutexLocker locker(&mutex);
+    QString msg = QString("Video::setCropBox - Setting Crop Box in current video to %1,%2 width: %3 height %4")
+            .arg(QString::number(x),QString::number(y),QString::number(width),QString::number(height));
+    qDebug() << msg;
+}
+
