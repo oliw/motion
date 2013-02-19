@@ -116,4 +116,3 @@ void Video::setCropBox(int x, int y, int width, int height) {
     qDebug() << msg;
     cropBox = Rect_<int>(x,y,width,height);
 }
-

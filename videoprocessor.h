@@ -48,7 +48,7 @@ public slots:
     void calculateMotionModel();
     void calculateIdealPath();
     void applyCropTransform();
-    void saveCroppedVideo();
+    void saveCroppedVideo(QString path);
 
 private:
     Video* video;
@@ -58,7 +58,7 @@ private:
 
     static RansacModel localRansac(const std::vector<Displacement>& points);
 
-    void saveVideo(const Video* videoToSave);
+    void saveVideo(const Video* videoToSave, QString path);
 };
 
 #endif // VIDEOPROCESSOR_H

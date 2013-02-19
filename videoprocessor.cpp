@@ -219,18 +219,18 @@ void VideoProcessor::applyCropTransform()
     qDebug() << "VideoProcessor::applyCropTransform() - Finished";
 }
 
-void VideoProcessor::saveCroppedVideo()
+void VideoProcessor::saveCroppedVideo(QString path)
 {
     qDebug() << "VideoProcessor::saveCroppedVideo() - Started";
-    saveVideo(croppedVideo);
+    saveVideo(croppedVideo, path);
     qDebug() << "VideoProcessor::saveCroppedVideo() - Finished";
 }
 
-void VideoProcessor::saveVideo(const Video* videoToSave)
+void VideoProcessor::saveVideo(const Video* videoToSave, QString path)
 {
     qDebug() << "VideoProcessor::saveVideo() - Started";
     emit processStarted(SAVING_VIDEO);
-    String fp = "/Users/Oli/Desktop/video.avi";
+    String fp = path.toStdString();
     Size frameSize = videoToSave->getSize();
     VideoWriter record(fp, CV_FOURCC('I','Y','U','V'),video->getOrigFps(), videoToSave->getSize());
     assert(record.isOpened());
