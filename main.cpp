@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     QObject::connect(&w, SIGNAL(globalMotionButtonPressed()),&vp, SLOT(calculateGlobalMotion()));
     QObject::connect(&w, SIGNAL(stillMotionButtonPressed()),&vp, SLOT(calculateIdealPath()));
     QObject::connect(&w, SIGNAL(cropTransformButtonPressed()),&vp, SLOT(applyCropTransform()));
-    QObject::connect(&w, SIGNAL(saveResultPressed()),&vp, SLOT(saveCroppedVideo()));
+    QObject::connect(&w, SIGNAL(saveResultPressed(QString)),&vp, SLOT(saveCroppedVideo(QString)));
     // Link Video Processor to Player
     const Player* player = w.getPlayer();
     QObject::connect(&vp, SIGNAL(videoLoaded(Video*)),player, SLOT(setVideo(Video*)));

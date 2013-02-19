@@ -297,5 +297,6 @@ void MainWindow::on_cropTransformButton_clicked()
 
 void MainWindow::on_actionSave_Result_triggered()
 {
-    emit saveResultPressed();
+    QString saveFileName = QFileDialog::getSaveFileName(this, "Save Cropped Video", "");
+    emit saveResultPressed(saveFileName);
 }

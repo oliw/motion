@@ -67,7 +67,7 @@ signals:
    void stillMotionButtonPressed();
    void showOriginalPath(int x, int y);
    void cropTransformButtonPressed();
-   void saveResultPressed();
+   void saveResultPressed(QString path);
 
 protected:
    void resizeEvent(QResizeEvent *);  // virtual
