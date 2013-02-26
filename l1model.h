@@ -13,16 +13,10 @@ using namespace cv;
 class L1Model
 {
 public:
-    L1Model(OsiSolverInterface* osi, Video* v);
-
-    void setObjectiveCoefficients();
-    void setLowerBounds();
-    void setUpperBounds();
-
-    void setConstraints(vector<Mat>& originalTransformations);
+    L1Model(Video* v);
+    ~L1Model();
 
     int getWidth();
-    int getConstraintsHeight();
 
     bool solve();
     double getVariableSolution(int frame, char ch);
@@ -34,28 +28,32 @@ public:
 
 
 private:
-    OsiSolverInterface* si;
+    OsiClpSolverInterface si;
 
-    int numVariablesPerFrame;
-    int numSlackVariablesPerFrame;
+    // Objectives
+    vector<double> objectiveCoefficients, colLb, colUb;
 
+    // Constraints
+    vector<CoinPackedVector> smoothnessConstraints;
+    vector<double> smoothnessLb,smoothnessUb;
+
+    vector<CoinPackedVector> inclusionConstraints;
+    vector<double> inclusionLb, inclusionUb;
+
+    int varPerFrame;
+    int slackVarPerFrame;
     int maxT;
 
-    double * objectiveCoefficients;
-    double * variableLowerBounds;
-    double * variableUpperBounds;
+    double getElem(const Mat& affine, char c);
 
-    CoinPackedMatrix * matrix;
-    double * constraintsLowerBounds;
-    double * constraintsUpperBounds;
-    double getAffineElement(Mat& affine, char c);
+    int toIndex(int t, char variable);
+    int toIndex(int t, int variable);
+    int toSlackIndex(int t, char variable);
+    int toSlackIndex(int t, int variable);
 
-    //p1,p2
-    int getVarIndex(int frame, char variable);
-    int getSlackVarIndex(int frame, char variable);
-
-    // Sets the bounds for the two rows representing -e <= xxxx <= e
-    void setConstraintBounds(int frame, int parameter, double bound);
+    void setObjectiveCoefficients();
+    void setSmoothnessConstraints(vector<Mat>& originalTransformations);
+    void setInclusionConstraints(Rect cropbox, int videoWidth, int videoHeight);
 
 };
 

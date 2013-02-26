@@ -100,15 +100,6 @@ int Video::getHeight() const {
     return frames.at(0)->getOriginalData().size().height;
 }
 
-void Video::setStillPath(QList<Mat>& stillPath)
-{
-    this->stillPath = stillPath;
-}
-
-const QList<Mat>& Video::getStillPath() const {
-    return stillPath;
-}
-
 void Video::setCropBox(int x, int y, int width, int height) {
     QMutexLocker locker(&mutex);
     QString msg = QString("Video::setCropBox - Setting Crop Box in current video to %1,%2 width: %3 height %4")

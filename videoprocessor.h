@@ -46,7 +46,7 @@ public slots:
     void trackFeatures();
     void outlierRejection();
     void calculateMotionModel();
-    void calculateIdealPath();
+    void calculateUpdateTransform();
     void applyCropTransform();
     void saveCroppedVideo(QString path);
 

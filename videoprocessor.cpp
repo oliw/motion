@@ -155,46 +155,40 @@ void VideoProcessor::calculateMotionModel() {
         vector<Point2f> srcPoints, destPoints;
         frame->getInliers(srcPoints,destPoints);
         Mat affineTransform = estimateRigidTransform(srcPoints, destPoints, true);
+//        std::stringstream ss;
+//        ss << "F(t="<<i<<") = " << affineTransform;
+//        qDebug() << QString::fromStdString(ss.str());
         frame->setAffineTransform(affineTransform);
     }
     qDebug() << "VideoProcessor::calculateMotionModel - Original motion detected";
     emit processFinished(ORIGINAL_MOTION);
 }
 
-int getParamIndex(int frameCount, int frame, int paramCount, int parameter) {
-    return frame*frameCount*paramCount*2 + parameter;
-}
-
-int getSlackIndex(int frameCount, int frame, int paramCount, int parameter) {
-    return frame*frameCount*paramCount*2 + parameter*2;
-}
-
-void VideoProcessor::calculateIdealPath() {
+void VideoProcessor::calculateUpdateTransform() {
     emit processStarted(STILL_MOTION);
-    QList<Mat> stillPath;
-    qDebug() << "VideoProcessor::calculateIdealPath - Start";
-    OsiSolverInterface* osi = new OsiClpSolverInterface();
+    qDebug() << "VideoProcessor::calculateUpdateTransform - Start";
     // Build model
-    L1Model model(osi,video);
+    L1Model model(video);
     emit progressMade(1,3);
+    qDebug() << "VideoProcessor::calculateUpdateTransform - Solving L1 Problem";
     // Solve model
     model.solve();
     emit progressMade(2,3);
-    // Extract Original Path
-    int frameCount = video->getFrameCount();
-    stillPath.reserve(frameCount-1);
-    for (int i = 0; i < frameCount-1 ; i++)
+    // Extract Results
+    for (int t = 1; t < video->getFrameCount(); t++)
     {
         Mat m(2,3,DataType<float>::type);
         for (char letter = 'a'; letter <= 'e'; letter++) {
-            m.at<float>(L1Model::toRow(letter),L1Model::toCol(letter)) = model.getVariableSolution(i, letter);
+            m.at<float>(L1Model::toRow(letter),L1Model::toCol(letter)) = model.getVariableSolution(t, letter);
         }
-        stillPath.push_back(m);
+//        std::stringstream ss;
+//        ss << "B(t="<<t<<") = " << m;
+//        qDebug() << QString::fromStdString(ss.str());
+        Frame* f = video->accessFrameAt(t);
+        f->setUpdateTransform(m);
     }
-    delete(osi);
-    video->setStillPath(stillPath);
     emit progressMade(3,3);
-    qDebug() << "VideoProcessor::calculateIdealPath - Ideal Path Calculated";
+    qDebug() << "VideoProcessor::calculateUpdateTransform - Ideal Path Calculated";
     emit processFinished(STILL_MOTION);
 }
 

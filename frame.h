@@ -37,6 +37,9 @@ public:
     void setAffineTransform(const Mat& affine);
     const Mat& getAffineTransform() const {QMutexLocker locker(&mutex); return affine;}
 
+    void setUpdateTransform(const Mat& update);
+    const Mat& getUpdateTransform() const {QMutexLocker locker(&mutex); return update;}
+
 private:
 
     mutable QMutex mutex;
@@ -54,8 +57,11 @@ private:
     // Outlier Rejection
     Mat outlierMask; // Set to 1 if feature at this point is an outlier
 
-    // Affine Transformation
+    // Affine Transformation 2x3
     Mat affine;
+
+    // Camera Update 2x3
+    Mat update;
 };
 
 #endif // FRAME_H

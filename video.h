@@ -35,11 +35,8 @@ public:
 
     vector<Mat> getAffineTransforms() const;
 
-    void setStillPath(QList<Mat>& stillPath);
-    const QList<Mat>& getStillPath() const;
-
     void setCropBox(int x, int y, int width, int height);
-    Rect_<int> getCropBox() {return cropBox;}
+    const Rect_<int>& getCropBox() const {return cropBox;}
 
 private:
     mutable QMutex mutex;
@@ -47,7 +44,6 @@ private:
     QList<Frame*> frames;
     int originalFps;
     Rect_<int> cropBox; // The starting crop box
-    QList<Mat> stillPath;
 
     void initCropBox();
 };

@@ -117,6 +117,13 @@ void Frame::setAffineTransform(const Mat& affine)
     this->affine = affine;
 }
 
+void Frame::setUpdateTransform(const Mat& update)
+{
+    QMutexLocker locker(&mutex);
+    this->update = update;
+}
+
+
 void Frame::setFeatures (const vector<Point2f>& features)
 {
     QMutexLocker locker(&mutex);

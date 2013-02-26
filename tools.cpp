@@ -2,8 +2,10 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <QDebug>
-#include <iostream>
 #include <stdio.h>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 Tools::Tools()
 {
@@ -13,8 +15,11 @@ float Tools::eucDistance(Point2f a, Point2f b) {
     return sqrt(pow(b.x - a.x,2) + pow(b.y - a.y,2));
 }
 
-Point2f applyAffineTransformation(Mat affine, Point2f src)
+Point2f Tools::applyAffineTransformation(Mat affine, Point2f src)
 {
+    std::stringstream ss;
+    ss << "Applying " << affine << " to " << src;
+    qDebug() << QString::fromStdString(ss.str());
     affine.convertTo(affine,CV_32FC1,1,0); //NOW A IS FLOAT
 
     vector<Point3f> vec;
@@ -40,7 +45,7 @@ void Tools::applyAffineTransformations(Point2f start, vector<Mat> trans, vector<
         time.push_back(i);
         std::stringstream str;
         str << "Applying transformation " << trans[i] << " to " << curr;
-        curr = applyAffineTransformation(trans[i], curr);
+        curr = Tools::applyAffineTransformation(trans[i], curr);
         x.push_back(curr.x);
         y.push_back(curr.y);
     }
@@ -55,3 +60,32 @@ void Tools::applyAffineTransformations(Point2f start, vector<Mat> trans, vector<
         y[i] = y[i] - shiftY;
     }
 }
+
+RotatedRect Tools::applyTransformation(const Mat& affine, const Rect& origRect) {
+    assert(affine.rows == 2 && affine.cols == 3);
+//    float m[2][3] = {{1,0,10},{0,1,0}};
+//    Mat test = Mat(2,3,CV_32F, m);
+    vector<Point2f> verts;
+    verts.push_back(Point2f(origRect.x, origRect.y));
+    verts.push_back(Point2f(origRect.x, origRect.y+origRect.height));
+    verts.push_back(Point2f(origRect.x+origRect.width, origRect.y));
+    verts.push_back(Point2f(origRect.x+origRect.width, origRect.y+origRect.height));
+    vector<Point2f> newVerts;
+    for (int i = 0; i < verts.size(); i++) {
+        newVerts.push_back(Tools::applyAffineTransformation(affine, verts[i]));
+    }
+    qDebug() << "Old Points";
+    std::stringstream s1;
+    for (int i = 0; i < verts.size(); i++) {
+        s1 << verts[i] << ",";
+    }
+    qDebug() << QString::fromStdString(s1.str());
+    qDebug() << "New Points";
+    std::stringstream s2;
+    for (int i = 0; i < newVerts.size(); i++) {
+        s2 << newVerts[i] << ",";
+    }
+    qDebug() << QString::fromStdString(s2.str());
+    return minAreaRect(newVerts);
+}
+
