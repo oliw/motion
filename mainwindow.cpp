@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QObjectList>
 #include <QProgressBar>
+#include <QCheckBox>
 #include <player.h>
 #include "tools.h"
 #include "MatToQImage.h"
@@ -171,7 +172,7 @@ void MainWindow::on_checkBox_stateChanged(int checked)
     bool enableFeatures = checked == Qt::Checked;
     player->setFeaturesEnabled(enableFeatures);
     if (enableFeatures) {
-        ui->checkBox_2->setChecked(false);
+    uncheckOtherPlayerButtons(ui->checkBox);
     }
 }
 
@@ -193,9 +194,9 @@ void MainWindow::on_checkBox_2_stateChanged(int checked)
     bool enableTracking = checked == Qt::Checked;
     player->setTrackingEnabled(enableTracking);
     if (enableTracking) {
-        ui->checkBox->setChecked(false);
-        ui->checkBox_3->setChecked(false);
+    uncheckOtherPlayerButtons(ui->checkBox_2);
     }
+
 }
 
 void MainWindow::on_checkBox_3_stateChanged(int checked)
@@ -203,9 +204,9 @@ void MainWindow::on_checkBox_3_stateChanged(int checked)
     bool enableOutliers = checked == Qt::Checked;
     player->setOutliersEnabled(enableOutliers);
     if (enableOutliers) {
-        ui->checkBox->setChecked(false);
-        ui->checkBox_2->setChecked(false);
+    uncheckOtherPlayerButtons(ui->checkBox_3);
     }
+
 }
 
 void MainWindow::processStarted(int processCode)
@@ -290,13 +291,29 @@ void MainWindow::on_actionCrop_Box_triggered()
     cropDialog.exec();
 }
 
-void MainWindow::on_cropTransformButton_clicked()
-{
-    emit cropTransformButtonPressed();
-}
-
 void MainWindow::on_actionSave_Result_triggered()
 {
     QString saveFileName = QFileDialog::getSaveFileName(this, "Save Cropped Video", "");
     emit saveResultPressed(saveFileName);
 }
+
+
+void MainWindow::on_checkBox_4_stateChanged(int checked)
+{
+    bool enableTracking = checked == Qt::Checked;
+    player->setCropboxEnabled(enableTracking);
+    if (enableTracking) {
+        uncheckOtherPlayerButtons(ui->checkBox_4);
+    }
+}
+
+void MainWindow::uncheckOtherPlayerButtons(QCheckBox* option)
+{
+    QList<QCheckBox*> list = ui->playerControlsBox->findChildren<QCheckBox*>();
+    foreach(QCheckBox* cb, list) {
+        if (cb != option) {
+            cb->setChecked(!option->isChecked());
+        }
+    }
+}
+

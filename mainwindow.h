@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QImage>
 #include <QProgressBar>
+#include <QCheckBox>
 #include <opencv2/core/core.hpp>
 #include "videoprocessor.h"
 #include "graphdrawer.h"
@@ -56,9 +57,8 @@ private slots:
     void on_pushButton_clicked();
     void on_calcStillPathButton_clicked();
     void on_actionCrop_Box_triggered();
-    void on_cropTransformButton_clicked();
-
     void on_actionSave_Result_triggered();
+    void on_checkBox_4_stateChanged(int arg1);
 
 signals:
    void signalResize(QResizeEvent *);
@@ -66,7 +66,6 @@ signals:
    void globalMotionButtonPressed();
    void stillMotionButtonPressed();
    void showOriginalPath(int x, int y);
-   void cropTransformButtonPressed();
    void saveResultPressed(QString path);
 
 protected:
@@ -80,10 +79,11 @@ private:
     Video* video;
 
     bool playing;
-    bool featuresDetected, featuresTracked, outliersRejected,originalMotion;
+    bool featuresDetected, featuresTracked, outliersRejected,originalMotion, cropBox;
     int currentFrameNumber;
 
     void togglePlayControls(bool show);
+    void uncheckOtherPlayerButtons(QCheckBox* option);
     void toggleActionControls(bool show);
 
 };

@@ -28,6 +28,7 @@ private:
     bool featuresEnabled;
     bool trackedEnabled;
     bool outliersEnabled;
+    bool cropboxEnabled;
 
     void showImage(int frameNumber);
 
@@ -54,6 +55,7 @@ public:
     void setFeaturesEnabled(bool enabled);
     void setTrackingEnabled(bool enabled);
     void setOutliersEnabled(bool enabled);
+    void setCropboxEnabled(bool enabled);
 };
 
 #endif // PLAYER_H

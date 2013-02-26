@@ -44,7 +44,7 @@ void SubSelectImage::mouseMoveEvent(QMouseEvent *e)
     }
 }
 
-void SubSelectImage::mouseReleaseEvent(QMouseEvent *e)
+void SubSelectImage::mouseReleaseEvent(QMouseEvent *)
 {
     selectionStarted=false;
 }

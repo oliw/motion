@@ -10,6 +10,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "MatToQImage.h"
+#include "tools.h"
 
 Player::Player(QObject *parent):QThread(parent)
 {
@@ -18,6 +19,7 @@ Player::Player(QObject *parent):QThread(parent)
     featuresEnabled = false;
     trackedEnabled = false;
     outliersEnabled = false;
+    cropboxEnabled = false;
     video = NULL;
 }
 
@@ -91,6 +93,20 @@ void Player::showImage(int frameNumber)
         assert(outliers.size() + inliers.size() == frame->getDisplacements().size());
         cv::drawKeypoints(originalData, outliers, image, Scalar(0,0,100));
         cv::drawKeypoints(image, inliers, image, Scalar(0,100,0));
+    } else if (cropboxEnabled) {
+        const Rect_<int>& cropBox = video->getCropBox();
+        image = originalData.clone();
+        if (frameNumber == 0) {
+            cv::rectangle(image, cropBox, Scalar(0,255,0), 3);
+        } else {
+            const Mat& update = frame->getUpdateTransform();
+            RotatedRect newCrop = Tools::applyTransformation(update, cropBox);
+            Point2f verts[4];
+            newCrop.points(verts);
+            for (int i = 0; i < 4; i++) {
+                line(image, verts[i], verts[(i+1)%4], Scalar(0,255,0),3);
+            }
+        }
     } else {
         image = originalData;
     }
@@ -179,5 +195,12 @@ void Player::setOutliersEnabled(bool enabled)
     outliersEnabled = enabled;
     refresh();
 }
+
+void Player::setCropboxEnabled(bool enabled)
+{
+    cropboxEnabled = enabled;
+    refresh();
+}
+
 
 
