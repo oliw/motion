@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>761</width>
-    <height>527</height>
+    <width>897</width>
+    <height>619</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -88,7 +88,7 @@
        <item alignment="Qt::AlignTop">
         <widget class="QGroupBox" name="groupBox_2">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -100,21 +100,21 @@
           <item>
            <widget class="QPushButton" name="pushButton_2">
             <property name="text">
-             <string>Calculate Global Motion</string>
+             <string>Calculate Existing Motion</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="calcStillPathButton">
             <property name="text">
-             <string>Calculate Optimal Path</string>
+             <string>Calculate Update Transforms</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_4">
+           <widget class="QPushButton" name="pushButton">
             <property name="text">
-             <string>Warp &amp; Crop</string>
+             <string>View Graphs</string>
             </property>
            </widget>
           </item>
@@ -198,6 +198,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="checkBox_4">
+         <property name="text">
+          <string>Show Crop</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="checkBox_3">
          <property name="text">
           <string>Show Outliers</string>
@@ -241,58 +248,8 @@
       </layout>
      </widget>
     </item>
-    <item>
-     <widget class="QFrame" name="frame_5">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>2</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>50</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>16777209</height>
-       </size>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QPlainTextEdit" name="plainTextEdit">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
    </layout>
    <zorder>playerControlsBox</zorder>
-   <zorder>frame_5</zorder>
    <zorder>widget_2</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -300,7 +257,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>761</width>
+     <width>897</width>
      <height>22</height>
     </rect>
    </property>
@@ -309,9 +266,17 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen_Video"/>
+    <addaction name="actionSave_Result"/>
     <addaction name="actionReset"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionCrop_Box"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionReset">
@@ -328,6 +293,28 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionCrop_Box">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Crop Box</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionSave_Result">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Save Result</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>

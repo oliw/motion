@@ -22,12 +22,13 @@ private:
     int frameRate;
     Mat RGBframe;
     QImage image;
-    Video video;
+    const Video* video;
     int frameNumber;
 
     bool featuresEnabled;
     bool trackedEnabled;
     bool outliersEnabled;
+    bool cropboxEnabled;
 
     void showImage(int frameNumber);
 
@@ -38,7 +39,7 @@ protected:
     void run();
     void msleep(int ms);
 public slots:
-    void setVideo(const Video& video);
+    void setVideo(Video* video);
 public:
     Player(QObject *parent = 0);
     ~Player();
@@ -54,6 +55,7 @@ public:
     void setFeaturesEnabled(bool enabled);
     void setTrackingEnabled(bool enabled);
     void setOutliersEnabled(bool enabled);
+    void setCropboxEnabled(bool enabled);
 };
 
 #endif // PLAYER_H

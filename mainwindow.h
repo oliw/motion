@@ -1,11 +1,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
+#include "cropwindowdialog.h"
 #include <QMainWindow>
 #include <QImage>
 #include <QProgressBar>
+#include <QCheckBox>
 #include <opencv2/core/core.hpp>
 #include "videoprocessor.h"
+#include "graphdrawer.h"
 #include <video.h>
 #include <player.h>
 
@@ -46,17 +48,25 @@ private slots:
     // When the processor has finished working on something
     void processStarted(int processCode);
     void processFinished(int processCode);
-    void newVideoLoaded(const Video& video);
+    void newVideoLoaded(Video* video);
     void showProgress(int current, int outof);
 
     //// Slots for player activity
     void player_stopped();
     void updatePlayerUI(QImage img,int frameNumber);
+    void on_pushButton_clicked();
+    void on_calcStillPathButton_clicked();
+    void on_actionCrop_Box_triggered();
+    void on_actionSave_Result_triggered();
+    void on_checkBox_4_stateChanged(int arg1);
 
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
    void globalMotionButtonPressed();
+   void stillMotionButtonPressed();
+   void showOriginalPath(int x, int y);
+   void saveResultPressed(QString path);
 
 protected:
    void resizeEvent(QResizeEvent *);  // virtual
@@ -66,11 +76,14 @@ private:
     Player* player;
     QProgressBar* progress;
 
+    Video* video;
+
     bool playing;
-    bool featuresDetected, featuresTracked, outliersRejected;
+    bool featuresDetected, featuresTracked, outliersRejected,originalMotion, cropBox;
     int currentFrameNumber;
 
     void togglePlayControls(bool show);
+    void uncheckOtherPlayerButtons(QCheckBox* option);
     void toggleActionControls(bool show);
 
 };
