@@ -1,6 +1,5 @@
 #include "l1model.h"
 #include "video.h"
-#include "l1messagehandler.h"
 #include <fstream>
 #include <coin/CoinModel.hpp>
 #include <coin/CoinPackedMatrix.hpp>
@@ -20,6 +19,8 @@ L1Model::L1Model(Video* v)
     setSmoothnessConstraints(affs);
     qDebug() << "L1Model - Setting Inclusion Constraints";
     setInclusionConstraints(v->getCropBox(), v->getWidth(), v->getHeight());
+    qDebug() << "L1Model - Setting Proximity Constraints";
+    setProximityConstraints();
     si.setLogLevel(10000);
 }
 
@@ -145,6 +146,44 @@ void L1Model::setSmoothnessConstraints(vector<Mat>& fs)
     }
 }
 
+void L1Model::setProximityConstraints()
+{
+    for (int t = 0; t < maxT-1; t++) {
+         CoinPackedVector v;
+         v.insert(toIndex(t, 'a'), 1);
+         proximityLb.push_back(0.9);
+         proximityUb.push_back(1.1);
+         proximityConstraints.push_back(v);
+         CoinPackedVector v2;
+         v2.insert(toIndex(t, 'd'), 1);
+         proximityLb.push_back(0.9);
+         proximityUb.push_back(1.1);
+         proximityConstraints.push_back(v2);
+         CoinPackedVector v3;
+         v3.insert(toIndex(t, 'b'), 1);
+         proximityLb.push_back(-0.1);
+         proximityUb.push_back(0.1);
+         proximityConstraints.push_back(v3);
+         CoinPackedVector v4;
+         v4.insert(toIndex(t, 'c'), 1);
+         proximityLb.push_back(-0.1);
+         proximityUb.push_back(0.1);
+         proximityConstraints.push_back(v4);
+         CoinPackedVector v5;
+         v5.insert(toIndex(t, 'b'), 1);
+         v5.insert(toIndex(t, 'c'), 1);
+         proximityLb.push_back(-0.05);
+         proximityUb.push_back(0.05);
+         proximityConstraints.push_back(v5);
+         CoinPackedVector v6;
+         v6.insert(toIndex(t, 'a'), 1);
+         v6.insert(toIndex(t, 'd'), -1);
+         proximityLb.push_back(-0.1);
+         proximityUb.push_back(0.1);
+         proximityConstraints.push_back(v6);
+    }
+}
+
 int L1Model::toRow(char c)
 {
     assert(c >= 'a' && c <= 'f');
@@ -203,16 +242,21 @@ bool L1Model::solve()
     for (uint i = 0; i < inclusionConstraints.size(); i++) {
         matrix.appendRow(inclusionConstraints[i]);
     }
+    for (uint i = 0; i < proximityConstraints.size(); i++) {
+        matrix.appendRow(proximityConstraints[i]);
+    }
 
     vector<double> rowLb;
-    rowLb.reserve(smoothnessConstraints.size()+inclusionConstraints.size());
+    rowLb.reserve(smoothnessConstraints.size()+inclusionConstraints.size()+proximityConstraints.size());
     rowLb.insert(rowLb.end(), smoothnessLb.begin(), smoothnessLb.end());
     rowLb.insert(rowLb.end(), inclusionLb.begin(), inclusionLb.end());
+    rowLb.insert(rowLb.end(), proximityLb.begin(), proximityLb.end());
 
     vector<double> rowUb;
-    rowUb.reserve(smoothnessConstraints.size()+inclusionConstraints.size());
+    rowUb.reserve(smoothnessConstraints.size()+inclusionConstraints.size()+proximityConstraints.size());
     rowUb.insert(rowUb.end(), smoothnessUb.begin(), smoothnessUb.end());
     rowUb.insert(rowUb.end(), inclusionUb.begin(), inclusionUb.end());
+    rowUb.insert(rowUb.end(), proximityUb.begin(), proximityUb.end());
 
     si.loadProblem(matrix,columnLb,columnUb,objectives,&rowLb[0],&rowUb[0]);
 
@@ -262,7 +306,6 @@ void L1Model::setInclusionConstraints(Rect cropBox, int videoWidth, int videoHei
         // For each corner
         for (int x = cropBox.x; x <= cropBox.x+cropBox.width; x+=cropBox.width) {
             for (int y = cropBox.y; y <= cropBox.y+cropBox.height; y+=cropBox.height) {
-                cropBox.contains(Point2f(x,y));
                 //Set inclusion constraints
                 CoinPackedVector const1;
                 const1.insert(toIndex(t, 'a'), x);
@@ -270,12 +313,15 @@ void L1Model::setInclusionConstraints(Rect cropBox, int videoWidth, int videoHei
                 const1.insert(toIndex(t, 'e'), 1);
                 inclusionLb.push_back(0);
                 inclusionUb.push_back(videoWidth);
+                inclusionConstraints.push_back(const1);
                 CoinPackedVector const2;
                 const2.insert(toIndex(t, 'c'), x);
                 const2.insert(toIndex(t, 'd'), y);
                 const2.insert(toIndex(t,'f'), 1);
                 inclusionLb.push_back(0);
                 inclusionUb.push_back(videoHeight);
+                inclusionConstraints.push_back(const2);
+
             }
         }
     }

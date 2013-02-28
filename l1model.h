@@ -40,6 +40,9 @@ private:
     vector<CoinPackedVector> inclusionConstraints;
     vector<double> inclusionLb, inclusionUb;
 
+    vector<CoinPackedVector> proximityConstraints;
+    vector<double> proximityLb, proximityUb;
+
     int varPerFrame;
     int slackVarPerFrame;
     int maxT;
@@ -54,6 +57,7 @@ private:
     void setObjectiveCoefficients();
     void setSmoothnessConstraints(vector<Mat>& originalTransformations);
     void setInclusionConstraints(Rect cropbox, int videoWidth, int videoHeight);
+    void setProximityConstraints();
 
 };
 
