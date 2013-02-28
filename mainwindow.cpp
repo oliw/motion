@@ -258,7 +258,7 @@ void MainWindow::processFinished(int processCode)
             originalMotion = true;
             ui->pushButton->setEnabled(true);
             break;
-        case VideoProcessor::CROP_TRANSFORM:
+        case VideoProcessor::STILL_MOTION:
             ui->actionSave_Result->setEnabled(true);
             break;
         default:
