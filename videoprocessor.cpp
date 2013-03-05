@@ -155,9 +155,6 @@ void VideoProcessor::calculateMotionModel() {
         vector<Point2f> srcPoints, destPoints;
         frame->getInliers(srcPoints,destPoints);
         Mat affineTransform = estimateRigidTransform(srcPoints, destPoints, true);
-//        std::stringstream ss;
-//        ss << "F(t="<<i<<") = " << affineTransform;
-//        qDebug() << QString::fromStdString(ss.str());
         frame->setAffineTransform(affineTransform);
     }
     qDebug() << "VideoProcessor::calculateMotionModel - Original motion detected";
@@ -177,13 +174,14 @@ void VideoProcessor::calculateUpdateTransform() {
     // Extract Results
     for (int t = 1; t < video->getFrameCount(); t++)
     {
-        Mat m(2,3,DataType<float>::type);
+        Mat m = Mat::zeros(2,3,DataType<float>::type);
         for (char letter = 'a'; letter <= 'e'; letter++) {
+            assert(model.getVariableSolution(t,letter) < 1e15);
             m.at<float>(L1Model::toRow(letter),L1Model::toCol(letter)) = model.getVariableSolution(t, letter);
         }
-//        std::stringstream ss;
-//        ss << "B(t="<<t<<") = " << m;
-//        qDebug() << QString::fromStdString(ss.str());
+        std::stringstream ss;
+        ss << "F:"<<t<<" - "<<m;
+        qDebug() << QString::fromStdString(ss.str());
         Frame* f = video->accessFrameAt(t);
         f->setUpdateTransform(m);
     }
@@ -198,14 +196,20 @@ void VideoProcessor::applyCropTransform()
     emit processStarted(CROP_TRANSFORM);
     croppedVideo = new Video(video->getFrameCount());
     Rect cropWindow = video->getCropBox();
-    qDebug() << cropWindow.x << "," << cropWindow.y << " width:" << cropWindow.width << " height: " << cropWindow.height;
     for (int f = 0; f < video->getFrameCount(); f++) {
+        qDebug() << "VideoProcessor::applyCropTransform() - Getting cropped version of frame:" << f;
         emit progressMade(f, video->getFrameCount());
         const Frame* frame = video->getFrameAt(f);
         const Mat& img = frame->getOriginalData();
         //Move cropWindow from current position to next position using frame's update transform
         //Extract rectangle
-        cv::Mat croppedImage = img(cropWindow);
+        Mat croppedImage;
+        if (f == 0) {
+            croppedImage = img(cropWindow);
+        } else {
+            RotatedRect newCropWindow = Tools::transformRectangle(frame->getUpdateTransform(), cropWindow);
+            croppedImage = Tools::getCroppedImage(img,newCropWindow);
+        }
         Frame* croppedF = new Frame(croppedImage, croppedVideo);
         croppedVideo->appendFrame(croppedF);
     }
@@ -216,6 +220,7 @@ void VideoProcessor::applyCropTransform()
 void VideoProcessor::saveCroppedVideo(QString path)
 {
     qDebug() << "VideoProcessor::saveCroppedVideo() - Started";
+    applyCropTransform();
     saveVideo(croppedVideo, path);
     qDebug() << "VideoProcessor::saveCroppedVideo() - Finished";
 }
@@ -226,7 +231,7 @@ void VideoProcessor::saveVideo(const Video* videoToSave, QString path)
     emit processStarted(SAVING_VIDEO);
     String fp = path.toStdString();
     Size frameSize = videoToSave->getSize();
-    VideoWriter record(fp, CV_FOURCC('I','Y','U','V'),video->getOrigFps(), videoToSave->getSize());
+    VideoWriter record(fp, CV_FOURCC('D','I','V','X'),video->getOrigFps(), videoToSave->getSize());
     assert(record.isOpened());
     for (int f = 0; f < videoToSave->getFrameCount(); f++) {
         emit progressMade(f, videoToSave->getFrameCount());

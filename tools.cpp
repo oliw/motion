@@ -18,16 +18,11 @@ float Tools::eucDistance(Point2f a, Point2f b) {
 Point2f Tools::applyAffineTransformation(Mat affine, Point2f src)
 {
     std::stringstream ss;
-    ss << "Applying " << affine << " to " << src;
-    qDebug() << QString::fromStdString(ss.str());
     affine.convertTo(affine,CV_32FC1,1,0); //NOW A IS FLOAT
-
     vector<Point3f> vec;
     vec.push_back(Point3f(src.x,src.y,1));
-
     Mat srcMat = Mat(vec).reshape(1).t();
     Mat dstMat = affine*srcMat; //USE MATRIX ALGEBRA
-
     return Point2f(dstMat.at<float>(0,0),dstMat.at<float>(1,0));
 }
 
@@ -61,31 +56,45 @@ void Tools::applyAffineTransformations(Point2f start, vector<Mat> trans, vector<
     }
 }
 
-RotatedRect Tools::applyTransformation(const Mat& affine, const Rect& origRect) {
+RotatedRect Tools::transformRectangle(const Mat& affine, const Rect& origRect) {
+    qDebug() << "Tools::transformRectangle - Started";
     assert(affine.rows == 2 && affine.cols == 3);
-//    float m[2][3] = {{1,0,10},{0,1,0}};
-//    Mat test = Mat(2,3,CV_32F, m);
     vector<Point2f> verts;
     verts.push_back(Point2f(origRect.x, origRect.y));
     verts.push_back(Point2f(origRect.x, origRect.y+origRect.height));
     verts.push_back(Point2f(origRect.x+origRect.width, origRect.y));
     verts.push_back(Point2f(origRect.x+origRect.width, origRect.y+origRect.height));
     vector<Point2f> newVerts;
-    for (int i = 0; i < verts.size(); i++) {
+    for (uint i = 0; i < verts.size(); i++) {
         newVerts.push_back(Tools::applyAffineTransformation(affine, verts[i]));
     }
-    qDebug() << "Old Points";
-    std::stringstream s1;
-    for (int i = 0; i < verts.size(); i++) {
-        s1 << verts[i] << ",";
-    }
-    qDebug() << QString::fromStdString(s1.str());
-    qDebug() << "New Points";
-    std::stringstream s2;
-    for (int i = 0; i < newVerts.size(); i++) {
-        s2 << newVerts[i] << ",";
-    }
-    qDebug() << QString::fromStdString(s2.str());
+    qDebug() << "Tools::transformRectangle - Finished";
+    std::stringstream ss;
+    ss << "Affine Trans:" << affine << '\n';
+    ss << "Old Coords: " << verts << '\n';
+    ss << "New Coords: " << newVerts << '\n';
+    qDebug() << QString::fromStdString(ss.str());
     return minAreaRect(newVerts);
 }
+
+Mat Tools::getCroppedImage(const Mat& image, const RotatedRect& rect) {
+    qDebug() << "Tools::getCroppedImage - Started";
+    Mat M, rotated, cropped;
+    float angle = rect.angle;
+    Size size = rect.size;
+    if (angle < -45) {
+        angle += 90.;
+        double height = size.height;
+        size.height = size.width;
+        size.width = height;
+    }
+    M = getRotationMatrix2D(rect.center, angle, 1);
+    qDebug() << "Warping Affine start";
+    warpAffine(image, rotated, M, image.size(), INTER_CUBIC);
+    qDebug() << "Warping Affine end";
+    getRectSubPix(rotated, size, rect.center,cropped);
+    qDebug() << "Tools::getCroppedImage - Finished";
+    return cropped;
+}
+
 

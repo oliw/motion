@@ -230,6 +230,7 @@ int L1Model::toSlackIndex(int t, int var)
 
 bool L1Model::solve()
 {
+    qDebug() << "L1Model::solve() - Solving ";
     double *objectives = &objectiveCoefficients[0];
     double *columnLb = &colLb[0];
     double *columnUb = &colUb[0];
@@ -262,11 +263,12 @@ bool L1Model::solve()
 
     qDebug() << "Problem Rows: " << si.getNumRows() << ", Cols:" << si.getNumCols();
     // Consolidate all the constraints
-    FILE * file = fopen("/Users/Oli/Desktop/coinMessages.txt","w");
+    FILE * file = fopen("coin.log","w");
+    assert(file);
     CoinMessageHandler* handler = new CoinMessageHandler(file);
     si.passInMessageHandler(handler);
     // Load Problem
-    si.writeMps("/Users/Oli/Desktop/test");
+    si.writeMps("coin.mps");
     // Solve Problem
     qDebug() << "L1Model::solve - Solving";
     si.initialSolve();
