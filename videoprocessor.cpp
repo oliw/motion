@@ -22,13 +22,17 @@
 #include <iostream>
 #include <QDebug>
 #include <QObject>
+#include <QMutex>
+#include <QMutexLocker>
 #include <vector>
 #include <engine.h>
 
 using namespace std;
 
-VideoProcessor::VideoProcessor(QObject *parent):QObject(parent) {
+VideoProcessor::VideoProcessor(QObject *parent):QObject(parent),mutex(QMutex::Recursive) {
     QObject::connect(&outlierRejector, SIGNAL(progressMade(int, int)), this, SIGNAL(progressMade(int, int)));
+    video = 0;
+    croppedVideo = 0;
 }
 
 VideoProcessor::~VideoProcessor() {
@@ -37,6 +41,7 @@ VideoProcessor::~VideoProcessor() {
 void VideoProcessor::reset(){
     qDebug() << "Not yet implemented";
     delete video;
+    delete croppedVideo;
 }
 
 void VideoProcessor::calculateGlobalMotion() {
@@ -77,21 +82,7 @@ void VideoProcessor::loadVideo(QString path) {
 
 void VideoProcessor::detectFeatures() {
     emit processStarted(FEATURE_DETECTION);
-    qDebug() << "VideoProcessor::detectFeatures - Feature Detection started";
-    int frameCount = video->getFrameCount();
-    FeatureDetector* featureDetector = new GoodFeaturesToTrackDetector();
-    vector<KeyPoint> bufferPoints;
-    for (int i = 0; i < frameCount; i++) {
-        qDebug() << "VideoProcessor::detectFeatures - Detecting features in frame " << i <<"/"<<frameCount-1;
-        emit progressMade(i, frameCount-1);
-        Frame* frame = video->accessFrameAt(i);
-        featureDetector->detect(frame->getOriginalData(), bufferPoints);
-        vector<Point2f> features;
-        KeyPoint::convert(bufferPoints, features);
-        frame->setFeatures(features);
-        qDebug() << "VideoProcessor::detectFeatures - Detected " << bufferPoints.size() << " features";
-    }
-    delete featureDetector;
+    detectVideoFeatures(video);
     emit videoUpdated(video);
     emit processFinished(FEATURE_DETECTION);
     return;
@@ -99,38 +90,7 @@ void VideoProcessor::detectFeatures() {
 
 void VideoProcessor::trackFeatures() {
     emit processStarted(FEATURE_TRACKING);
-    qDebug() << "VideoProcessor::trackFeatures - Feature Tracking started";
-    for (int i = video->getFrameCount()-1; i > 0; i--) {
-        Frame* frameT = video->accessFrameAt(i);
-        const Frame* framePrev = video->accessFrameAt(i-1);
-        const vector<Point2f>& features = frameT->getFeatures();
-        int featuresToTrack = frameT->getFeatures().size();
-        qDebug() << "VideoProcessor::trackFeatures - Tracking " << featuresToTrack << " features from frame " << i << " to frame "<<i-1;
-        emit progressMade(video->getFrameCount()-i, video->getFrameCount());
-        vector<Point2f> nextPositions;
-        vector<uchar> status;
-        vector<float> err;
-        // Initiate optical flow tracking
-        calcOpticalFlowPyrLK(frameT->getOriginalData(),
-                             framePrev->getOriginalData(),
-                             features,
-                             nextPositions,
-                             status,
-                             err);
-        // Remove features that were not tracked correctly
-        int featuresCorrectlyTracked = 0;
-        for (uint j = 0; j < features.size(); j++) {
-            if (status[j] == 0) {
-                // Feature could not be tracked
-            } else {
-                // Feature was tracked
-                featuresCorrectlyTracked++;
-                Displacement d = Displacement(features[j], nextPositions[j]);
-                frameT->registerDisplacement(d);
-            }
-        }
-        qDebug() << "VideoProcessor::trackFeatures - " << featuresCorrectlyTracked << "/" << featuresToTrack << "successfully tracked";
-    }
+    trackVideoFeatures(video);
     emit videoUpdated(video);
     emit processFinished(FEATURE_TRACKING);
     return;
@@ -138,9 +98,7 @@ void VideoProcessor::trackFeatures() {
 
 void VideoProcessor::outlierRejection() {
     emit processStarted(OUTLIER_REJECTION);
-    qDebug() << "VideoProcessor::outlierRejection - Outlier rejection started";
-    outlierRejector.execute(video);
-    qDebug() << "VideoProcessor::outlierRejection - Outlier rejection finished";
+    removeVideoOutliers(video);
     emit videoUpdated(video);
     emit processFinished(OUTLIER_REJECTION);
     return;
@@ -148,16 +106,7 @@ void VideoProcessor::outlierRejection() {
 
 void VideoProcessor::calculateMotionModel() {
     emit processStarted(ORIGINAL_MOTION);
-    qDebug() << "VideoProcessor::calculateMotionModel - Calculating original motion";
-    for (int i = 1; i < video->getFrameCount(); i++) {
-        emit progressMade(i, video->getFrameCount()-2);
-        Frame* frame = video->accessFrameAt(i);
-        vector<Point2f> srcPoints, destPoints;
-        frame->getInliers(srcPoints,destPoints);
-        Mat affineTransform = estimateRigidTransform(srcPoints, destPoints, true);
-        frame->setAffineTransform(affineTransform);
-    }
-    qDebug() << "VideoProcessor::calculateMotionModel - Original motion detected";
+    calculateVideoMotionModel(video);
     emit processFinished(ORIGINAL_MOTION);
 }
 
@@ -187,7 +136,9 @@ void VideoProcessor::calculateUpdateTransform() {
     }
     emit progressMade(3,3);
     qDebug() << "VideoProcessor::calculateUpdateTransform - Ideal Path Calculated";
+    applyCropTransform();
     emit processFinished(STILL_MOTION);
+    analyseCroppedVideo();
 }
 
 void VideoProcessor::applyCropTransform()
@@ -214,13 +165,13 @@ void VideoProcessor::applyCropTransform()
         croppedVideo->appendFrame(croppedF);
     }
     emit processFinished(CROP_TRANSFORM);
+    Tools::trimVideo(croppedVideo);
     qDebug() << "VideoProcessor::applyCropTransform() - Finished";
 }
 
 void VideoProcessor::saveCroppedVideo(QString path)
 {
     qDebug() << "VideoProcessor::saveCroppedVideo() - Started";
-    applyCropTransform();
     saveVideo(croppedVideo, path);
     qDebug() << "VideoProcessor::saveCroppedVideo() - Finished";
 }
@@ -243,5 +194,86 @@ void VideoProcessor::saveVideo(const Video* videoToSave, QString path)
     qDebug() << "VideoProcessor::saveVideo() - Finished";
 }
 
+void VideoProcessor::analyseCroppedVideo() {
+    assert(croppedVideo != 0);
+    emit processStarted(ANALYSE_CROP_VIDEO);
+    detectVideoFeatures(croppedVideo);
+    trackVideoFeatures(croppedVideo);
+    removeVideoOutliers(croppedVideo);
+    calculateVideoMotionModel(croppedVideo);
+    emit processFinished(ANALYSE_CROP_VIDEO);
+}
+
+void VideoProcessor::detectVideoFeatures(Video* v) {
+    qDebug() << "VideoProcessor::detectFeatures - Feature Detection started";
+    int frameCount = v->getFrameCount();
+    FeatureDetector* featureDetector = new GoodFeaturesToTrackDetector();
+    vector<KeyPoint> bufferPoints;
+    for (int i = 0; i < frameCount; i++) {
+        qDebug() << "VideoProcessor::detectFeatures - Detecting features in frame " << i <<"/"<<frameCount-1;
+        emit progressMade(i, frameCount-1);
+        Frame* frame = v->accessFrameAt(i);
+        featureDetector->detect(frame->getOriginalData(), bufferPoints);
+        vector<Point2f> features;
+        KeyPoint::convert(bufferPoints, features);
+        frame->setFeatures(features);
+        qDebug() << "VideoProcessor::detectFeatures - Detected " << bufferPoints.size() << " features";
+    }
+    delete featureDetector;
+}
+
+void VideoProcessor::trackVideoFeatures(Video* v) {
+    qDebug() << "VideoProcessor::trackFeatures - Feature Tracking started";
+    for (int i = v->getFrameCount()-1; i > 0; i--) {
+        Frame* frameT = v->accessFrameAt(i);
+        const Frame* framePrev = v->accessFrameAt(i-1);
+        const vector<Point2f>& features = frameT->getFeatures();
+        int featuresToTrack = frameT->getFeatures().size();
+        qDebug() << "VideoProcessor::trackFeatures - Tracking " << featuresToTrack << " features from frame " << i << " to frame "<<i-1;
+        emit progressMade(v->getFrameCount()-i, v->getFrameCount());
+        vector<Point2f> nextPositions;
+        vector<uchar> status;
+        vector<float> err;
+        // Initiate optical flow tracking
+        calcOpticalFlowPyrLK(frameT->getOriginalData(),
+                             framePrev->getOriginalData(),
+                             features,
+                             nextPositions,
+                             status,
+                             err);
+        // Remove features that were not tracked correctly
+        int featuresCorrectlyTracked = 0;
+        for (uint j = 0; j < features.size(); j++) {
+            if (status[j] == 0) {
+                // Feature could not be tracked
+            } else {
+                // Feature was tracked
+                featuresCorrectlyTracked++;
+                Displacement d = Displacement(features[j], nextPositions[j]);
+                frameT->registerDisplacement(d);
+            }
+        }
+        qDebug() << "VideoProcessor::trackFeatures - " << featuresCorrectlyTracked << "/" << featuresToTrack << "successfully tracked";
+    }
+}
+
+void VideoProcessor::removeVideoOutliers(Video* v) {
+    qDebug() << "VideoProcessor::outlierRejection - Outlier rejection started";
+    outlierRejector.execute(video);
+    qDebug() << "VideoProcessor::outlierRejection - Outlier rejection finished";
+}
+
+void VideoProcessor::calculateVideoMotionModel(Video* v) {
+    qDebug() << "VideoProcessor::calculateMotionModel - Calculating original motion";
+    for (int i = 1; i < v->getFrameCount(); i++) {
+        emit progressMade(i, v->getFrameCount()-2);
+        Frame* frame = v->accessFrameAt(i);
+        vector<Point2f> srcPoints, destPoints;
+        frame->getInliers(srcPoints,destPoints);
+        Mat affineTransform = estimateRigidTransform(srcPoints, destPoints, true);
+        frame->setAffineTransform(affineTransform);
+    }
+    qDebug() << "VideoProcessor::calculateMotionModel - Original motion detected";
+}
 
 

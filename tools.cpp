@@ -97,4 +97,28 @@ Mat Tools::getCroppedImage(const Mat& image, const RotatedRect& rect) {
     return cropped;
 }
 
+void Tools::trimVideo(Video* image) {
+    qDebug() << "Tools::trimVideo - Start";
+    // Find smallest frame
+    Size area = image->getFrameAt(0)->getOriginalData().size();
+    for (int i = 0; i < image->getFrameCount(); i++) {
+        Frame* f = image->accessFrameAt(i);
+        Size thisArea = f->getOriginalData().size();
+        if (thisArea.width < area.width) {
+            area.width = thisArea.height;
+        }
+        if (thisArea.height < area.height) {
+            area.height = thisArea.height;
+        }
+    }
+    qDebug() << "Smallest area is " << area.width << "," << area.height;
+    // Trim all frames
+    for (int i = 0; i < image->getFrameCount(); i++) {
+        qDebug() << "Trimming frame " << i;
+        Frame* f = image->accessFrameAt(i);
+        f->trim(area);
+    }
+    qDebug() << "Tools::trimVideo - End";
+}
+
 

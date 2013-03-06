@@ -9,11 +9,15 @@ Frame::Frame(QObject *parent):QObject(parent),mutex()
 
 Frame::Frame(const Mat& originalData,QObject *parent):QObject(parent),mutex(),image(originalData)
 {
-    dx = Mat::zeros(originalData.rows, originalData.cols, DataType<float>::type);
-    dy = Mat::zeros(originalData.rows, originalData.cols, DataType<float>::type);
+    resize();
+}
+
+void Frame::resize() {
+    dx = Mat::zeros(image.rows, image.cols, DataType<float>::type);
+    dy = Mat::zeros(image.rows, image.cols, DataType<float>::type);
     displacements.clear();
-    displacementMask = Mat::zeros(originalData.rows, originalData.cols, DataType<int>::type);
-    outlierMask = Mat::zeros(originalData.rows, originalData.cols, DataType<int>::type);
+    displacementMask = Mat::zeros(image.rows, image.cols, DataType<int>::type);
+    outlierMask = Mat::zeros(image.rows, image.cols, DataType<int>::type);
 }
 
 void Frame::registerDisplacement(const Displacement& displacement) {
@@ -129,6 +133,18 @@ void Frame::setFeatures (const vector<Point2f>& features)
     QMutexLocker locker(&mutex);
     this->features = features;
 }
+
+void Frame::trim(Size area)
+{
+    QMutexLocker locker(&mutex);
+    Rect rect(Point2f(0,0),area);
+    qDebug() << "Rectangle size:" << rect.width << "," << rect.height;
+    qDebug() << "Old Rectangle size:" << image.size().width << "," << image.size().height;
+    image = image(rect);
+    qDebug() << "New Rectangle size:" << image.size().width << "," << image.size().height;
+    resize();
+}
+
 
 
 

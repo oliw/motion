@@ -17,6 +17,8 @@ public:
     Frame(QObject *parent = 0);
     Frame(const Mat& image, QObject *parent = 0);
 
+    void resize();
+
     const Mat& getOriginalData() const {QMutexLocker locker(&mutex); return image;}
 
     void setFeatures (const vector<Point2f>& features);
@@ -39,6 +41,8 @@ public:
 
     void setUpdateTransform(const Mat& update);
     const Mat& getUpdateTransform() const {QMutexLocker locker(&mutex); return update;}
+
+    void trim(Size area);
 
 private:
 

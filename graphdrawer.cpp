@@ -2,9 +2,10 @@
 #include <QDebug>
 #include "engine.h"
 #include "tools.h"
+#include "videoprocessor.h"
 
-GraphDrawer::GraphDrawer(QObject *parent) :
-    QObject(parent)
+GraphDrawer::GraphDrawer(VideoProcessor* vp, QObject *parent) :
+    QObject(parent),vp(vp)
 {
     mEngine = engOpen(NULL);
     assert(mEngine != NULL);
@@ -28,17 +29,19 @@ mxArray* GraphDrawer::vectorToMatlabFormat(const vector<double>& original)
 
 void GraphDrawer::drawOriginalMotionGraph(int x, int y) {
     qDebug() << "GraphDrawer::drawOriginalMotionGraph - Drawing graphs starting at ("<<x<<","<<y<<")";
+    const Video* video = vp->getVideo();
     const vector<Mat>& transforms = video->getAffineTransforms();
-    showMotionGraph(Point2f(x,y),transforms);
+    showMotionGraph(Point2f(x,y));
 }
 
-
-
-
-void GraphDrawer::showMotionGraph(Point2f start, const vector<Mat>& transforms) {
+void GraphDrawer::showMotionGraph(Point2f start) {
+    const Video* original = vp->getVideo();
     // Calculate values
-    vector<double> times, xss, yss;
-    Tools::applyAffineTransformations(start, transforms, times, xss, yss);
+    vector<double> times;
+    // Original Video Movement
+    vector <double> xss, yss;
+    Tools::applyAffineTransformations(start, original->getAffineTransforms(), times, xss, yss);
+    const Video* cropped = vp->getCroppedVideo();
     // Convert values to Matlab format
     mxArray *time = vectorToMatlabFormat(times);
     mxArray *xs = vectorToMatlabFormat(xss);
@@ -47,7 +50,19 @@ void GraphDrawer::showMotionGraph(Point2f start, const vector<Mat>& transforms) 
     engPutVariable(mEngine, "time", time);
     engPutVariable(mEngine, "xs", xs);
     engPutVariable(mEngine, "ys", ys);
-    // Draw two graphs
-    engEvalString(mEngine, "figure; plot(xs,time); xlabel('x'); ylabel('Time /frame')");
-    engEvalString(mEngine, "figure; plot(ys,time); xlabel('y'); ylabel('Time /frame')");
+    if (cropped != 0) {
+        // Cropped Video Movement
+        vector <double> cxss, cyss;
+        Tools::applyAffineTransformations(start, cropped->getAffineTransforms(), times, cxss, cyss);
+        mxArray *cxs = vectorToMatlabFormat(cxss);
+        mxArray *cys = vectorToMatlabFormat(cyss);
+        engPutVariable(mEngine, "cxs", cxs);
+        engPutVariable(mEngine, "cys", cys);
+        // Draw two graphs
+        engEvalString(mEngine, "figure; plot(xs,time,cxs,time); xlabel('x'); ylabel('Time /frame'); legend('Original','Cropped')");
+        engEvalString(mEngine, "figure; plot(ys,time,cys,time); xlabel('y'); ylabel('Time /frame'); legend('Original','Cropped')");
+    } else {
+        engEvalString(mEngine, "figure; plot(xs,time); xlabel('x'); ylabel('Time /frame'); legend('Original')");
+        engEvalString(mEngine, "figure; plot(ys,time); xlabel('y'); ylabel('Time /frame'); legend('Original')");
+    }
 }

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <opencv2/core/core.hpp>
+#include "videoprocessor.h"
 #include "engine.h"
 #include "video.h"
 
@@ -13,19 +14,18 @@ class GraphDrawer : public QObject
 {
     Q_OBJECT
 public:
-    explicit GraphDrawer(QObject *parent = 0);
+    explicit GraphDrawer(VideoProcessor* vp, QObject *parent = 0);
     ~GraphDrawer();
 
-    void showMotionGraph(Point2f start, const vector<Mat>& transforms);
+    void showMotionGraph(Point2f start);
 signals:
     
 public slots:
-    void setVideo(Video* video) {this->video = video;}
     void drawOriginalMotionGraph(int x, int y);
 
 private:
     Engine* mEngine;
-    const Video* video;
+    VideoProcessor* const vp;
     static mxArray* vectorToMatlabFormat(const vector<double>& original);
     
 };

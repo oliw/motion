@@ -2,6 +2,7 @@
 #define VIDEOPROCESSOR_H
 
 #include <QObject>
+#include <QMutex>
 #include "video.h"
 #include "opencv2/core/core.hpp"
 #include "opencv2/features2d/features2d.hpp"
@@ -20,7 +21,8 @@ public:
     ~VideoProcessor();
 
     void reset();
-    const Video * getVideo() {return video;}
+    const Video * getVideo() {QMutexLocker locker(&mutex); return video;}
+    const Video * getCroppedVideo() {QMutexLocker locker(&mutex); return croppedVideo;}
 
     const static int FEATURE_DETECTION = 1;
     const static int FEATURE_TRACKING = 2;
@@ -30,6 +32,7 @@ public:
     const static int STILL_MOTION = 6;
     const static int CROP_TRANSFORM = 10;
     const static int SAVING_VIDEO = 11;
+    const static int ANALYSE_CROP_VIDEO = 12;
 
 
 signals:
@@ -51,13 +54,27 @@ public slots:
     void saveCroppedVideo(QString path);
 
 private:
+    mutable QMutex mutex;
+
+    // Video Objects
     Video* video;
     Video* croppedVideo;
+
+    // Original Video Source
     QString videoPath;
+
+    // Processing Tools
     LocalRANSACRejector outlierRejector;
+
+    // Processing Functions
+    void detectVideoFeatures(Video* v);
+    void trackVideoFeatures(Video* v);
+    void removeVideoOutliers(Video* v);
+    void calculateVideoMotionModel(Video* v);
 
     static RansacModel localRansac(const std::vector<Displacement>& points);
 
+    void analyseCroppedVideo();
     void saveVideo(const Video* videoToSave, QString path);
 };
 
