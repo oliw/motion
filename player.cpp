@@ -100,7 +100,7 @@ void Player::showImage(int frameNumber)
             cv::rectangle(image, cropBox, Scalar(0,255,0), 3);
         } else {
             const Mat& update = frame->getUpdateTransform();
-            RotatedRect newCrop = Tools::applyTransformation(update, cropBox);
+            RotatedRect newCrop = Tools::transformRectangle(update, cropBox);
             Point2f verts[4];
             newCrop.points(verts);
             for (int i = 0; i < 4; i++) {

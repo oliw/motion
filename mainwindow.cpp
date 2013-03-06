@@ -232,6 +232,8 @@ void MainWindow::processStarted(int processCode)
             break;
         case VideoProcessor::SAVING_VIDEO:
         processMessage = "Saving Video";
+        case VideoProcessor::ANALYSE_CROP_VIDEO:
+        processMessage = "Analysing Movement in Cropped Video";
         default:
         processMessage = "Busy";
             break;

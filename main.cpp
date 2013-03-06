@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     QObject::connect(&a, SIGNAL(aboutToQuit()),videoProcessorThread, SLOT(quit()));
     VideoProcessor vp;
     vp.moveToThread(videoProcessorThread);
-    GraphDrawer gd;
+    GraphDrawer gd(&vp);
     gd.moveToThread(videoProcessorThread);
 
     MainWindow w;
@@ -33,8 +33,6 @@ int main(int argc, char *argv[])
     const Player* player = w.getPlayer();
     QObject::connect(&vp, SIGNAL(videoLoaded(Video*)),player, SLOT(setVideo(Video*)));
     QObject::connect(&vp, SIGNAL(videoUpdated(Video*)),player, SLOT(setVideo(Video*)));
-    // Link Video Processor to Graph Drawer
-    QObject::connect(&vp, SIGNAL(videoLoaded(Video*)),&gd, SLOT(setVideo(Video*)));
     // Link Main Window to Graph Drawer
     QObject::connect(&w, SIGNAL(showOriginalPath(int,int)), &gd, SLOT(drawOriginalMotionGraph(int,int)));
 
