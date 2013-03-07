@@ -41,7 +41,7 @@ void GraphDrawer::showMotionGraph(Point2f start) {
     // Original Video Movement
     vector <double> xss, yss;
     Tools::applyAffineTransformations(start, original->getAffineTransforms(), times, xss, yss);
-    const Video* cropped = vp->getCroppedVideo();
+    const Video* cropped = 0;
     // Convert values to Matlab format
     mxArray *time = vectorToMatlabFormat(times);
     mxArray *xs = vectorToMatlabFormat(xss);

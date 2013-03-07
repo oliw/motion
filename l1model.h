@@ -26,6 +26,10 @@ public:
 
     void print();
 
+    void enableDebug();
+    void setDOF(int dof = 6);
+    void writeToFile();
+    bool prepare(vector<Mat>& frameMotions, Rect cropBox, int vidWidth, int vidHeight);
 
 private:
     OsiClpSolverInterface si;
@@ -34,18 +38,15 @@ private:
     vector<double> objectiveCoefficients, colLb, colUb;
 
     // Constraints
-    vector<CoinPackedVector> smoothnessConstraints;
-    vector<double> smoothnessLb,smoothnessUb;
-
-    vector<CoinPackedVector> inclusionConstraints;
-    vector<double> inclusionLb, inclusionUb;
-
-    vector<CoinPackedVector> proximityConstraints;
-    vector<double> proximityLb, proximityUb;
+    CoinPackedMatrix matrix;
+    vector<CoinPackedVector> constraints;
+    vector<double> constraintsLb, constraintsUb;
 
     int varPerFrame;
     int slackVarPerFrame;
     int maxT;
+    bool isSimilarityTransform;
+    bool problemLoaded;
 
     double getElem(const Mat& affine, char c);
 
@@ -58,6 +59,7 @@ private:
     void setSmoothnessConstraints(vector<Mat>& originalTransformations);
     void setInclusionConstraints(Rect cropbox, int videoWidth, int videoHeight);
     void setProximityConstraints();
+    void setSimilarityConstraints();
 
 };
 

@@ -13,15 +13,8 @@ L1Model::L1Model(Video* v)
     slackVarPerFrame = varPerFrame;
     // 0,1,2,3,...,maxT
     maxT = v->getFrameCount()-1;
-    setObjectiveCoefficients();
-    vector<Mat> affs = v->getAffineTransforms();
-    qDebug() << "L1Model - Setting Smoothness Constraints";
-    setSmoothnessConstraints(affs);
-    qDebug() << "L1Model - Setting Inclusion Constraints";
-    setInclusionConstraints(v->getCropBox(), v->getWidth(), v->getHeight());
-    qDebug() << "L1Model - Setting Proximity Constraints";
-    setProximityConstraints();
-    si.setLogLevel(10000);
+    isSimilarityTransform = false;
+    problemLoaded = false;
 }
 
 L1Model::~L1Model()
@@ -29,12 +22,84 @@ L1Model::~L1Model()
 
 }
 
-
-int L1Model::getWidth()
+void L1Model::enableDebug()
 {
-    return (varPerFrame + slackVarPerFrame)*maxT;
+    si.setLogLevel(10000);
+    FILE * file = fopen("coin.log","w");
+    assert(file);
+    CoinMessageHandler* handler = new CoinMessageHandler(file);
+    si.passInMessageHandler(handler);
 }
 
+void L1Model::setDOF(int dof) {
+    assert(dof == 4 || dof == 6);
+    isSimilarityTransform = dof == 4;
+}
+
+void L1Model::writeToFile()
+{
+    if (problemLoaded) {
+        si.writeMps("coin.mps");
+    }
+}
+
+bool L1Model::prepare(vector<Mat>& frameMotions, Rect cropBox, int vidWidth, int vidHeight)
+{
+    if (problemLoaded) {
+        si.reset();
+        problemLoaded = false;
+    }
+
+    setObjectiveCoefficients();
+
+    matrix.setDimensions(0,getWidth());
+    setSmoothnessConstraints(frameMotions); // Define what motion is permissible
+    setInclusionConstraints(cropBox, vidWidth, vidHeight);   // Prevent crop window from leaving frame
+    setProximityConstraints();  // Prevent the crop window from varying too greatly
+
+    if (isSimilarityTransform) {
+        setSimilarityConstraints(); // Restrict transformation to 4 DOF
+    }
+
+    for (int i = 0; i < constraints.size(); i++) {
+        matrix.appendRow(constraints[i]);
+    }
+
+    si.loadProblem(matrix,&colLb[0],&colUb[0],&objectiveCoefficients[0],&constraintsLb[0],&constraintsUb[0]);
+    problemLoaded = true;
+}
+
+bool L1Model::solve()
+{
+    assert(problemLoaded);
+    qDebug() << "L1Model::solve() - Solving ";
+    si.initialSolve();
+    // Check Is Optimal
+    if (si.isProvenOptimal()) {
+        qDebug() << "L1Model::solve - Found optimal solution";
+    } else {
+        qDebug() << "L1Model::solve - Did not find optimal solution";
+        if (si.isProvenPrimalInfeasible())
+        qDebug() << "Problem is proven to be infeasible.";
+        if (si.isProvenDualInfeasible())
+        qDebug() << "Problem is proven dual infeasible.";
+        if (si.isIterationLimitReached())
+            qDebug() << "Iteration limit reached";
+    }
+    if (si.isProvenPrimalInfeasible()) {
+        qDebug() << "Infeasible";
+    }
+    return si.isProvenOptimal();
+}
+
+// ACCESS RESULTS
+double L1Model::getVariableSolution(int t, char ch)
+{
+    const double * sols = si.getColSolution();
+    return sols[toIndex(t-1,ch)];
+}
+
+// SET OBJECTIVE
 void L1Model::setObjectiveCoefficients()
 {
     int width = getWidth();
@@ -53,14 +118,12 @@ void L1Model::setObjectiveCoefficients()
     }
 }
 
-double L1Model::getElem(const Mat& affine, char c)
-{
-    return affine.at<double>(toRow(c),toCol(c));
-}
-
-
+// CONSTRAINT SETTERS
 void L1Model::setSmoothnessConstraints(vector<Mat>& fs)
 {
+    constraints.reserve(constraints.size()+((maxT-1)*2*6));
+    constraintsLb.reserve(constraintsLb.size()+((maxT-1)*2*6));
+    constraintsUb.reserve(constraintsUb.size()+((maxT-1)*2*6));
     // F(t) = mapping from It to It-1
     for (int t = 0; t < maxT-1; t++) {
         const Mat& aff = fs[t+1]; // F = F(t+1)
@@ -115,73 +178,135 @@ void L1Model::setSmoothnessConstraints(vector<Mat>& fs)
         CoinPackedVector f2(f);
         f.insert(toSlackIndex(t, 'f'), -1);
         f2.insert(toSlackIndex(t, 'f'), 1);
-        smoothnessConstraints.push_back(a);
-        smoothnessConstraints.push_back(a2);
-        smoothnessConstraints.push_back(b);
-        smoothnessConstraints.push_back(b2);
-        smoothnessConstraints.push_back(c);
-        smoothnessConstraints.push_back(c2);
-        smoothnessConstraints.push_back(d);
-        smoothnessConstraints.push_back(d2);
-        smoothnessConstraints.push_back(e);
-        smoothnessConstraints.push_back(e2);
-        smoothnessConstraints.push_back(f);
-        smoothnessConstraints.push_back(f2);
+        constraints.push_back(a);
+        constraints.push_back(a2);
+        constraints.push_back(b);
+        constraints.push_back(b2);
+        constraints.push_back(c);
+        constraints.push_back(c2);
+        constraints.push_back(d);
+        constraints.push_back(d2);
+        constraints.push_back(e);
+        constraints.push_back(e2);
+        constraints.push_back(f);
+        constraints.push_back(f2);
 
         for (int i = 0; i < 4; i++) {
-            smoothnessLb.push_back(-1 * si.getInfinity());
-            smoothnessUb.push_back(0);
-            smoothnessLb.push_back(0);
-            smoothnessUb.push_back(si.getInfinity());
+            constraintsLb.push_back(-1 * si.getInfinity());
+            constraintsUb.push_back(0);
+            constraintsLb.push_back(0);
+            constraintsUb.push_back(si.getInfinity());
         }
-        smoothnessLb.push_back(-1 * si.getInfinity());
-        smoothnessUb.push_back(-1 * getElem(aff,'e'));
-        smoothnessLb.push_back(-1 * getElem(aff,'e'));
-        smoothnessUb.push_back(si.getInfinity());
+        constraintsLb.push_back(-1 * si.getInfinity());
+        constraintsUb.push_back(-1 * getElem(aff,'e'));
+        constraintsLb.push_back(-1 * getElem(aff,'e'));
+        constraintsUb.push_back(si.getInfinity());
 
-        smoothnessLb.push_back(-1 * si.getInfinity());
-        smoothnessUb.push_back(-1 * getElem(aff,'f'));
-        smoothnessLb.push_back(-1 * getElem(aff,'f'));
-        smoothnessUb.push_back(si.getInfinity());
+        constraintsLb.push_back(-1 * si.getInfinity());
+        constraintsUb.push_back(-1 * getElem(aff,'f'));
+        constraintsLb.push_back(-1 * getElem(aff,'f'));
+        constraintsUb.push_back(si.getInfinity());
     }
 }
 
 void L1Model::setProximityConstraints()
 {
+    constraints.reserve(constraints.size()+((maxT-1)*6));
+    constraintsLb.reserve(constraintsLb.size()+((maxT-1)*6));
+    constraintsUb.reserve(constraintsUb.size()+((maxT-1)*6));
     for (int t = 0; t < maxT-1; t++) {
          CoinPackedVector v;
          v.insert(toIndex(t, 'a'), 1);
-         proximityLb.push_back(0.9);
-         proximityUb.push_back(1.1);
-         proximityConstraints.push_back(v);
+         constraintsLb.push_back(0.9);
+         constraintsUb.push_back(1.1);
+         constraints.push_back(v);
          CoinPackedVector v2;
          v2.insert(toIndex(t, 'd'), 1);
-         proximityLb.push_back(0.9);
-         proximityUb.push_back(1.1);
-         proximityConstraints.push_back(v2);
+         constraintsLb.push_back(0.9);
+         constraintsUb.push_back(1.1);
+         constraints.push_back(v2);
          CoinPackedVector v3;
          v3.insert(toIndex(t, 'b'), 1);
-         proximityLb.push_back(-0.1);
-         proximityUb.push_back(0.1);
-         proximityConstraints.push_back(v3);
+         constraintsLb.push_back(-0.1);
+         constraintsUb.push_back(0.1);
+         constraints.push_back(v3);
          CoinPackedVector v4;
          v4.insert(toIndex(t, 'c'), 1);
-         proximityLb.push_back(-0.1);
-         proximityUb.push_back(0.1);
-         proximityConstraints.push_back(v4);
+         constraintsLb.push_back(-0.1);
+         constraintsUb.push_back(0.1);
+         constraints.push_back(v4);
          CoinPackedVector v5;
          v5.insert(toIndex(t, 'b'), 1);
          v5.insert(toIndex(t, 'c'), 1);
-         proximityLb.push_back(-0.05);
-         proximityUb.push_back(0.05);
-         proximityConstraints.push_back(v5);
+         constraintsLb.push_back(-0.05);
+         constraintsUb.push_back(0.05);
+         constraints.push_back(v5);
          CoinPackedVector v6;
          v6.insert(toIndex(t, 'a'), 1);
          v6.insert(toIndex(t, 'd'), -1);
-         proximityLb.push_back(-0.1);
-         proximityUb.push_back(0.1);
-         proximityConstraints.push_back(v6);
+         constraintsLb.push_back(-0.1);
+         constraintsUb.push_back(0.1);
+         constraints.push_back(v6);
     }
+}
+
+void L1Model::setInclusionConstraints(Rect cropBox, int videoWidth, int videoHeight) {
+    // Number of Constraints
+    int numConstraints = 2 * 4 * maxT;
+    constraints.reserve(constraints.size()+numConstraints);
+    constraintsLb.reserve(constraintsLb.size()+numConstraints);
+    constraintsUb.reserve(constraintsUb.size()+numConstraints);
+    // For each pt
+    for (int t = 0; t < maxT; t++) {
+        // For each corner
+        for (int x = cropBox.x; x <= cropBox.x+cropBox.width; x+=cropBox.width) {
+            for (int y = cropBox.y; y <= cropBox.y+cropBox.height; y+=cropBox.height) {
+                //Set inclusion constraints
+                CoinPackedVector const1;
+                const1.insert(toIndex(t, 'a'), x);
+                const1.insert(toIndex(t, 'b'), y);
+                const1.insert(toIndex(t, 'e'), 1);
+                constraintsLb.push_back(0);
+                constraintsUb.push_back(videoWidth);
+                constraints.push_back(const1);
+                CoinPackedVector const2;
+                const2.insert(toIndex(t, 'c'), x);
+                const2.insert(toIndex(t, 'd'), y);
+                const2.insert(toIndex(t,'f'), 1);
+                constraintsLb.push_back(0);
+                constraintsUb.push_back(videoHeight);
+                constraints.push_back(const2);
+
+            }
+        }
+    }
+}
+
+void L1Model::setSimilarityConstraints() {
+    int numConstraints = 2 * maxT;
+    constraints.reserve(constraints.size()+numConstraints);
+    constraintsLb.reserve(constraintsLb.size()+numConstraints);
+    constraintsUb.reserve(constraintsUb.size()+numConstraints);
+    for (int i = 0; i < maxT; i++) {
+        CoinPackedVector s1;
+        s1.insert(toIndex(i,'a'),1);
+        s1.insert(toIndex(i,'d'),-1);
+        constraints.push_back(s1);
+        constraintsLb.push_back(0);
+        constraintsUb.push_back(0);
+        CoinPackedVector s2;
+        s2.insert(toIndex(i,'b'),1);
+        s2.insert(toIndex(i,'c'),1);
+        constraints.push_back(s2);
+        constraintsLb.push_back(0);
+        constraintsUb.push_back(0);
+    }
+}
+
+// HELPERS
+int L1Model::getWidth()
+{
+    return (varPerFrame + slackVarPerFrame)*maxT;
 }
 
 int L1Model::toRow(char c)
@@ -228,104 +353,7 @@ int L1Model::toSlackIndex(int t, int var)
     return t*(varPerFrame+slackVarPerFrame)+varPerFrame+var;
 }
 
-bool L1Model::solve()
+double L1Model::getElem(const Mat& affine, char c)
 {
-    qDebug() << "L1Model::solve() - Solving ";
-    double *objectives = &objectiveCoefficients[0];
-    double *columnLb = &colLb[0];
-    double *columnUb = &colUb[0];
-
-    CoinPackedMatrix matrix;
-    matrix.setDimensions(0, getWidth());
-    for (uint i = 0; i < smoothnessConstraints.size(); i++) {
-        matrix.appendRow(smoothnessConstraints[i]);
-    }
-    for (uint i = 0; i < inclusionConstraints.size(); i++) {
-        matrix.appendRow(inclusionConstraints[i]);
-    }
-    for (uint i = 0; i < proximityConstraints.size(); i++) {
-        matrix.appendRow(proximityConstraints[i]);
-    }
-
-    vector<double> rowLb;
-    rowLb.reserve(smoothnessConstraints.size()+inclusionConstraints.size()+proximityConstraints.size());
-    rowLb.insert(rowLb.end(), smoothnessLb.begin(), smoothnessLb.end());
-    rowLb.insert(rowLb.end(), inclusionLb.begin(), inclusionLb.end());
-    rowLb.insert(rowLb.end(), proximityLb.begin(), proximityLb.end());
-
-    vector<double> rowUb;
-    rowUb.reserve(smoothnessConstraints.size()+inclusionConstraints.size()+proximityConstraints.size());
-    rowUb.insert(rowUb.end(), smoothnessUb.begin(), smoothnessUb.end());
-    rowUb.insert(rowUb.end(), inclusionUb.begin(), inclusionUb.end());
-    rowUb.insert(rowUb.end(), proximityUb.begin(), proximityUb.end());
-
-    si.loadProblem(matrix,columnLb,columnUb,objectives,&rowLb[0],&rowUb[0]);
-
-    qDebug() << "Problem Rows: " << si.getNumRows() << ", Cols:" << si.getNumCols();
-    // Consolidate all the constraints
-    FILE * file = fopen("coin.log","w");
-    assert(file);
-    CoinMessageHandler* handler = new CoinMessageHandler(file);
-    si.passInMessageHandler(handler);
-    // Load Problem
-    si.writeMps("coin.mps");
-    // Solve Problem
-    qDebug() << "L1Model::solve - Solving";
-    si.initialSolve();
-    // Check Is Optimal
-    if (si.isProvenOptimal()) {
-        qDebug() << "L1Model::solve - Found optimal solution";
-    } else {
-        qDebug() << "L1Model::solve - Did not find optimal solution";
-        if (si.isProvenPrimalInfeasible())
-        qDebug() << "Problem is proven to be infeasible.";
-        if (si.isProvenDualInfeasible())
-        qDebug() << "Problem is proven dual infeasible.";
-        if (si.isIterationLimitReached())
-            qDebug() << "Iteration limit reached";
-    }
-    if (si.isProvenPrimalInfeasible()) {
-        qDebug() << "Infeasible";
-    }
-    fclose(file);
-    return si.isProvenOptimal();
+    return affine.at<double>(toRow(c),toCol(c));
 }
-
-// t >= 1
-double L1Model::getVariableSolution(int t, char ch)
-{
-    const double * sols = si.getColSolution();
-    return sols[toIndex(t-1,ch)];
-}
-
-void L1Model::setInclusionConstraints(Rect cropBox, int videoWidth, int videoHeight) {
-    // Number of Constraints
-    int numConstraints = 2 * 4 * maxT;
-    inclusionLb.reserve(numConstraints);
-    inclusionUb.reserve(numConstraints);
-    // For each pt
-    for (int t = 0; t < maxT; t++) {
-        // For each corner
-        for (int x = cropBox.x; x <= cropBox.x+cropBox.width; x+=cropBox.width) {
-            for (int y = cropBox.y; y <= cropBox.y+cropBox.height; y+=cropBox.height) {
-                //Set inclusion constraints
-                CoinPackedVector const1;
-                const1.insert(toIndex(t, 'a'), x);
-                const1.insert(toIndex(t, 'b'), y);
-                const1.insert(toIndex(t, 'e'), 1);
-                inclusionLb.push_back(0);
-                inclusionUb.push_back(videoWidth);
-                inclusionConstraints.push_back(const1);
-                CoinPackedVector const2;
-                const2.insert(toIndex(t, 'c'), x);
-                const2.insert(toIndex(t, 'd'), y);
-                const2.insert(toIndex(t,'f'), 1);
-                inclusionLb.push_back(0);
-                inclusionUb.push_back(videoHeight);
-                inclusionConstraints.push_back(const2);
-
-            }
-        }
-    }
-}
-

@@ -115,6 +115,9 @@ void VideoProcessor::calculateUpdateTransform() {
     qDebug() << "VideoProcessor::calculateUpdateTransform - Start";
     // Build model
     L1Model model(video);
+    vector<Mat> affineTransforms = video->getAffineTransforms();
+    model.setDOF(4);
+    model.prepare(affineTransforms, video->getCropBox(), video->getWidth(), video->getHeight());
     emit progressMade(1,3);
     qDebug() << "VideoProcessor::calculateUpdateTransform - Solving L1 Problem";
     // Solve model
@@ -138,7 +141,6 @@ void VideoProcessor::calculateUpdateTransform() {
     qDebug() << "VideoProcessor::calculateUpdateTransform - Ideal Path Calculated";
     applyCropTransform();
     emit processFinished(STILL_MOTION);
-    analyseCroppedVideo();
 }
 
 void VideoProcessor::applyCropTransform()
