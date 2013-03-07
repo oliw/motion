@@ -68,23 +68,23 @@ void Player::showImage(int frameNumber)
         vector<KeyPoint> features;
         KeyPoint::convert(frame->getFeatures(), features);
         cv::drawKeypoints(originalData, features, image);
-    } else if (trackedEnabled && frameNumber < video->getFrameCount()-1) {
+    } else if (trackedEnabled && frameNumber > 0) {
         // Draw Tracked Features
         const vector<Displacement>& disps = frame->getDisplacements();
-        const Frame* nextFrame = video->getFrameAt(frameNumber+1);
-        const Mat& nextFrameImg = nextFrame->getOriginalData();
+        const Frame* prevFrame = video->getFrameAt(frameNumber-1);
+        const Mat& prevFrameImg = prevFrame->getOriginalData();
         vector<Point2f> features1, features2;
         vector<KeyPoint> featuresk1, featuresk2;
         vector<DMatch> matches;
         for (uint i = 0; i < disps.size(); i++) {
             Displacement d = disps[i];
-            features1.push_back(d.getFrom());
-            features2.push_back(d.getTo());
+            features1.push_back(d.getTo());
+            features2.push_back(d.getFrom());
             matches.push_back(DMatch(i,i,i));
         }
         KeyPoint::convert(features1, featuresk1);
         KeyPoint::convert(features2, featuresk2);
-        cv::drawMatches(originalData, featuresk1, nextFrameImg, featuresk2, matches, image);
+        cv::drawMatches(prevFrameImg, featuresk1, originalData, featuresk2, matches, image);
     } else if (outliersEnabled) {
         // Draw outliers
         vector<KeyPoint> outliers, inliers;

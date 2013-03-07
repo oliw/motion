@@ -44,7 +44,6 @@ MainWindow::MainWindow(QWidget *parent) :
     // Disable Button Areas
     ui->pushButton_2->setDisabled(true);
     ui->playerControlsBox->setDisabled(true);
-
     ui->frameRate->setText(QString::number(player->getFrameRate()));
 
 }
@@ -88,6 +87,8 @@ void MainWindow::newVideoLoaded(Video* video)
     ui->checkBox->setDisabled(true);
     ui->checkBox_2->setDisabled(true);
     ui->checkBox_3->setDisabled(true);
+    ui->checkBox_4->setDisabled(true);
+
     ui->frameCountLabel->setText(QString::number(video->getFrameCount()-1));
     // Enable 1st Processing Step Button
     ui->pushButton_2->setEnabled(true);
@@ -144,6 +145,7 @@ void MainWindow::togglePlayControls(bool show)
     ui->checkBox->setEnabled(featuresDetected);
     ui->checkBox_2->setEnabled(featuresTracked);
     ui->checkBox_3->setEnabled(outliersRejected);
+    ui->checkBox_4->setEnabled(cropBox);
 }
 
 void MainWindow::on_rewindButton_clicked()
@@ -261,6 +263,7 @@ void MainWindow::processFinished(int processCode)
             ui->pushButton->setEnabled(true);
             break;
         case VideoProcessor::STILL_MOTION:
+            cropBox = true;
             ui->actionSave_Result->setEnabled(true);
             break;
         default:
