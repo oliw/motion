@@ -65,6 +65,7 @@ void VideoProcessor::loadVideo(QString path) {
     Mat buffer;
     Mat bAndWBuffer;
     int numFrames = vc.get(CV_CAP_PROP_FRAME_COUNT);
+    qDebug() << "Number of Frames:" << numFrames;
     int fps = vc.get(CV_CAP_PROP_FPS);
     video = new Video(numFrames,fps);
     int currentFrame = 0;
@@ -127,7 +128,7 @@ void VideoProcessor::calculateUpdateTransform() {
     for (int t = 1; t < video->getFrameCount(); t++)
     {
         Mat m = Mat::zeros(2,3,DataType<float>::type);
-        for (char letter = 'a'; letter <= 'e'; letter++) {
+        for (char letter = 'a'; letter <= 'f'; letter++) {
             assert(model.getVariableSolution(t,letter) < 1e15);
             m.at<float>(L1Model::toRow(letter),L1Model::toCol(letter)) = model.getVariableSolution(t, letter);
         }
