@@ -94,6 +94,18 @@ void MainWindow::newVideoLoaded(Video* video)
     ui->pushButton_2->setEnabled(true);
     // Enable Crop Box Dialog
     ui->actionCrop_Box->setEnabled(true);
+
+    // Set Video Info
+    ui->dimensionsLineEdit->setText(QString::number(video->getWidth())+"x"+QString::number(video->getHeight()));
+    ui->frameCountLineEdit->setText(QString::number(video->getFrameCount()));
+}
+
+void MainWindow::setOriginalScore(float score) {
+    ui->originalMovementScoreLineEdit->setText(QString::number(score));
+}
+
+void MainWindow::setNewScore(float score) {
+    ui->originalMovementScoreLineEdit->setText(QString::number(score));
 }
 
 void MainWindow::player_stopped()
@@ -115,6 +127,8 @@ void MainWindow::on_actionOpen_Video_triggered()
         ui->label->setText(tr("Loading video"));
         emit videoChosen(path);
     }
+    QFileInfo fileInfo = QFileInfo(path);
+    ui->videoNameLineEdit->setText(fileInfo.fileName());
 }
 
 void MainWindow::on_playButton_clicked()

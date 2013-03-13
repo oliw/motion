@@ -50,6 +50,8 @@ private slots:
     void processFinished(int processCode);
     void newVideoLoaded(Video* video);
     void showProgress(int current, int outof);
+    void setOriginalScore(float score);
+    void setNewScore(float score);
 
     //// Slots for player activity
     void player_stopped();
