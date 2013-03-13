@@ -105,7 +105,7 @@ void MainWindow::setOriginalScore(float score) {
 }
 
 void MainWindow::setNewScore(float score) {
-    ui->originalMovementScoreLineEdit->setText(QString::number(score));
+    ui->newMovementScoreLineEdit->setText(QString::number(score));
 }
 
 void MainWindow::player_stopped()
