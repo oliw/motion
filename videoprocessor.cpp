@@ -63,7 +63,6 @@ void VideoProcessor::loadVideo(QString path) {
     }
     videoPath = path;
     Mat buffer;
-    Mat bAndWBuffer;
     int numFrames = vc.get(CV_CAP_PROP_FRAME_COUNT);
     qDebug() << "Number of Frames:" << numFrames;
     int fps = vc.get(CV_CAP_PROP_FPS);
@@ -76,6 +75,7 @@ void VideoProcessor::loadVideo(QString path) {
         video->appendFrame(newFrame);
         currentFrame++;
     }
+    scoreOriginalVideo();
     emit videoLoaded(video);
     emit processFinished(VIDEO_LOADING);
     return;
@@ -168,7 +168,8 @@ void VideoProcessor::applyCropTransform()
         croppedVideo->appendFrame(croppedF);
     }
     emit processFinished(CROP_TRANSFORM);
-    Tools::trimVideo(croppedVideo);
+    scoreNewVideo();
+    //Tools::trimVideo(croppedVideo);
     qDebug() << "VideoProcessor::applyCropTransform() - Finished";
 }
 
@@ -262,7 +263,7 @@ void VideoProcessor::trackVideoFeatures(Video* v) {
 
 void VideoProcessor::removeVideoOutliers(Video* v) {
     qDebug() << "VideoProcessor::outlierRejection - Outlier rejection started";
-    outlierRejector.execute(video);
+    outlierRejector.execute(v);
     qDebug() << "VideoProcessor::outlierRejection - Outlier rejection finished";
 }
 
@@ -278,5 +279,55 @@ void VideoProcessor::calculateVideoMotionModel(Video* v) {
     }
     qDebug() << "VideoProcessor::calculateMotionModel - Original motion detected";
 }
+
+void VideoProcessor::scoreOriginalVideo() {
+    float score = scoreStillness(video);
+    emit scoredOriginalVideo(score);
+}
+
+void VideoProcessor::scoreNewVideo() {
+    float score = scoreStillness(croppedVideo);
+    emit scoredOriginalVideo(score);
+}
+
+float VideoProcessor::scoreStillness(Video* v) {
+    qDebug() << "VideoProcessor::scoreStillness - begin";
+    const Mat& referenceImage = v->getFrameAt(0)->getOriginalData();
+    Mat res = Mat::zeros(referenceImage.size(), CV_32FC3);
+
+    for (int f = 0; f < frameCount; f++) {
+        const Mat& frame = v->getFrameAt(f)->getOriginalData();
+        Mat difference;
+        absdiff(referenceImage, frame, difference);
+        difference.convertTo(CV_32FC3);
+        res += difference;
+    }
+
+
+    int p = referenceImage.size().height * referenceImage.size().width;
+    int frameCount = v->getFrameCount();
+    float result = 0;
+    for (int ch = 0; ch < referenceImage.channels() ; ch++) {
+        float averageError = 0;
+        for (int x = 0; x < referenceImage.cols; x++) {
+            for (int y = 0; y < referenceImage.rows; y++) {
+                float avgDistance = 0;
+                for (int f = 0; f < frameCount; f++) {
+                    qDebug() << "VideoProcessor::scoreStillness - frame number " << f;
+                    const Mat& frame = v->getFrameAt(f)->getOriginalData();
+                    assert(frame.cols == referenceImage.cols && frame.rows == referenceImage.rows);
+                    avgDistance += abs(frame.at<Vec3b>(y,x)[ch] - referenceImage.at<Vec3b>(y,x)[ch]);
+                }
+                avgDistance /= frameCount;
+                averageError += avgDistance;
+            }
+        }
+        averageError /= p;
+        result += averageError;
+    }
+    qDebug() << "VideoProcessor::scoreStillness - end";
+    return result;
+}
+
 
 

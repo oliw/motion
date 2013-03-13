@@ -41,6 +41,8 @@ signals:
     void processStarted(int processCode = -1);
     void processFinished(int processCode = -1);
     void progressMade(int current, int total);
+    void scoredOriginalVideo(float score);
+    void scoredNewVideo(float score);
 
 public slots:
     void loadVideo(QString path);
@@ -52,6 +54,8 @@ public slots:
     void calculateUpdateTransform();
     void applyCropTransform();
     void saveCroppedVideo(QString path);
+    void scoreOriginalVideo();
+    void scoreNewVideo();
 
 private:
     mutable QMutex mutex;
@@ -71,6 +75,7 @@ private:
     void trackVideoFeatures(Video* v);
     void removeVideoOutliers(Video* v);
     void calculateVideoMotionModel(Video* v);
+    float scoreStillness(Video* v);
 
     static RansacModel localRansac(const std::vector<Displacement>& points);
 
