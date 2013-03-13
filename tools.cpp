@@ -105,7 +105,7 @@ void Tools::trimVideo(Video* image) {
         Frame* f = image->accessFrameAt(i);
         Size thisArea = f->getOriginalData().size();
         if (thisArea.width < area.width) {
-            area.width = thisArea.height;
+            area.width = thisArea.width;
         }
         if (thisArea.height < area.height) {
             area.height = thisArea.height;

@@ -168,8 +168,8 @@ void VideoProcessor::applyCropTransform()
         croppedVideo->appendFrame(croppedF);
     }
     emit processFinished(CROP_TRANSFORM);
+    Tools::trimVideo(croppedVideo);
     scoreNewVideo();
-    //Tools::trimVideo(croppedVideo);
     qDebug() << "VideoProcessor::applyCropTransform() - Finished";
 }
 
@@ -287,46 +287,40 @@ void VideoProcessor::scoreOriginalVideo() {
 
 void VideoProcessor::scoreNewVideo() {
     float score = scoreStillness(croppedVideo);
-    emit scoredOriginalVideo(score);
+    emit scoredNewVideo(score);
+}
+
+QString toString(Scalar m) {
+    std::stringstream ss;
+    ss << m[0] << ",";
+    ss << m[1] << ",";
+    ss << m[2] << ",";
+    ss << m[3];
+    return QString::fromStdString(ss.str());
 }
 
 float VideoProcessor::scoreStillness(Video* v) {
     qDebug() << "VideoProcessor::scoreStillness - begin";
-    const Mat& referenceImage = v->getFrameAt(0)->getOriginalData();
-    Mat res = Mat::zeros(referenceImage.size(), CV_32FC3);
+    const Mat& referenceImage = v->getFrameAt(1)->getOriginalData();
+    int frameCount = v->getFrameCount();
 
+    // Calculate average error in each frame
+    vector<float> frameErrors;
+    frameErrors.reserve(frameCount);
     for (int f = 0; f < frameCount; f++) {
         const Mat& frame = v->getFrameAt(f)->getOriginalData();
+        qDebug() << "VideoProcessor::scoreStillness - getting average error in frame: " << f;
         Mat difference;
         absdiff(referenceImage, frame, difference);
-        difference.convertTo(CV_32FC3);
-        res += difference;
+        difference.convertTo(difference,CV_32FC3);
+        Scalar channelMeans = mean(difference);
+        frameErrors.push_back((channelMeans[0] + channelMeans[1] + channelMeans[2])/3);
     }
 
-
-    int p = referenceImage.size().height * referenceImage.size().width;
-    int frameCount = v->getFrameCount();
-    float result = 0;
-    for (int ch = 0; ch < referenceImage.channels() ; ch++) {
-        float averageError = 0;
-        for (int x = 0; x < referenceImage.cols; x++) {
-            for (int y = 0; y < referenceImage.rows; y++) {
-                float avgDistance = 0;
-                for (int f = 0; f < frameCount; f++) {
-                    qDebug() << "VideoProcessor::scoreStillness - frame number " << f;
-                    const Mat& frame = v->getFrameAt(f)->getOriginalData();
-                    assert(frame.cols == referenceImage.cols && frame.rows == referenceImage.rows);
-                    avgDistance += abs(frame.at<Vec3b>(y,x)[ch] - referenceImage.at<Vec3b>(y,x)[ch]);
-                }
-                avgDistance /= frameCount;
-                averageError += avgDistance;
-            }
-        }
-        averageError /= p;
-        result += averageError;
-    }
+    // Calculate average error across all frames
+    Scalar finalMean = mean(frameErrors);
     qDebug() << "VideoProcessor::scoreStillness - end";
-    return result;
+    return finalMean[0];
 }
 
 

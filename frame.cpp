@@ -140,7 +140,7 @@ void Frame::trim(Size area)
     Rect rect(Point2f(0,0),area);
     qDebug() << "Rectangle size:" << rect.width << "," << rect.height;
     qDebug() << "Old Rectangle size:" << image.size().width << "," << image.size().height;
-    image = image(rect);
+    image = image(rect).clone();
     qDebug() << "New Rectangle size:" << image.size().width << "," << image.size().height;
     resize();
 }
