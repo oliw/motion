@@ -116,6 +116,17 @@ void L1Model::setObjectiveCoefficients()
             colUb[toSlackIndex(t,i)] = si.getInfinity(); // Slacks can be as big as we like
         }
     }
+
+    // Anchor first movement to be at location of crop window
+    for (char i = 'a'; i <= 'f' ; i++) {
+        if (i == 'a' || i == 'd') {
+            colLb[toIndex(0,i)] = 1;
+            colUb[toIndex(0,i)] = 1;
+        } else {
+            colLb[toIndex(0,i)] = 0;
+            colUb[toIndex(0,i)] = 0;
+        }
+    }
 }
 
 // CONSTRAINT SETTERS
