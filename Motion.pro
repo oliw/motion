@@ -13,7 +13,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Motion
 TEMPLATE = app
 
-
 SOURCES += main.cpp\
         mainwindow.cpp \
     player.cpp \
@@ -31,6 +30,10 @@ FORMS    += mainwindow.ui \
     cropwindowdialog.ui
 
 macx {
+
+    # Application Icon
+    ICON = Resources/icons.icns
+
     # OPENCV Library
     INCLUDEPATH += /usr/local/include/
     LIBS += -lopencv_core
