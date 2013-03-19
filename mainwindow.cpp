@@ -280,7 +280,6 @@ void MainWindow::processFinished(int processCode)
             originalMotion = true;
             ui->pushButton_2->setDisabled(true); // You can only calculate still motion once
             ui->calcStillPathButton->setEnabled(true);
-            ui->pushButton->setEnabled(true);
             break;
         case VideoProcessor::STILL_MOTION:
             cropBox = true;
@@ -296,12 +295,6 @@ void MainWindow::showProgress(int current, int outof)
 {
     progress->setMaximum(outof);
     progress->setValue(current);
-}
-
-
-void MainWindow::on_pushButton_clicked()
-{
-    emit showOriginalPath(0,0);
 }
 
 void MainWindow::on_calcStillPathButton_clicked()
@@ -348,4 +341,9 @@ void MainWindow::on_actionMark_Original_Movement_triggered()
     ManualMotionTracker manMotion(video);
     manMotion.setModal(true);
     manMotion.exec();
+}
+
+void MainWindow::on_loadVideoButton_clicked()
+{
+    on_actionOpen_Video_triggered();
 }

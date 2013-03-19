@@ -56,13 +56,14 @@ private slots:
     //// Slots for player activity
     void player_stopped();
     void updatePlayerUI(QImage img,int frameNumber);
-    void on_pushButton_clicked();
     void on_calcStillPathButton_clicked();
     void on_actionCrop_Box_triggered();
     void on_actionSave_Result_triggered();
     void on_checkBox_4_stateChanged(int arg1);
 
     void on_actionMark_Original_Movement_triggered();
+
+    void on_loadVideoButton_clicked();
 
 signals:
    void signalResize(QResizeEvent *);
