@@ -18,16 +18,21 @@ SOURCES += main.cpp\
     player.cpp \
     MatToQImage.cpp \
     cropwindowdialog.cpp \
-    subselectimage.cpp
+    subselectimage.cpp \
+    manualmotiontracker.cpp \
+    selectpointimage.cpp
 
 HEADERS  += mainwindow.h \
     player.h \
     MatToQImage.h \
     cropwindowdialog.h \
-    subselectimage.h
+    subselectimage.h \
+    manualmotiontracker.h \
+    selectpointimage.h
 
 FORMS    += mainwindow.ui \
-    cropwindowdialog.ui
+    cropwindowdialog.ui \
+    manualmotiontracker.ui
 
 macx {
 

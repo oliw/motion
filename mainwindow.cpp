@@ -14,7 +14,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-
+#include "manualmotiontracker.h"
 #include "videoprocessor.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -336,3 +336,10 @@ void MainWindow::uncheckOtherPlayerButtons(QCheckBox* option)
     }
 }
 
+
+void MainWindow::on_actionMark_Original_Movement_triggered()
+{
+    ManualMotionTracker manMotion(video);
+    manMotion.setModal(true);
+    manMotion.exec();
+}

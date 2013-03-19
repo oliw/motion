@@ -373,7 +373,7 @@
      <x>0</x>
      <y>0</y>
      <width>977</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -390,8 +390,15 @@
     </property>
     <addaction name="actionCrop_Box"/>
    </widget>
+   <widget class="QMenu" name="menuEvaluate">
+    <property name="title">
+     <string>Evaluate</string>
+    </property>
+    <addaction name="actionMark_Original_Movement"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuEvaluate"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionReset">
@@ -430,6 +437,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionMark_Original_Movement">
+   <property name="text">
+    <string>Mark Feature Movement</string>
    </property>
   </action>
  </widget>

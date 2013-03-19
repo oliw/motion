@@ -62,6 +62,8 @@ private slots:
     void on_actionSave_Result_triggered();
     void on_checkBox_4_stateChanged(int arg1);
 
+    void on_actionMark_Original_Movement_triggered();
+
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
