@@ -121,4 +121,12 @@ void Tools::trimVideo(Video* image) {
     qDebug() << "Tools::trimVideo - End";
 }
 
+Point2f Tools::QPointToPoint2f(QPoint p) {
+    Point2f result;
+    float x = p.x();
+    float y = p.y();
+    result.x = x;
+    result.y = y;
+    return result;
+}
 

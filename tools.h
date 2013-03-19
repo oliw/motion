@@ -15,7 +15,7 @@ public:
     static void applyAffineTransformations(Point2f start, vector<Mat> trans, vector<double>& time, vector<double>& xs, vector<double>& ys);
     static RotatedRect transformRectangle(const Mat& affine, const Rect& origRect);
     static Mat getCroppedImage(const Mat& image, const RotatedRect& rect);
-
+    static Point2f QPointToPoint2f(QPoint p);
     static void trimVideo(Video* image);
 };
 
