@@ -41,8 +41,12 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(player, SIGNAL(playerStopped()),this, SLOT(player_stopped()));
    // QObject::connect(&cropDialog, SIGNAL(cropBoxChosen(int,int,int,int)), this, SIGNAL(cropBoxChosen(int,int,int,int)));
 
-    // Disable Button Areas
-    ui->pushButton_2->setDisabled(true);
+    // Disable Buttons on Right Column
+    QList<QPushButton*> list = ui->tabWidget->findChildren<QPushButton*>();
+    foreach(QPushButton* w, list) {
+        w->setEnabled(false);
+    }
+
     ui->playerControlsBox->setDisabled(true);
     ui->frameRate->setText(QString::number(player->getFrameRate()));
 
@@ -274,6 +278,8 @@ void MainWindow::processFinished(int processCode)
             break;
         case VideoProcessor::ORIGINAL_MOTION:
             originalMotion = true;
+            ui->pushButton_2->setDisabled(true); // You can only calculate still motion once
+            ui->calcStillPathButton->setEnabled(true);
             ui->pushButton->setEnabled(true);
             break;
         case VideoProcessor::STILL_MOTION:
