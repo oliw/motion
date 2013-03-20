@@ -18,7 +18,8 @@ SOURCES += videoprocessor.cpp \
     tools.cpp \
     localransacrejector.cpp \
     graphdrawer.cpp \
-    l1model.cpp
+    l1model.cpp \
+    evaluator.cpp
 
 HEADERS += videoprocessor.h \
     video.h \
@@ -28,7 +29,8 @@ HEADERS += videoprocessor.h \
     tools.h \
     localransacrejector.h \
     graphdrawer.h \
-    l1model.h
+    l1model.h \
+    evaluator.h
 
 macx {
     # OPENCV Library
