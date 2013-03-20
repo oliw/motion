@@ -6,11 +6,15 @@ CoreApplication::CoreApplication(QObject *parent) :
     QObject(parent)
 {
     QObject::connect(&vp, SIGNAL(processProgressChanged(float)), this, SIGNAL(processProgressChanged(float)));
+    originalVideo = 0;
+    newVideo = 0;
 }
 
 void CoreApplication::loadOriginalVideo(QString path)
 {
     emit processStatusChanged(CoreApplication::LOAD_VIDEO, true);
+    delete(originalVideo);
+    delete(newVideo);
     cv::VideoCapture vc;
     if (!vc.open(path.toStdString())) {
         qDebug() << "VideoProcessor::loadVideo - Video could not be opened";
@@ -72,6 +76,7 @@ void CoreApplication::calculateNewMotion() {
     emit processStatusChanged(CoreApplication::NEW_VIDEO, true);
     newVideo = new Video(originalVideo->getFrameCount());
     vp.applyCropTransform(originalVideo, newVideo);
+    emit newVideoCreated(newVideo);
     emit processStatusChanged(CoreApplication::NEW_VIDEO, false);
 }
 

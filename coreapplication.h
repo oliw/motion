@@ -25,6 +25,7 @@ signals:
     void processStatusChanged(int,bool);
     void processProgressChanged(float);
     void originalVideoLoaded(Video* video);
+    void newVideoCreated(Video* video);
     
 public slots:
     void loadOriginalVideo(QString path);
