@@ -63,8 +63,6 @@ private slots:
 
     void on_actionMark_Original_Movement_triggered();
 
-    void on_loadVideoButton_clicked();
-
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);

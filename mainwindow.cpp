@@ -342,8 +342,3 @@ void MainWindow::on_actionMark_Original_Movement_triggered()
     manMotion.setModal(true);
     manMotion.exec();
 }
-
-void MainWindow::on_loadVideoButton_clicked()
-{
-    on_actionOpen_Video_triggered();
-}

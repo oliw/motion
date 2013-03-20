@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "evaluator.h"
 #include <QApplication>
 #include <QObject>
 #include <video.h>
@@ -8,16 +9,17 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    // Create New Thread for Video Processor
-    QThread* videoProcessorThread = new QThread();
-    QObject::connect(&a, SIGNAL(aboutToQuit()),videoProcessorThread, SLOT(quit()));
-    VideoProcessor vp;
-    vp.moveToThread(videoProcessorThread);
-    GraphDrawer gd(&vp);
-    gd.moveToThread(videoProcessorThread);
+    // Create New Thread for Non-GUI Work
+    QThread* nonGuiThread = new QThread();
+    QObject::connect(&a, SIGNAL(aboutToQuit()),nonGuiThread, SLOT(quit()));
+
+    VideoProcessor vp;              // Handles Video and Processing
+    vp.moveToThread(nonGuiThread);
+
+    Evaluator evaluator(vp);        // Evaluates video and end video
+    evaluator.moveToThread(nonGuiThread);
 
     MainWindow w;
-
     qRegisterMetaType<Video*>("Video*");
     // Link Video Processor to Main Window
     QObject::connect(&vp, SIGNAL(videoLoaded(Video*)),&w, SLOT(newVideoLoaded(Video*)));
@@ -38,7 +40,7 @@ int main(int argc, char *argv[])
     // Link Main Window to Graph Drawer
     QObject::connect(&w, SIGNAL(showOriginalPath(int,int)), &gd, SLOT(drawOriginalMotionGraph(int,int)));
 
-    videoProcessorThread->start();
+    nonGuiThread->start();
 
     w.show();
     return a.exec();
