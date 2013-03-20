@@ -19,7 +19,7 @@ public:
     void calculateStillness(DataSet motion);
 
 private:
-    GraphDrawer gd;
+    //GraphDrawer gd;
 
 
 signals:

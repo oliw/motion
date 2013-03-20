@@ -38,9 +38,13 @@ public:
     void setCropBox(int x, int y, int width, int height);
     const Rect_<int>& getCropBox() const {return cropBox;}
 
+    void setVideoName(const QString& name) {videoName = name;}
+    QString getVideoName() {return videoName;}
+
 private:
     mutable QMutex mutex;
 
+    QString videoName;
     QList<Frame*> frames;
     int originalFps;
     Rect_<int> cropBox; // The starting crop box
