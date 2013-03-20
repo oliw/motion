@@ -15,7 +15,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "manualmotiontracker.h"
-#include "videoprocessor.h"
+#include "coreapplication.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -28,28 +28,28 @@ MainWindow::MainWindow(QWidget *parent) :
     progress = new QProgressBar(this);
     ui->statusBar->addPermanentWidget(progress);
     progress->setTextVisible(false);
+    progress->setMaximum(100);
     progress->hide();
 
-    ui->label->setText(tr("No video loaded"));
     featuresDetected = false;
     featuresTracked = false;
     outliersRejected = false;
     originalMotion = false;
+    cropBox = false;
 
     // Setup SIGNALS and SLOTS
     QObject::connect(player, SIGNAL(processedImage(QImage, int)),this, SLOT(updatePlayerUI(QImage, int)));
     QObject::connect(player, SIGNAL(playerStopped()),this, SLOT(player_stopped()));
    // QObject::connect(&cropDialog, SIGNAL(cropBoxChosen(int,int,int,int)), this, SIGNAL(cropBoxChosen(int,int,int,int)));
 
-    // Disable Buttons on Right Column
+    // Disable Core Application Buttons
     QList<QPushButton*> list = ui->tabWidget->findChildren<QPushButton*>();
     foreach(QPushButton* w, list) {
         w->setEnabled(false);
     }
 
+    // Disable Player Buttons
     ui->playerControlsBox->setDisabled(true);
-    ui->frameRate->setText(QString::number(player->getFrameRate()));
-
 }
 
 MainWindow::~MainWindow()
@@ -58,118 +58,142 @@ MainWindow::~MainWindow()
     delete player;
 }
 
-void MainWindow::updatePlayerUI(QImage img, int frameNumber)
+/*
+ *
+ *  CoreApplication Activity
+ *
+ */
+void MainWindow::showProcessStatus(int processCode, bool started)
 {
-    if (!img.isNull())
-    {
-        ui->label->setAlignment(Qt::AlignCenter);
-        ui->label->setPixmap(QPixmap::fromImage(img).scaled(ui->label->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
-        ui->currentFrameLabel->setText(QString("%1").arg(frameNumber));
+    if (started) {
+        togglePlayControls(false);
+        progress->show();
+        QString processMessage;
+        switch (processCode){
+            case CoreApplication::FEATURE_DETECTION:
+                processMessage = "Detecting Features";
+                break;
+            case CoreApplication::FEATURE_TRACKING:
+            processMessage = "Tracking Features";
+                break;
+            case CoreApplication::OUTLIER_REJECTION:
+            processMessage = "Detecting Outliers";
+                break;
+            case CoreApplication::ORIGINAL_MOTION:
+            processMessage = "Detecting Original Movement";
+                break;
+            case CoreApplication::LOAD_VIDEO:
+            processMessage = "Loading Original Video";
+                break;
+            case CoreApplication::SAVE_VIDEO:
+            processMessage = "Saving New Cropped Video";
+            case CoreApplication::ANALYSE_CROP_VIDEO:
+            processMessage = "Analysing Movement in Cropped Video";
+            default:
+            processMessage = "Busy";
+                break;
+        }
+        ui->statusBar->showMessage(processMessage);
+    } else {
+        progress->reset();
+        progress->hide();
+        ui->statusBar->clearMessage();
+        switch (processCode){
+            case CoreApplication::FEATURE_DETECTION:
+                featuresDetected = true;
+                break;
+            case CoreApplication::FEATURE_TRACKING:
+                featuresTracked = true;
+                break;
+            case CoreApplication::OUTLIER_REJECTION:
+                outliersRejected = true;
+                break;
+            case CoreApplication::ORIGINAL_MOTION:
+                originalMotion = true;
+                ui->originalMotionButton->setDisabled(true);
+                ui->newMotionButton->setEnabled(true);
+                break;
+            case CoreApplication::NEW_MOTION:
+                cropBox = true;
+                ui->actionSave_Result->setEnabled(true);
+                break;
+            default:
+                break;
+        }
+        togglePlayControls(true);
     }
 }
 
-void MainWindow::on_actionReset_triggered()
-{
+/*
+ *
+ *  Player Activity
+ *
+ */
 
-}
-
-void MainWindow::on_stepButton_clicked()
-{
-    if (player->isStopped()) {
-        player->step();
-    }
-}
-
-void MainWindow::newVideoLoaded(Video* video)
-{
-    this->video = video;
-    ui->label->setText(tr("Video loaded"));
-    // Set-up player
-    player->setVideo(video);
-    // Enable Player Controls
-    ui->playerControlsBox->setEnabled(true);
-    ui->checkBox->setDisabled(true);
-    ui->checkBox_2->setDisabled(true);
-    ui->checkBox_3->setDisabled(true);
-    ui->checkBox_4->setDisabled(true);
-
-    ui->frameCountLabel->setText(QString::number(video->getFrameCount()-1));
-    // Enable 1st Processing Step Button
-    ui->pushButton_2->setEnabled(true);
-    // Enable Crop Box Dialog
-    ui->actionCrop_Box->setEnabled(true);
-
-    // Set Video Info
-    ui->dimensionsLineEdit->setText(QString::number(video->getWidth())+"x"+QString::number(video->getHeight()));
-    ui->frameCountLineEdit->setText(QString::number(video->getFrameCount()));
-}
-
-void MainWindow::setOriginalScore(float score) {
-    ui->originalMovementScoreLineEdit->setText(QString::number(score));
-}
-
-void MainWindow::setNewScore(float score) {
-    ui->newMovementScoreLineEdit->setText(QString::number(score));
-}
-
-void MainWindow::player_stopped()
-{
-    togglePlayControls(true);
-    toggleActionControls(true);
-}
-
-void MainWindow::toggleActionControls(bool show)
-{
-    ui->groupBox_2->setEnabled(show);
-}
+/*
+ *
+ *  Actions
+ *
+ */
 
 void MainWindow::on_actionOpen_Video_triggered()
 {
-    QString path = QFileDialog::getOpenFileName(this, tr("Open Video"), "/Users/Oli");
+    QString path = QFileDialog::getOpenFileName(this, tr("Open Video"), QDir::homePath());
     QFile file(path);
     if (file.exists()) {
-        ui->label->setText(tr("Loading video"));
         emit videoChosen(path);
     }
-    QFileInfo fileInfo = QFileInfo(path);
-    ui->videoNameLineEdit->setText(fileInfo.fileName());
 }
 
+void MainWindow::on_actionCrop_Box_triggered()
+{
+    CropWindowDialog cropDialog(originalVideo);
+    cropDialog.setModal(true);
+    cropDialog.exec();
+}
+
+void MainWindow::on_actionSave_Result_triggered()
+{
+    QString saveFileName = QFileDialog::getSaveFileName(this, "Save Cropped Video", "");
+    emit saveNewVideoButtonPressed(saveFileName);
+}
+
+void MainWindow::on_actionMark_Original_Movement_triggered()
+{
+    ManualMotionTracker manMotion(originalVideo);
+    manMotion.setModal(true);
+    manMotion.exec();
+}
+
+/*
+ *
+ *  Player Controls UI
+ *
+ */
 void MainWindow::on_playButton_clicked()
 {
-    bool play = player->isStopped();
-    if (play) {
+    bool isPlaying = !(player->isStopped());
+    if (isPlaying) {
+        player->stop();
+    } else {
         player->play();
         toggleActionControls(false);
-    } else {
-        player->stop();
     }
-    togglePlayControls(!play);
+    togglePlayControls(!isPlaying);
     ui->playButton->setEnabled(true);
-}
-
-void MainWindow::togglePlayControls(bool show)
-{
-    QList<QWidget*> list = ui->playerControlsBox->findChildren<QWidget*>();
-    foreach(QWidget* w, list) {
-        w->setEnabled(show);
-    }
-    bool play = player->isStopped();
-    if (!play) {
-        ui->playButton->setText(tr("Stop"));
-    } else {
-        ui->playButton->setText(tr("Start"));
-    }
-    ui->checkBox->setEnabled(featuresDetected);
-    ui->checkBox_2->setEnabled(featuresTracked);
-    ui->checkBox_3->setEnabled(outliersRejected);
-    ui->checkBox_4->setEnabled(cropBox);
 }
 
 void MainWindow::on_rewindButton_clicked()
 {
     if (player->isStopped()) {
         player->rewind();
+    }
+}
+
+void MainWindow::on_stepButton_clicked()
+{
+    if (player->isStopped()) {
+        player->step();
     }
 }
 
@@ -187,141 +211,41 @@ void MainWindow::on_frameRate_editingFinished()
     ui->frameRate->setText(QString::number(frameRate));
 }
 
-void MainWindow::on_checkBox_stateChanged(int checked)
+void MainWindow::on_showFeaturesCheckbox_stateChanged(int checked)
 {
     bool enableFeatures = checked == Qt::Checked;
     player->setFeaturesEnabled(enableFeatures);
     if (enableFeatures) {
-    uncheckOtherPlayerButtons(ui->checkBox);
+    uncheckOtherPlayerButtons(ui->showFeaturesCheckbox);
     }
 }
 
-void MainWindow::on_pushButton_2_clicked()
-{
-    emit globalMotionButtonPressed();
-}
-
-void MainWindow::resizeEvent(QResizeEvent *e)
-{
-  // call the base method
-  QMainWindow::resizeEvent(e);
-  player->refresh();
-}
-
-
-void MainWindow::on_checkBox_2_stateChanged(int checked)
+void MainWindow::on_showTrackedCheckbox_stateChanged(int checked)
 {
     bool enableTracking = checked == Qt::Checked;
     player->setTrackingEnabled(enableTracking);
     if (enableTracking) {
-    uncheckOtherPlayerButtons(ui->checkBox_2);
+    uncheckOtherPlayerButtons(ui->showTrackedCheckbox);
     }
 
 }
 
-void MainWindow::on_checkBox_3_stateChanged(int checked)
+void MainWindow::on_showOutliersCheckbox_stateChanged(int checked)
 {
     bool enableOutliers = checked == Qt::Checked;
     player->setOutliersEnabled(enableOutliers);
     if (enableOutliers) {
-    uncheckOtherPlayerButtons(ui->checkBox_3);
+    uncheckOtherPlayerButtons(ui->showOutliersCheckbox);
     }
 
 }
 
-void MainWindow::processStarted(int processCode)
-{
-    togglePlayControls(false);
-    progress->show();
-    QString processMessage;
-    switch (processCode){
-        case VideoProcessor::FEATURE_DETECTION:
-            processMessage = "Detecting Features";
-            break;
-        case VideoProcessor::FEATURE_TRACKING:
-        processMessage = "Tracking Features";
-            break;
-        case VideoProcessor::OUTLIER_REJECTION:
-        processMessage = "Detecting Outliers";
-            break;
-        case VideoProcessor::ORIGINAL_MOTION:
-        processMessage = "Detecting Original Movement";
-            break;
-        case VideoProcessor::VIDEO_LOADING:
-        processMessage = "Loading Video";
-            break;
-        case VideoProcessor::SAVING_VIDEO:
-        processMessage = "Saving Video";
-        case VideoProcessor::ANALYSE_CROP_VIDEO:
-        processMessage = "Analysing Movement in Cropped Video";
-        default:
-        processMessage = "Busy";
-            break;
-    }
-    ui->statusBar->showMessage(processMessage);
-}
-
-void MainWindow::processFinished(int processCode)
-{
-    progress->reset();
-    progress->hide();
-    ui->statusBar->clearMessage();
-    switch (processCode){
-        case VideoProcessor::FEATURE_DETECTION:
-            featuresDetected = true;
-            break;
-        case VideoProcessor::FEATURE_TRACKING:
-            featuresTracked = true;
-            break;
-        case VideoProcessor::OUTLIER_REJECTION:
-            outliersRejected = true;
-            break;
-        case VideoProcessor::ORIGINAL_MOTION:
-            originalMotion = true;
-            ui->pushButton_2->setDisabled(true); // You can only calculate still motion once
-            ui->calcStillPathButton->setEnabled(true);
-            break;
-        case VideoProcessor::STILL_MOTION:
-            cropBox = true;
-            ui->actionSave_Result->setEnabled(true);
-            break;
-        default:
-            break;
-    }
-    togglePlayControls(true);
-}
-
-void MainWindow::showProgress(int current, int outof)
-{
-    progress->setMaximum(outof);
-    progress->setValue(current);
-}
-
-void MainWindow::on_calcStillPathButton_clicked()
-{
-    emit stillMotionButtonPressed();
-}
-
-void MainWindow::on_actionCrop_Box_triggered()
-{
-    CropWindowDialog cropDialog(video);
-    cropDialog.setModal(true);
-    cropDialog.exec();
-}
-
-void MainWindow::on_actionSave_Result_triggered()
-{
-    QString saveFileName = QFileDialog::getSaveFileName(this, "Save Cropped Video", "");
-    emit saveResultPressed(saveFileName);
-}
-
-
-void MainWindow::on_checkBox_4_stateChanged(int checked)
+void MainWindow::on_showCropboxCheckbox_stateChanged(int checked)
 {
     bool enableTracking = checked == Qt::Checked;
     player->setCropboxEnabled(enableTracking);
     if (enableTracking) {
-        uncheckOtherPlayerButtons(ui->checkBox_4);
+        uncheckOtherPlayerButtons(ui->showCropboxCheckbox);
     }
 }
 
@@ -336,9 +260,102 @@ void MainWindow::uncheckOtherPlayerButtons(QCheckBox* option)
 }
 
 
-void MainWindow::on_actionMark_Original_Movement_triggered()
+/*
+ *
+ *  Core App Controls UI
+ *
+ */
+void MainWindow::on_newMotionButton_clicked()
 {
-    ManualMotionTracker manMotion(video);
-    manMotion.setModal(true);
-    manMotion.exec();
+    emit newMotionButtonPressed();
+}
+
+void MainWindow::on_originalMotionButton_clicked()
+{
+    emit originalMotionButtonPressed();
+}
+
+
+
+void MainWindow::updatePlayerUI(QImage img, int frameNumber)
+{
+    if (!img.isNull())
+    {
+        ui->label->setAlignment(Qt::AlignCenter);
+        ui->label->setPixmap(QPixmap::fromImage(img).scaled(ui->label->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
+        ui->currentFrameLabel->setText(QString("%1").arg(frameNumber));
+    }
+}
+
+void MainWindow::registerOriginalVideo(Video* video)
+{
+    qDebug() << "UI sees video";
+    originalVideo = video;
+    featuresDetected = false;
+    featuresTracked = false;
+    outliersRejected = false;
+    originalMotion = false;
+    cropBox = false;
+
+    // Set-up player
+    player->setVideo(video);
+    // Enable Player Controls
+    ui->playerControlsBox->setEnabled(true);
+    ui->frameCountLabel->setText(QString::number(video->getFrameCount()-1));
+
+    // Enable 1st Processing Step Button
+    ui->originalMotionButton->setEnabled(true);
+    ui->actionCrop_Box->setEnabled(true);
+    ui->actionMark_Original_Movement->setEnabled(true);
+
+    // Set Video Info
+    ui->videoNameLineEdit->setText(video->getVideoName());
+    ui->dimensionsLineEdit->setText(QString::number(video->getWidth())+"x"+QString::number(video->getHeight()));
+    ui->frameCountLineEdit->setText(QString::number(video->getFrameCount()));
+}
+
+
+void MainWindow::player_stopped()
+{
+    togglePlayControls(true);
+    toggleActionControls(true);
+}
+
+void MainWindow::toggleActionControls(bool show)
+{
+    ui->groupBox_2->setEnabled(show);
+}
+
+
+
+void MainWindow::togglePlayControls(bool show)
+{
+    QList<QWidget*> list = ui->playerControlsBox->findChildren<QWidget*>();
+    foreach(QWidget* w, list) {
+        w->setEnabled(show);
+    }
+    bool play = player->isStopped();
+    if (!play) {
+        ui->playButton->setText(tr("Stop"));
+    } else {
+        ui->playButton->setText(tr("Start"));
+    }
+    ui->showFeaturesCheckbox->setEnabled(featuresDetected);
+    ui->showTrackedCheckbox->setEnabled(featuresTracked);
+    ui->showOutliersCheckbox->setEnabled(outliersRejected);
+    ui->showCropboxCheckbox->setEnabled(cropBox);
+}
+
+
+
+void MainWindow::resizeEvent(QResizeEvent *e)
+{
+  // call the base method
+  QMainWindow::resizeEvent(e);
+  player->refresh();
+}
+
+void MainWindow::showProcessProgress(float amount)
+{
+    progress->setValue(amount*100);
 }
