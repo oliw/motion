@@ -21,12 +21,13 @@ Player::Player(QObject *parent):QThread(parent)
     outliersEnabled = false;
     cropboxEnabled = false;
     video = NULL;
+    frameNumber = 0;
 }
 
 void Player::setVideo(Video* video)
 {
     this->video = video;
-    frameNumber = 0;
+    refresh();
 }
 
 void Player::play()

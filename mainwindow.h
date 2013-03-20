@@ -52,12 +52,15 @@ private slots:
     // When the processor has finished working on something
     void showProcessStatus(int processCode, bool started);
     void registerOriginalVideo(Video* video);
+    void registerNewVideo(Video* video);
     void showProcessProgress(float amount);
 
     //// Slots for player activity
     void player_stopped();
     void updatePlayerUI(QImage img,int frameNumber);
 
+
+    void on_videoCombobox_activated(const QString &arg1);
 
 signals:
    void signalResize(QResizeEvent *);
@@ -77,6 +80,7 @@ private:
     QProgressBar* progress;
 
     Video* originalVideo;
+    Video* newVideo;
 
     bool playing;
     bool featuresDetected, featuresTracked, outliersRejected,originalMotion, cropBox;

@@ -66,7 +66,6 @@ MainWindow::~MainWindow()
 void MainWindow::showProcessStatus(int processCode, bool started)
 {
     if (started) {
-        togglePlayControls(false);
         progress->show();
         QString processMessage;
         switch (processCode){
@@ -120,8 +119,8 @@ void MainWindow::showProcessStatus(int processCode, bool started)
             default:
                 break;
         }
-        togglePlayControls(true);
     }
+    togglePlayControls(!started);
 }
 
 /*
@@ -179,7 +178,7 @@ void MainWindow::on_playButton_clicked()
         player->play();
         toggleActionControls(false);
     }
-    togglePlayControls(!isPlaying);
+    togglePlayControls(isPlaying);
     ui->playButton->setEnabled(true);
 }
 
@@ -275,8 +274,6 @@ void MainWindow::on_originalMotionButton_clicked()
     emit originalMotionButtonPressed();
 }
 
-
-
 void MainWindow::updatePlayerUI(QImage img, int frameNumber)
 {
     if (!img.isNull())
@@ -289,7 +286,6 @@ void MainWindow::updatePlayerUI(QImage img, int frameNumber)
 
 void MainWindow::registerOriginalVideo(Video* video)
 {
-    qDebug() << "UI sees video";
     originalVideo = video;
     featuresDetected = false;
     featuresTracked = false;
@@ -312,8 +308,17 @@ void MainWindow::registerOriginalVideo(Video* video)
     ui->videoNameLineEdit->setText(video->getVideoName());
     ui->dimensionsLineEdit->setText(QString::number(video->getWidth())+"x"+QString::number(video->getHeight()));
     ui->frameCountLineEdit->setText(QString::number(video->getFrameCount()));
+
+    ui->videoCombobox->clear();
+    ui->videoCombobox->addItem("Original Video");
 }
 
+void MainWindow::registerNewVideo(Video* video)
+{
+    newVideo = video;
+    ui->videoCombobox->addItem("New Video");
+    ui->videoCombobox->addItem("Both");
+}
 
 void MainWindow::player_stopped()
 {
@@ -325,8 +330,6 @@ void MainWindow::toggleActionControls(bool show)
 {
     ui->groupBox_2->setEnabled(show);
 }
-
-
 
 void MainWindow::togglePlayControls(bool show)
 {
@@ -340,13 +343,18 @@ void MainWindow::togglePlayControls(bool show)
     } else {
         ui->playButton->setText(tr("Start"));
     }
-    ui->showFeaturesCheckbox->setEnabled(featuresDetected);
-    ui->showTrackedCheckbox->setEnabled(featuresTracked);
-    ui->showOutliersCheckbox->setEnabled(outliersRejected);
-    ui->showCropboxCheckbox->setEnabled(cropBox);
+    if (ui->videoCombobox->currentText() == "Original Video") {
+        ui->showFeaturesCheckbox->setEnabled(featuresDetected);
+        ui->showTrackedCheckbox->setEnabled(featuresTracked);
+        ui->showOutliersCheckbox->setEnabled(outliersRejected);
+        ui->showCropboxCheckbox->setEnabled(cropBox);
+    } else {
+        ui->showFeaturesCheckbox->setEnabled(false);
+        ui->showTrackedCheckbox->setEnabled(false);
+        ui->showOutliersCheckbox->setEnabled(false);
+        ui->showCropboxCheckbox->setEnabled(false);
+    }
 }
-
-
 
 void MainWindow::resizeEvent(QResizeEvent *e)
 {
@@ -358,4 +366,25 @@ void MainWindow::resizeEvent(QResizeEvent *e)
 void MainWindow::showProcessProgress(float amount)
 {
     progress->setValue(amount*100);
+}
+
+void MainWindow::on_videoCombobox_activated(const QString &option)
+{
+    bool origVid = option == "Original Video";
+    if (origVid) {
+        player->setVideo(originalVideo);
+    } else if (option == "New Video") {
+        player->setVideo(newVideo);
+    } else if (option == "Both") {
+
+    }
+    QList<QCheckBox*> list = ui->playerControlsBox->findChildren<QCheckBox*>();
+    foreach(QCheckBox* box, list) {
+        if (origVid) {
+            box->setEnabled(true);
+        } else {
+            box->setChecked(false);
+            box->setEnabled(false);
+        }
+    }
 }
