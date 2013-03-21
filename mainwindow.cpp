@@ -56,6 +56,7 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete player;
+    delete manMotionTracker;
 }
 
 /*
@@ -159,9 +160,10 @@ void MainWindow::on_actionSave_Result_triggered()
 
 void MainWindow::on_actionMark_Original_Movement_triggered()
 {
-    ManualMotionTracker manMotion(originalVideo);
-    manMotion.setModal(true);
-    manMotion.exec();
+   manMotionTracker = new ManualMotionTracker(originalVideo);
+   manMotionTracker->setAttribute( Qt::WA_DeleteOnClose, true );
+   QObject::connect(manMotionTracker,SIGNAL(pointsSelected(QMap<int, QPoint>)),this,SIGNAL(pointsSelected(QMap<int, QPoint>)));
+   manMotionTracker->show();
 }
 
 /*

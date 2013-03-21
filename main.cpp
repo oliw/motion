@@ -27,14 +27,15 @@ int main(int argc, char *argv[])
     QObject::connect(&w, SIGNAL(evaluateButtonPressed()),&app, SLOT(evaluateNewMotion()));
     QObject::connect(&w, SIGNAL(graphButtonPressed()),&app, SLOT(drawGraph()));
 
+    typedef QMap<int, QPoint> LocationMap;
+    qRegisterMetaType<LocationMap>("QMap<int, QPoint>");
+    QObject::connect(&w, SIGNAL(pointsSelected(QMap<int, QPoint>)),&app, SLOT(registerOriginalPointLocations(QMap<int, QPoint>)));
+
     // Connect CoreApp events to GUI
     QObject::connect(&app, SIGNAL(originalVideoLoaded(Video*)),&w, SLOT(registerOriginalVideo(Video*)));
     QObject::connect(&app, SIGNAL(newVideoCreated(Video*)),&w, SLOT(registerNewVideo(Video*)));
     QObject::connect(&app, SIGNAL(processStatusChanged(int,bool)),&w, SLOT(showProcessStatus(int,bool)));
     QObject::connect(&app, SIGNAL(processProgressChanged(float)),&w, SLOT(showProcessProgress(float)));
-
-
-
 
     qRegisterMetaType<Video*>("Video*");
     // Link Video Processor to Main Window

@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QPoint>
+#include <QMap>
 #include "video.h"
 #include "selectpointimage.h"
 #include "opencv2/core/core.hpp"
@@ -19,12 +20,18 @@ public:
     explicit ManualMotionTracker(const Video* v, QWidget *parent = 0);
     ~ManualMotionTracker();
     
+signals:
+    void pointsSelected(QMap<int, QPoint> locations);
+
 private:
     Ui::ManualMotionTracker *ui;
     const Video* v;
+
+
+    QMap<int, QPoint> locations;
+
     int currentFrameNumber;
     int stepRate;
-    Point2f* point;
     void setStepRate(int step);
     void previousFrame();
     void nextFrame();

@@ -8,6 +8,7 @@
 #include <opencv2/core/core.hpp>
 #include "videoprocessor.h"
 #include "graphdrawer.h"
+#include "manualmotiontracker.h"
 #include <video.h>
 #include <player.h>
 
@@ -23,9 +24,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     Player* getPlayer() {return player;}
+    ManualMotionTracker* getManualMotionTracker() {return manMotionTracker;}
 
-signals:
-    
 private slots:
 
     // Menu Actions
@@ -58,8 +58,6 @@ private slots:
     //// Slots for player activity
     void player_stopped();
     void updatePlayerUI(QImage img,int frameNumber);
-
-
     void on_videoCombobox_activated(const QString &arg1);
 
 signals:
@@ -70,6 +68,7 @@ signals:
    void evaluateButtonPressed();
    void graphButtonPressed();
    void saveNewVideoButtonPressed(QString path);
+   void pointsSelected(QMap<int, QPoint> locations);
 
 protected:
    void resizeEvent(QResizeEvent *);  // virtual
@@ -78,6 +77,9 @@ private:
     Ui::MainWindow* ui;
     Player* player;
     QProgressBar* progress;
+
+    // Helper Windows
+    ManualMotionTracker* manMotionTracker;
 
     Video* originalVideo;
     Video* newVideo;

@@ -16,10 +16,6 @@ ManualMotionTracker::ManualMotionTracker(const Video* v, QWidget *parent) :
 {
     setFocusPolicy ( Qt::StrongFocus );
     ui->setupUi(this);
-    point = new Point2f[v->getFrameCount()];
-    for (int i = 0; i < v->getFrameCount(); i++) {
-        point[i] = Point2f(-1,-1);
-    }
     setStepRate(1);
     setFrame(0);
 }
@@ -38,7 +34,6 @@ void ManualMotionTracker::keyPressEvent(QKeyEvent* e)
 ManualMotionTracker::~ManualMotionTracker()
 {
     delete ui;
-    delete point;
 }
 
 void ManualMotionTracker::setStepRate(int step) {
@@ -73,8 +68,7 @@ void ManualMotionTracker::setFrame(int frame) {
 
 void ManualMotionTracker::registerPoint(const QPoint& point)
 {
-    Point2f newPoint = Tools::QPointToPoint2f(point);
-    this->point[currentFrameNumber] = newPoint;
+    locations[currentFrameNumber] = point;
 }
 
 void ManualMotionTracker::on_imageFrame_pointSelected(const QPoint& point)
@@ -85,13 +79,13 @@ void ManualMotionTracker::on_imageFrame_pointSelected(const QPoint& point)
 
 void ManualMotionTracker::on_buttonBox_accepted()
 {
+    emit pointsSelected(locations);
     this->accept();
 }
 
 void ManualMotionTracker::displayPoint() {
-    if (point[currentFrameNumber].x >= 0) {
-        Point2f currPoint = point[currentFrameNumber];
-        QPoint p = QPoint(currPoint.x, currPoint.y);
+    if (locations.contains(currentFrameNumber)) {
+        QPoint p = locations[currentFrameNumber];
         ui->coordsLineEdit->setText("("+QString::number(p.x())+","+QString::number(p.y())+")");
         ui->imageFrame->setPoint(p);
     } else {
@@ -101,10 +95,7 @@ void ManualMotionTracker::displayPoint() {
 }
 
 void ManualMotionTracker::clearPoint() {
-    Point2f nullPoint;
-    nullPoint.x = -1;
-    nullPoint.y = -1;
-    point[currentFrameNumber] = nullPoint;
+    locations.remove(currentFrameNumber);
     displayPoint();
 }
 
@@ -114,15 +105,12 @@ void ManualMotionTracker::loadMarkings() {
     if (file.exists()) {
         file.open(QIODevice::ReadOnly | QIODevice::Text);
         QTextStream in(&file);
-        int i = 0;
         while(!in.atEnd()) {
             QString line = in.readLine();
-            QStringList coords = line.split(",");
-            Point2f point;
-            point.x = coords.at(0).toFloat();
-            point.y = coords.at(1).toFloat();
-            this->point[i] = point;
-            i++;
+            QStringList lineParts = line.split(",");
+            int frame = lineParts.at(0).toInt();
+            QPoint p(lineParts.at(1).toInt(), lineParts.at(2).toInt());
+            locations.insert(frame,p);
         }
     } else {
         QMessageBox msgBox;
@@ -137,8 +125,12 @@ void ManualMotionTracker::exportMarkings() {
     QFile file(saveFileName);
     file.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream out(&file);
-    for (int i = 0; i < v->getFrameCount(); i++) {
-        out << point[i].x << "," << point[i].y << "\n";
+
+    QMapIterator<int, QPoint> i(locations);
+    while (i.hasNext()) {
+        i.next();
+        QPoint p = i.value();
+        out << i.key() << "," << p.x() << "," << p.y() << "\n";
     }
     file.close();
 }
