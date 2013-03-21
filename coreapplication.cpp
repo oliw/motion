@@ -87,3 +87,7 @@ void CoreApplication::evaluateNewMotion() {
 void CoreApplication::drawGraph() {
     qDebug() << "drawGraph - Not yet implemented";
 }
+
+void CoreApplication::registerOriginalPointLocations(QMap<int, QPoint> locations) {
+    qDebug() << "registerOriginalPointLocations" << locations.size();
+}

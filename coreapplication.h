@@ -4,6 +4,7 @@
 #include <QObject>
 #include "videoprocessor.h"
 #include "evaluator.h"
+#include <QMap>
 
 class CoreApplication : public QObject
 {
@@ -35,15 +36,20 @@ public slots:
     void evaluateNewMotion();
     void drawGraph();
 
+    void registerOriginalPointLocations(QMap<int, QPoint> locations);
+
 private:
     // For Loading Video and Processing it
     VideoProcessor vp;
+    Video* originalVideo;
+    Video* newVideo;
 
     // For Evaluating Video and drawing Graphs
     Evaluator ev;
+    DataSet* originalPointMotion;
+    DataSet* originalGlobalMotion;
+    DataSet* newVideoMotion;
 
-    Video* originalVideo;
-    Video* newVideo;
 
 
 };

@@ -3,6 +3,7 @@
 #include <opencv2/core/core.hpp>
 #include "video.h"
 #include "frame.h"
+#include "evaluator.h"
 
 using namespace cv;
 
@@ -17,6 +18,18 @@ public:
     static Mat getCroppedImage(const Mat& image, const RotatedRect& rect);
     static Point2f QPointToPoint2f(QPoint p);
     static void trimVideo(Video* image);
+
+
+    // Move coordinates to start from 0,0
+    DataSet moveToOriginDataSet(const DataSet& dataSet);
+
+    // Builds coordinates from original manual motion
+
+    // Builds coordinates from original video global motion
+    DataSet buildDiscreteDataSet();
+
+    // Builds coordinates with motion update and then camera update
+    DataSet buildNewVideoDataSet(Video* video);
 };
 
 #endif // TOOLS_H
