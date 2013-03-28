@@ -48,6 +48,8 @@ MainWindow::MainWindow(QWidget *parent) :
         w->setEnabled(false);
     }
 
+    ui->drawGraphButton->setEnabled(true);
+
     // Disable Player Buttons
     ui->playerControlsBox->setDisabled(true);
 }
@@ -89,6 +91,8 @@ void MainWindow::showProcessStatus(int processCode, bool started)
             processMessage = "Saving New Cropped Video";
             case CoreApplication::ANALYSE_CROP_VIDEO:
             processMessage = "Analysing Movement in Cropped Video";
+        case CoreApplication::PLOTTING_MOVEMENT:
+            processMessage = "Plotting Movement in Video";
             default:
             processMessage = "Busy";
                 break;
@@ -389,4 +393,10 @@ void MainWindow::on_videoCombobox_activated(const QString &option)
             box->setEnabled(false);
         }
     }
+}
+
+void MainWindow::on_drawGraphButton_clicked()
+{
+    qDebug() << "Ignoring checkbox options and just drawing the original graph Motion";
+    emit drawGraphButtonPressed(false,true,false,true,true);
 }

@@ -100,7 +100,7 @@
           <item>
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
-             <number>1</number>
+             <number>3</number>
             </property>
             <widget class="QWidget" name="tab_5">
              <attribute name="title">
@@ -289,7 +289,10 @@
                </widget>
               </item>
               <item row="4" column="0" colspan="2">
-               <widget class="QPushButton" name="pushButton_7">
+               <widget class="QPushButton" name="drawGraphButton">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
                 <property name="text">
                  <string>Draw</string>
                 </property>

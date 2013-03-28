@@ -60,6 +60,9 @@ private slots:
     void updatePlayerUI(QImage img,int frameNumber);
     void on_videoCombobox_activated(const QString &arg1);
 
+
+    void on_drawGraphButton_clicked();
+
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
@@ -69,6 +72,7 @@ signals:
    void graphButtonPressed();
    void saveNewVideoButtonPressed(QString path);
    void pointsSelected(QMap<int, QPoint> locations);
+   void drawGraphButtonPressed(bool originalPointMotion, bool originalGlobalMotion, bool newGlobalMotion, bool x, bool y);
 
 protected:
    void resizeEvent(QResizeEvent *);  // virtual

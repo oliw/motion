@@ -25,11 +25,11 @@ int main(int argc, char *argv[])
     QObject::connect(&w, SIGNAL(originalMotionButtonPressed()),&app, SLOT(calculateOriginalMotion()));
     QObject::connect(&w, SIGNAL(newMotionButtonPressed()),&app, SLOT(calculateNewMotion()));
     QObject::connect(&w, SIGNAL(evaluateButtonPressed()),&app, SLOT(evaluateNewMotion()));
-    QObject::connect(&w, SIGNAL(graphButtonPressed()),&app, SLOT(drawGraph()));
+    QObject::connect(&w, SIGNAL(drawGraphButtonPressed(bool, bool, bool, bool, bool)),&app, SLOT(drawGraph(bool, bool, bool, bool, bool)));
 
     typedef QMap<int, QPoint> LocationMap;
     qRegisterMetaType<LocationMap>("QMap<int, QPoint>");
-    QObject::connect(&w, SIGNAL(pointsSelected(QMap<int, QPoint>)),&app, SLOT(registerOriginalPointLocations(QMap<int, QPoint>)));
+    QObject::connect(&w, SIGNAL(pointsSelected(QMap<int, QPoint>)),&app, SLOT(setOriginalPointMotion(QMap<int, QPoint>)));
 
     // Connect CoreApp events to GUI
     QObject::connect(&app, SIGNAL(originalVideoLoaded(Video*)),&w, SLOT(registerOriginalVideo(Video*)));
