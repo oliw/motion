@@ -2,25 +2,24 @@
 #define EVALUATOR_H
 
 #include <QObject>
-#include "graphdrawer.h"
+#include <QDebug>
+#include "engine.h"
+#include "tools.h"
 
-struct DataSet {
-    vector<int> time;
-    vector<Point2f> location;
-};
+typedef QMap<int, Point2f> DataSet;
 
 class Evaluator : public QObject
 {
     Q_OBJECT
 public:
     explicit Evaluator(QObject *parent = 0);
+    ~Evaluator();
 
-    void compareMotions(DataSet oldMotion, DataSet newMotion);
-    void calculateStillness(DataSet motion);
+    void drawData(const DataSet& data);
+    void drawData(const DataSet& origData, const DataSet& newData);
 
 private:
-    //GraphDrawer gd;
-
+    Engine* mEngine;
 
 signals:
     

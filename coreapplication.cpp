@@ -1,4 +1,5 @@
 #include "coreapplication.h"
+#include "tools.h"
 #include <QDebug>
 #include <QFileInfo>
 
@@ -6,15 +7,13 @@ CoreApplication::CoreApplication(QObject *parent) :
     QObject(parent)
 {
     QObject::connect(&vp, SIGNAL(processProgressChanged(float)), this, SIGNAL(processProgressChanged(float)));
-    originalVideo = 0;
-    newVideo = 0;
+    clear();
 }
 
 void CoreApplication::loadOriginalVideo(QString path)
 {
     emit processStatusChanged(CoreApplication::LOAD_VIDEO, true);
-    delete(originalVideo);
-    delete(newVideo);
+    clear();
     cv::VideoCapture vc;
     if (!vc.open(path.toStdString())) {
         qDebug() << "VideoProcessor::loadVideo - Video could not be opened";
@@ -67,6 +66,7 @@ void CoreApplication::calculateOriginalMotion()
     emit processStatusChanged(CoreApplication::ORIGINAL_MOTION, true);
     vp.calculateMotionModel(originalVideo);
     emit processStatusChanged(CoreApplication::ORIGINAL_MOTION, false);
+    setOriginalGlobalMotion();
 }
 
 void CoreApplication::calculateNewMotion() {
@@ -78,6 +78,7 @@ void CoreApplication::calculateNewMotion() {
     vp.applyCropTransform(originalVideo, newVideo);
     emit newVideoCreated(newVideo);
     emit processStatusChanged(CoreApplication::NEW_VIDEO, false);
+    setNewGlobalMotion();
 }
 
 void CoreApplication::evaluateNewMotion() {
@@ -88,6 +89,69 @@ void CoreApplication::drawGraph() {
     qDebug() << "drawGraph - Not yet implemented";
 }
 
-void CoreApplication::registerOriginalPointLocations(QMap<int, QPoint> locations) {
-    qDebug() << "registerOriginalPointLocations" << locations.size();
+void CoreApplication::setOriginalPointMotion(QMap<int, QPoint> locations) {
+    emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, true);
+    originalPointMotion.clear();
+    // Convert QPoint to Point2f
+    QMapIterator<int, QPoint> i(locations);
+    while (i.hasNext()) {
+        i.next();
+        QPoint p = i.value();
+        Point2f pNew = Tools::QPointToPoint2f(p);
+        originalPointMotion.insert(i.key(),pNew);
+    }
+    // Normalise
+    originalPointMotion = Tools::moveToOriginDataSet(originalPointMotion);
+    emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, false);
 }
+
+void CoreApplication::setOriginalGlobalMotion() {
+    emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, true);
+    originalGlobalMotion.clear();
+    // Work backwards
+    Point2f p(0,0);
+    originalGlobalMotion.insert(originalVideo->getFrameCount()-1, p);
+    for (int f = originalVideo->getFrameCount()-1; f > 0; f--) {
+        Frame* frame = originalVideo->accessFrameAt(f);
+        const Mat& aff = frame->getAffineTransform();
+        p = Tools::applyAffineTransformation(aff, p);
+        originalGlobalMotion.insert(f-1, p);
+    }
+    // Normalise
+    originalGlobalMotion = Tools::moveToOriginDataSet(originalGlobalMotion);
+    emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, false);
+}
+
+void CoreApplication::setNewGlobalMotion() {
+    emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, true);
+    // Work backwards
+    Point2f p(0,0);
+    newGlobalMotion.insert(originalVideo->getFrameCount()-1, p);
+    for (int f = originalVideo->getFrameCount()-1; f > 0; f--) {
+        Frame* frame = originalVideo->accessFrameAt(f);
+        const Mat& aff = frame->getAffineTransform();
+        p = Tools::applyAffineTransformation(aff, p);
+        const Mat& update = frame->getUpdateTransform();
+        p = Tools::applyAffineTransformation(update, p);
+        newGlobalMotion.insert(f-1, p);
+    }
+    // Normalise
+    newGlobalMotion = Tools::moveToOriginDataSet(newGlobalMotion);
+    emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, false);
+}
+
+void CoreApplication::drawGraph(bool originalPointMotion, bool originalGlobalMotion, bool newGlobalMotion, bool x, bool y)
+{
+    qDebug() << "Ignoring function params and drawing original Global motion";
+    ev.drawData(this->originalGlobalMotion);
+}
+
+
+void CoreApplication::clear() {
+    delete(originalVideo);
+    delete(newVideo);
+    originalPointMotion.clear();
+    originalGlobalMotion.clear();
+    newGlobalMotion.clear();
+}
+

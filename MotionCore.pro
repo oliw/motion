@@ -17,7 +17,6 @@ SOURCES += videoprocessor.cpp \
     ransacmodel.cpp \
     tools.cpp \
     localransacrejector.cpp \
-    graphdrawer.cpp \
     l1model.cpp \
     evaluator.cpp \
     coreapplication.cpp
@@ -29,7 +28,6 @@ HEADERS += videoprocessor.h \
     ransacmodel.h \
     tools.h \
     localransacrejector.h \
-    graphdrawer.h \
     l1model.h \
     evaluator.h \
     coreapplication.h

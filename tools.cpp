@@ -130,3 +130,17 @@ Point2f Tools::QPointToPoint2f(QPoint p) {
     return result;
 }
 
+QMap<int, Point2f> Tools::moveToOriginDataSet(const QMap<int, Point2f>& dataSet) {
+    Point2f firstPoint = dataSet.begin().value();
+    QMap<int, Point2f> result;
+    QMapIterator<int, Point2f> i(dataSet);
+    while (i.hasNext()) {
+        i.next();
+        Point2f p = i.value();
+        p.x = p.x - firstPoint.x;
+        p.y = p.y - firstPoint.y;
+        result.insert(i.key(), p);
+    }
+    return result;
+}
+

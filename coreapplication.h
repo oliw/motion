@@ -21,6 +21,7 @@ public:
     const static int NEW_VIDEO = 10;
     const static int SAVE_VIDEO = 11;
     const static int ANALYSE_CROP_VIDEO = 12;
+    const static int PLOTTING_MOVEMENT = 13;
     
 signals:
     void processStatusChanged(int,bool);
@@ -36,7 +37,12 @@ public slots:
     void evaluateNewMotion();
     void drawGraph();
 
-    void registerOriginalPointLocations(QMap<int, QPoint> locations);
+    void setOriginalPointMotion(QMap<int, QPoint> locations);
+    void setOriginalGlobalMotion();
+    void setNewGlobalMotion();
+
+    void drawGraph(bool originalPointMotion, bool originalGlobalMotion, bool newGlobalMotion, bool x, bool y);
+
 
 private:
     // For Loading Video and Processing it
@@ -46,9 +52,11 @@ private:
 
     // For Evaluating Video and drawing Graphs
     Evaluator ev;
-    DataSet* originalPointMotion;
-    DataSet* originalGlobalMotion;
-    DataSet* newVideoMotion;
+    QMap<int, Point2f> originalPointMotion;
+    QMap<int, Point2f> originalGlobalMotion;
+    QMap<int, Point2f> newGlobalMotion;
+
+    void clear();
 
 
 

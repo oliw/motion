@@ -21,15 +21,13 @@ public:
 
 
     // Move coordinates to start from 0,0
-    DataSet moveToOriginDataSet(const DataSet& dataSet);
+    static QMap<int, Point2f> moveToOriginDataSet(const QMap<int, Point2f>& dataSet);
 
     // Builds coordinates from original manual motion
 
     // Builds coordinates from original video global motion
-    DataSet buildDiscreteDataSet();
 
     // Builds coordinates with motion update and then camera update
-    DataSet buildNewVideoDataSet(Video* video);
 };
 
 #endif // TOOLS_H
