@@ -144,8 +144,3 @@ void Frame::trim(Size area)
     qDebug() << "New Rectangle size:" << image.size().width << "," << image.size().height;
     resize();
 }
-
-
-
-
-

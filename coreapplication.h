@@ -41,6 +41,9 @@ public slots:
     void setOriginalGlobalMotion();
     void setNewGlobalMotion();
 
+    void saveOriginalGlobalMotionToMatlab();
+    void saveNewGlobalMotionToMatlab();
+
     void drawGraph(bool originalPointMotion, bool originalGlobalMotion, bool newGlobalMotion, bool x, bool y);
 
 

@@ -18,6 +18,8 @@ public:
     void drawData(const DataSet& data);
     void drawData(const DataSet& origData, const DataSet& newData);
 
+    void exportMatrices(QList<Mat> matrices, QString filePath, QString name);
+
 private:
     Engine* mEngine;
 

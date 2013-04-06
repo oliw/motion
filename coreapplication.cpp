@@ -2,6 +2,7 @@
 #include "tools.h"
 #include <QDebug>
 #include <QFileInfo>
+#include <QDir>
 
 CoreApplication::CoreApplication(QObject *parent) :
     QObject(parent)
@@ -67,6 +68,7 @@ void CoreApplication::calculateOriginalMotion()
     vp.calculateMotionModel(originalVideo);
     emit processStatusChanged(CoreApplication::ORIGINAL_MOTION, false);
     setOriginalGlobalMotion();
+    saveOriginalGlobalMotionToMatlab();
 }
 
 void CoreApplication::calculateNewMotion() {
@@ -79,6 +81,7 @@ void CoreApplication::calculateNewMotion() {
     emit newVideoCreated(newVideo);
     emit processStatusChanged(CoreApplication::NEW_VIDEO, false);
     setNewGlobalMotion();
+    saveNewGlobalMotionToMatlab();
 }
 
 void CoreApplication::evaluateNewMotion() {
@@ -125,25 +128,58 @@ void CoreApplication::setOriginalGlobalMotion() {
 void CoreApplication::setNewGlobalMotion() {
     emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, true);
     // Work backwards
-    Point2f p(0,0);
-    newGlobalMotion.insert(originalVideo->getFrameCount()-1, p);
-    for (int f = originalVideo->getFrameCount()-1; f > 0; f--) {
+    assert(originalGlobalMotion[0] == Point2f(0,0));
+    newGlobalMotion.insert(0, Point2f(0,0));
+    for (int f = 1; f < originalVideo->getFrameCount(); f++) {
         Frame* frame = originalVideo->accessFrameAt(f);
-        const Mat& aff = frame->getAffineTransform();
-        p = Tools::applyAffineTransformation(aff, p);
         const Mat& update = frame->getUpdateTransform();
-        p = Tools::applyAffineTransformation(update, p);
-        newGlobalMotion.insert(f-1, p);
+        Point2f oldPoint = originalGlobalMotion[f];
+        Point2f newPoint = Tools::applyAffineTransformation(update, oldPoint);
+        newGlobalMotion.insert(f, newPoint);
     }
-    // Normalise
-    newGlobalMotion = Tools::moveToOriginDataSet(newGlobalMotion);
     emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, false);
 }
 
 void CoreApplication::drawGraph(bool originalPointMotion, bool originalGlobalMotion, bool newGlobalMotion, bool x, bool y)
 {
-    qDebug() << "Ignoring function params and drawing original Global motion";
-    ev.drawData(this->originalGlobalMotion);
+    if (!(x && y)) {
+        qDebug() << "Evaluator not yet configured to draw individual axis";
+    }
+    if (originalPointMotion && originalGlobalMotion) {
+        qDebug() << "Evaluator not yet configured to draw both original motions";
+    } else if (originalPointMotion && newGlobalMotion) {
+        ev.drawData(this->originalPointMotion, this->newGlobalMotion);
+    } else if (originalGlobalMotion && newGlobalMotion) {
+        ev.drawData(this->originalGlobalMotion, this->newGlobalMotion);
+    } else if (originalGlobalMotion) {
+        ev.drawData(this->originalGlobalMotion);
+    } else if (originalPointMotion) {
+        ev.drawData(this->originalPointMotion);
+    } else if (newGlobalMotion) {
+        ev.drawData(this->newGlobalMotion);
+    }
+}
+
+void CoreApplication::saveOriginalGlobalMotionToMatlab() {
+    qDebug() << "Saving original motion to Matlab";
+    QList<Mat> matrices;
+    for (int f = 1; f < originalVideo->getFrameCount(); f++) {
+        Frame* frame = originalVideo->accessFrameAt(f);
+        matrices.push_back(frame->getAffineTransform());
+    }
+    QString filePath = QDir::homePath()+QDir::separator()+"motionDump.mat";
+    ev.exportMatrices(matrices, filePath, "originalGlobalMotion");
+}
+
+void CoreApplication::saveNewGlobalMotionToMatlab() {
+    qDebug() << "Saving new motion to Matlab";
+    QList<Mat> matrices;
+    for (int f = 1; f < originalVideo->getFrameCount(); f++) {
+        Frame* frame = originalVideo->accessFrameAt(f);
+        matrices.push_back(frame->getUpdateTransform());
+    }
+    QString filePath = QDir::homePath()+QDir::separator()+"motionDump.mat";
+    ev.exportMatrices(matrices, filePath, "newGlobalMotion");
 }
 
 

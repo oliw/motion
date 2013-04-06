@@ -2,6 +2,8 @@
 #include <QDebug>
 #include "engine.h"
 #include "tools.h"
+#include "mat.h"
+#include <QDir>
 
 Evaluator::Evaluator(QObject *parent) :
     QObject(parent)
@@ -33,7 +35,7 @@ void DataSetToMatlabFormat(const DataSet& data, mxArray *time, mxArray *xs, mxAr
 
 void Evaluator::drawData(const DataSet& data) {
     // Convert data to Matlab Format
-    mxArray *time =  mxCreateDoubleMatrix(data.size(), 1, mxREAL);
+    mxArray *time = mxCreateDoubleMatrix(data.size(), 1, mxREAL);
     mxArray *xs = mxCreateDoubleMatrix(data.size(), 1, mxREAL);
     mxArray *ys = mxCreateDoubleMatrix(data.size(), 1, mxREAL);
 
@@ -50,34 +52,67 @@ void Evaluator::drawData(const DataSet& data) {
 }
 
 void Evaluator::drawData(const DataSet& origData, const DataSet& newData) {
-    //    const Video* original = vp->getVideo();
-    //    // Calculate values
-    //    vector<double> times;
-    //    // Original Video Movement
-    //    vector <double> xss, yss;
-    //    Tools::applyAffineTransformations(start, original->getAffineTransforms(), times, xss, yss);
-    //    const Video* cropped = 0;
-    //    // Convert values to Matlab format
-    //    mxArray *time = vectorToMatlabFormat(times);
-    //    mxArray *xs = vectorToMatlabFormat(xss);
-    //    mxArray *ys = vectorToMatlabFormat(yss);
-    //    // Give values to Matlab
-    //    engPutVariable(mEngine, "time", time);
-    //    engPutVariable(mEngine, "xs", xs);
-    //    engPutVariable(mEngine, "ys", ys);
-    //    if (cropped != 0) {
-    //        // Cropped Video Movement
-    //        vector <double> cxss, cyss;
-    //        Tools::applyAffineTransformations(start, cropped->getAffineTransforms(), times, cxss, cyss);
-    //        mxArray *cxs = vectorToMatlabFormat(cxss);
-    //        mxArray *cys = vectorToMatlabFormat(cyss);
-    //        engPutVariable(mEngine, "cxs", cxs);
-    //        engPutVariable(mEngine, "cys", cys);
-    //        // Draw two graphs
-    //        engEvalString(mEngine, "figure; plot(xs,time,cxs,time); xlabel('x'); ylabel('Time /frame'); legend('Original','Cropped')");
-    //        engEvalString(mEngine, "figure; plot(ys,time,cys,time); xlabel('y'); ylabel('Time /frame'); legend('Original','Cropped')");
-    //    } else {
-    //        engEvalString(mEngine, "figure; plot(xs,time); xlabel('x'); ylabel('Time /frame'); legend('Original')");
-    //        engEvalString(mEngine, "figure; plot(ys,time); xlabel('y'); ylabel('Time /frame'); legend('Original')");
-    //    }
+    // Convert data to Matlab Format
+    mxArray *oldtime = mxCreateDoubleMatrix(origData.size(), 1, mxREAL);
+    mxArray *oldxs = mxCreateDoubleMatrix(origData.size(), 1, mxREAL);
+    mxArray *oldys = mxCreateDoubleMatrix(origData.size(), 1, mxREAL);
+    mxArray *newtime = mxCreateDoubleMatrix(newData.size(), 1, mxREAL);
+    mxArray *newxs = mxCreateDoubleMatrix(newData.size(), 1, mxREAL);
+    mxArray *newys = mxCreateDoubleMatrix(newData.size(), 1, mxREAL);
+
+    DataSetToMatlabFormat(origData, oldtime, oldxs, oldys);
+    DataSetToMatlabFormat(newData, newtime, newxs, newys);
+
+    // Give values to Matlab
+    engPutVariable(mEngine, "oldtime", oldtime);
+    engPutVariable(mEngine, "oldxs", oldxs);
+    engPutVariable(mEngine, "oldys", oldys);
+    engPutVariable(mEngine, "newtime", newtime);
+    engPutVariable(mEngine, "newxs", newxs);
+    engPutVariable(mEngine, "newys", newys);
+
+    // Instruct Matlab to Draw Graphs
+    engEvalString(mEngine, "figure; plot(oldxs,oldtime,newxs,newtime); xlabel('x'); ylabel('Time /frame'); legend('Original','New')");
+    engEvalString(mEngine, "figure; plot(oldys,oldtime,newys,newtime); xlabel('y'); ylabel('Time /frame'); legend('Original','New')");
+}
+
+void Evaluator::exportMatrices(QList<Mat> matrices, QString filePath, QString name) {
+    // Move matrices into a cell array
+    mxArray *cellArray = mxCreateCellMatrix(matrices.size(), 1);
+    for (int i = 0; i < matrices.size(); i++) {
+        Mat m = matrices[i];
+        m.convertTo(m, CV_32F);
+        int rows = m.rows;
+        int cols = m.cols;
+        //Mat data is float, and mxArray uses double, so we need to convert.
+        mxArray *T=mxCreateDoubleMatrix(rows, cols, mxREAL);
+        double *buffer = (double*)mxGetPr(T);
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                if (i == 0) {
+                    qDebug() << "Setting "<< r << "," << c << " to " << (double)m.at<float>(r,c);
+                }
+                buffer[c*rows+r] = (double)m.at<float>(r,c);
+            }
+        }
+        if (i == 0) {
+            std::stringstream ss;
+            ss << m;
+            qDebug() << "Exporting First Matrix:";
+            qDebug() << QString::fromStdString(ss.str());
+        }
+        mxSetCell(cellArray, i, T);
+    }
+
+    // Save into mat File
+    QFile file(filePath);
+    MATFile* matFile;
+    if (file.exists()) {
+        matFile = matOpen(filePath.toStdString().c_str(), "u");
+    } else {
+        matFile = matOpen(filePath.toStdString().c_str(), "w");
+    }
+    assert(matFile != 0);
+    matPutVariable(matFile, name.toStdString().c_str(), cellArray);
+    matClose(matFile);
 }

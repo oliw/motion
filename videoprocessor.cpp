@@ -16,7 +16,6 @@
 #include "displacement.h"
 #include "ransacmodel.h"
 #include "tools.h"
-#include "graphdrawer.h"
 #include "l1model.h"
 #include <stdio.h>
 #include <iostream>
