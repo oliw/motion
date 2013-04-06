@@ -397,6 +397,24 @@ void MainWindow::on_videoCombobox_activated(const QString &option)
 
 void MainWindow::on_drawGraphButton_clicked()
 {
-    qDebug() << "Ignoring checkbox options and just drawing the original graph Motion";
-    emit drawGraphButtonPressed(false,true,false,true,true);
+    bool x = ui->showXAxisCheckbox->isChecked();
+    bool y = ui->showYAxisCheckbox->isChecked();
+    bool origGlobal = ui->showOriginalGlobalMotionCheckbox->isChecked();
+    bool origPoint = ui->showOriginalPointMotionCheckbox->isChecked();
+    bool newGlobal = ui->showNewGlobalMotionCheckbox->isChecked();
+    emit drawGraphButtonPressed(origPoint,origGlobal,newGlobal,x,y);
+}
+
+void MainWindow::on_showOriginalGlobalMotionCheckbox_toggled(bool checked)
+{
+    if (checked) {
+        ui->showOriginalPointMotionCheckbox->setChecked(false);
+    }
+}
+
+void MainWindow::on_showOriginalPointMotionCheckbox_toggled(bool checked)
+{
+    if (checked) {
+        ui->showOriginalGlobalMotionCheckbox->setChecked(false);
+    }
 }

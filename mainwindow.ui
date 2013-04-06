@@ -275,16 +275,22 @@
              </attribute>
              <layout class="QGridLayout" name="gridLayout">
               <item row="0" column="0">
-               <widget class="QCheckBox" name="checkBox_5">
+               <widget class="QCheckBox" name="showXAxisCheckbox">
                 <property name="text">
                  <string>X</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QCheckBox" name="checkBox_7">
+               <widget class="QCheckBox" name="showYAxisCheckbox">
                 <property name="text">
                  <string>Y</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -299,23 +305,23 @@
                </widget>
               </item>
               <item row="1" column="0" colspan="2">
-               <widget class="QCheckBox" name="checkBox_8">
+               <widget class="QCheckBox" name="showOriginalGlobalMotionCheckbox">
                 <property name="text">
                  <string>Original Global Motion</string>
                 </property>
                </widget>
               </item>
               <item row="2" column="0" colspan="2">
-               <widget class="QCheckBox" name="checkBox_9">
+               <widget class="QCheckBox" name="showOriginalPointMotionCheckbox">
                 <property name="text">
-                 <string>Single Point Motion</string>
+                 <string>Original Point Motion</string>
                 </property>
                </widget>
               </item>
               <item row="3" column="0" colspan="2">
-               <widget class="QCheckBox" name="checkBox_10">
+               <widget class="QCheckBox" name="showNewGlobalMotionCheckbox">
                 <property name="text">
-                 <string>New Motion</string>
+                 <string>New Global Motion</string>
                 </property>
                </widget>
               </item>

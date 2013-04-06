@@ -50,7 +50,7 @@ macx {
     # MATLAB Engine Library
     INCLUDEPATH += /Applications/MATLAB_R2012b.app/extern/include
     DEPENDPATH += /Applications/MATLAB_R2012b.app/extern/include
-    LIBS += -L/Applications/MATLAB_R2012b.app/bin/maci64 -leng -lmx
+    LIBS += -L/Applications/MATLAB_R2012b.app/bin/maci64 -leng -lmx -lmat
     QMAKE_RPATHDIR += /Applications/MATLAB_R2012b.app/bin/maci64
 
     # COIN LP Lib

@@ -7,7 +7,6 @@
 #include <QCheckBox>
 #include <opencv2/core/core.hpp>
 #include "videoprocessor.h"
-#include "graphdrawer.h"
 #include "manualmotiontracker.h"
 #include <video.h>
 #include <player.h>
@@ -62,6 +61,10 @@ private slots:
 
 
     void on_drawGraphButton_clicked();
+
+    void on_showOriginalGlobalMotionCheckbox_toggled(bool checked);
+
+    void on_showOriginalPointMotionCheckbox_toggled(bool checked);
 
 signals:
    void signalResize(QResizeEvent *);
