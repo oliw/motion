@@ -8,7 +8,9 @@ CoreApplication::CoreApplication(QObject *parent) :
     QObject(parent)
 {
     QObject::connect(&vp, SIGNAL(processProgressChanged(float)), this, SIGNAL(processProgressChanged(float)));
-    clear();
+    QObject::connect(this, SIGNAL(registerMatlabFunctionPath(QString)), &ev, SLOT(addFunctionLocationToPath(QString)));
+    originalVideo = 0;
+    newVideo = 0;
 }
 
 void CoreApplication::loadOriginalVideo(QString path)

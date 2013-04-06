@@ -10,6 +10,7 @@ Evaluator::Evaluator(QObject *parent) :
 {
     mEngine = engOpen(NULL);
     assert(mEngine != NULL);
+    functionLocationSet = false;
 }
 
 Evaluator::~Evaluator() {
@@ -116,3 +117,11 @@ void Evaluator::exportMatrices(QList<Mat> matrices, QString filePath, QString na
     matPutVariable(matFile, name.toStdString().c_str(), cellArray);
     matClose(matFile);
 }
+
+void Evaluator::addFunctionLocationToPath(QString path) {
+    QString instruction = "path(path, '"+ path +"')";
+    engEvalString(mEngine, instruction.toStdString().c_str());
+    functionLocationSet = true;
+    qDebug() << "Matlab Path includes: " << path;
+}
+

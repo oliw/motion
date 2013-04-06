@@ -18,15 +18,20 @@ public:
     void drawData(const DataSet& data);
     void drawData(const DataSet& origData, const DataSet& newData);
 
+    void drawOriginal();
+    void drawNew();
+    void drawBoth();
+
     void exportMatrices(QList<Mat> matrices, QString filePath, QString name);
 
 private:
     Engine* mEngine;
+    bool functionLocationSet;
 
 signals:
     
 public slots:
-
+    void addFunctionLocationToPath(QString path);
     
 };
 

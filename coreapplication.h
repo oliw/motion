@@ -28,6 +28,7 @@ signals:
     void processProgressChanged(float);
     void originalVideoLoaded(Video* video);
     void newVideoCreated(Video* video);
+    void registerMatlabFunctionPath(QString);
     
 public slots:
     void loadOriginalVideo(QString path);
