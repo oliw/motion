@@ -42,13 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(player, SIGNAL(playerStopped()),this, SLOT(player_stopped()));
    // QObject::connect(&cropDialog, SIGNAL(cropBoxChosen(int,int,int,int)), this, SIGNAL(cropBoxChosen(int,int,int,int)));
 
-    // Disable Core Application Buttons
-    QList<QPushButton*> list = ui->tabWidget->findChildren<QPushButton*>();
-    foreach(QPushButton* w, list) {
-        w->setEnabled(false);
-    }
-
-    ui->drawGraphButton->setEnabled(true);
+    resetUI();
 
     // Disable Player Buttons
     ui->playerControlsBox->setDisabled(true);
@@ -114,12 +108,18 @@ void MainWindow::showProcessStatus(int processCode, bool started)
                 break;
             case CoreApplication::ORIGINAL_MOTION:
                 originalMotion = true;
-                ui->originalMotionButton->setDisabled(true);
+                ui->originalMotionButton->setEnabled(false);
                 ui->newMotionButton->setEnabled(true);
+                ui->showOriginalGlobalMotionCheckbox->setEnabled(true);
+                ui->originalMotionSourceComboBox->addItem("Global");
+                ui->drawGraphButton->setEnabled(true);
+                ui->exportDataToMatlabButton->setEnabled(true);
+                ui->showOriginalGlobalMotionCheckbox->setEnabled(true);
                 break;
             case CoreApplication::NEW_MOTION:
                 cropBox = true;
                 ui->actionSave_Result->setEnabled(true);
+                ui->showNewGlobalMotionCheckbox->setEnabled(true);
                 break;
             default:
                 break;
@@ -166,7 +166,7 @@ void MainWindow::on_actionMark_Original_Movement_triggered()
 {
    manMotionTracker = new ManualMotionTracker(originalVideo);
    manMotionTracker->setAttribute( Qt::WA_DeleteOnClose, true );
-   QObject::connect(manMotionTracker,SIGNAL(pointsSelected(QMap<int, QPoint>)),this,SIGNAL(pointsSelected(QMap<int, QPoint>)));
+   QObject::connect(manMotionTracker,SIGNAL(pointsSelected(QMap<int, QPoint>)),this,SLOT(manualTrackingFinished(QMap<int, QPoint>)));
    manMotionTracker->show();
 }
 
@@ -292,6 +292,8 @@ void MainWindow::updatePlayerUI(QImage img, int frameNumber)
 
 void MainWindow::registerOriginalVideo(Video* video)
 {
+    resetUI();
+
     originalVideo = video;
     featuresDetected = false;
     featuresTracked = false;
@@ -301,12 +303,15 @@ void MainWindow::registerOriginalVideo(Video* video)
 
     // Set-up player
     player->setVideo(video);
+
     // Enable Player Controls
     ui->playerControlsBox->setEnabled(true);
     ui->frameCountLabel->setText(QString::number(video->getFrameCount()-1));
 
     // Enable 1st Processing Step Button
     ui->originalMotionButton->setEnabled(true);
+
+    // Enable Actions
     ui->actionCrop_Box->setEnabled(true);
     ui->actionMark_Original_Movement->setEnabled(true);
 
@@ -397,24 +402,49 @@ void MainWindow::on_videoCombobox_activated(const QString &option)
 
 void MainWindow::on_drawGraphButton_clicked()
 {
-    bool x = ui->showXAxisCheckbox->isChecked();
-    bool y = ui->showYAxisCheckbox->isChecked();
-    bool origGlobal = ui->showOriginalGlobalMotionCheckbox->isChecked();
-    bool origPoint = ui->showOriginalPointMotionCheckbox->isChecked();
-    bool newGlobal = ui->showNewGlobalMotionCheckbox->isChecked();
-    emit drawGraphButtonPressed(origPoint,origGlobal,newGlobal,x,y);
+//    bool x = ui->showXAxisCheckbox->isChecked();
+//    bool y = ui->showYAxisCheckbox->isChecked();
+//    bool origGlobal = ui->showOriginalGlobalMotionCheckbox->isChecked();
+//    bool origPoint = ui->showOriginalPointMotionCheckbox->isChecked();
+//    bool newGlobal = ui->showNewGlobalMotionCheckbox->isChecked();
+//    emit drawGraphButtonPressed(origPoint,origGlobal,newGlobal,x,y);
 }
 
-void MainWindow::on_showOriginalGlobalMotionCheckbox_toggled(bool checked)
-{
-    if (checked) {
-        ui->showOriginalPointMotionCheckbox->setChecked(false);
-    }
+void MainWindow::manualTrackingFinished(QMap<int, QPoint> locations) {
+    emit pointsSelected(locations);
+    ui->originalMotionSourceComboBox->addItem("Point");
+    ui->drawGraphButton->setEnabled(true);
+    ui->exportDataToMatlabButton->setEnabled(true);
+    ui->showOriginalGlobalMotionCheckbox->setEnabled(true);
 }
 
-void MainWindow::on_showOriginalPointMotionCheckbox_toggled(bool checked)
+
+void MainWindow::resetUI()
 {
-    if (checked) {
-        ui->showOriginalGlobalMotionCheckbox->setChecked(false);
+    // Reset Actions
+    ui->actionCrop_Box->setEnabled(false);
+    ui->actionMark_Original_Movement->setEnabled(false);
+
+    // Reset Video Tab
+    QList<QLineEdit*> list = ui->videoInfoTab->findChildren<QLineEdit*>();
+    foreach(QLineEdit* infoLine, list) {
+         infoLine->clear();
     }
+    // Reset Process Tab
+    QList<QPushButton*>processList = ui->processTab->findChildren<QPushButton*>();
+    foreach(QPushButton* button, processList) {
+         button->setEnabled(false);
+    }
+    // Reset Evaluate Tab
+    // TODO
+    // Reset Matlab Tab
+    ui->showXAxisCheckbox->setChecked(true);
+    ui->showYAxisCheckbox->setChecked(true);
+    ui->originalMotionSourceComboBox->clear();
+    ui->showOriginalGlobalMotionCheckbox->setEnabled(false);
+    ui->showNewGlobalMotionCheckbox->setEnabled(false);
+    ui->drawGraphButton->setEnabled(false);
+    ui->exportDataToMatlabButton->setEnabled(false);
+
 }
+

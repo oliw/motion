@@ -59,12 +59,11 @@ private slots:
     void updatePlayerUI(QImage img,int frameNumber);
     void on_videoCombobox_activated(const QString &arg1);
 
+    // Slots for Actions Activity
+    void manualTrackingFinished(QMap<int, QPoint> locations);
+
 
     void on_drawGraphButton_clicked();
-
-    void on_showOriginalGlobalMotionCheckbox_toggled(bool checked);
-
-    void on_showOriginalPointMotionCheckbox_toggled(bool checked);
 
 signals:
    void signalResize(QResizeEvent *);
@@ -98,6 +97,8 @@ private:
     void togglePlayControls(bool show);
     void uncheckOtherPlayerButtons(QCheckBox* option);
     void toggleActionControls(bool show);
+
+    void resetUI();
 
 };
 
