@@ -77,7 +77,7 @@ signals:
    void saveNewVideoButtonPressed(QString path);
    void pointsSelected(QMap<int, QPoint> locations);
    void matLabFunctionPathSelected(QString path);
-   void drawGraphButtonPressed(bool originalPointMotion, bool originalGlobalMotion, bool newGlobalMotion, bool x, bool y);
+   void drawGraphButtonPressed(bool usePointOriginal, bool showOriginal, bool showNew, bool x, bool y);
 
 protected:
    void resizeEvent(QResizeEvent *);  // virtual

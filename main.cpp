@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 
     typedef QMap<int, QPoint> LocationMap;
     qRegisterMetaType<LocationMap>("QMap<int, QPoint>");
+    qRegisterMetaType<Video*>("Video*");
     QObject::connect(&w, SIGNAL(pointsSelected(QMap<int, QPoint>)),&app, SLOT(setOriginalPointMotion(QMap<int, QPoint>)));
 
     // Connect CoreApp events to GUI
@@ -36,24 +37,6 @@ int main(int argc, char *argv[])
     QObject::connect(&app, SIGNAL(newVideoCreated(Video*)),&w, SLOT(registerNewVideo(Video*)));
     QObject::connect(&app, SIGNAL(processStatusChanged(int,bool)),&w, SLOT(showProcessStatus(int,bool)));
     QObject::connect(&app, SIGNAL(processProgressChanged(float)),&w, SLOT(showProcessProgress(float)));
-
-    qRegisterMetaType<Video*>("Video*");
-    // Link Video Processor to Main Window
-    // QObject::connect(&vp, SIGNAL(videoLoaded(Video*)),&w, SLOT(newVideoLoaded(Video*)));
-    // QObject::connect(&vp, SIGNAL(processStarted(int)),&w, SLOT(processStarted(int)));
-    // QObject::connect(&vp, SIGNAL(processFinished(int)),&w, SLOT(processFinished(int)));
-    // QObject::connect(&vp, SIGNAL(progressMade(int,int)),&w, SLOT(showProgress(int,int)));
-    // QObject::connect(&vp, SIGNAL(scoredOriginalVideo(float)),&w, SLOT(setOriginalScore(float)));
-    // QObject::connect(&vp, SIGNAL(scoredNewVideo(float)),&w, SLOT(setNewScore(float)));
-    // Link Main Window to Video Processor
-    // QObject::connect(&w, SIGNAL(stillMotionButtonPressed()),&vp, SLOT(calculateUpdateTransform()));
-    // QObject::connect(&w, SIGNAL(saveResultPressed(QString)),&vp, SLOT(saveCroppedVideo(QString)));
-    // Link Video Processor to Player
-    // const Player* player = w.getPlayer();
-    // QObject::connect(&vp, SIGNAL(videoLoaded(Video*)),player, SLOT(setVideo(Video*)));
-    // QObject::connect(&vp, SIGNAL(videoUpdated(Video*)),player, SLOT(setVideo(Video*)));
-    // Link Main Window to Graph Drawer
-    // QObject::connect(&w, SIGNAL(showOriginalPath(int,int)), &gd, SLOT(drawOriginalMotionGraph(int,int)));
 
     nonGuiThread->start();
 

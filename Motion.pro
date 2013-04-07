@@ -73,7 +73,6 @@ unix:!macx: {
     QMAKE_EXTRA_COMPILERS += fortran
 
    # LIBS += -lgfortran
-
     CONFIG += link_pkgconfig
 
     # OPENCV Library
@@ -89,8 +88,8 @@ unix:!macx: {
 
     # COIN LP
     PKGCONFIG += osi-clp
-    INCLUDEPATH += $$PWD/../Clp-1.14.8/include
-    DEPENDPATH += $$PWD/../Clp-1.14.8/include
+    INCLUDEPATH += /homes/osw09/Motion/Clp-1.14.8/include
+    DEPENDPATH += /homes/osw09/Motion/Clp-1.14.8/include
 
     # Link to Core Lib
     LIBS += -L$$PWD/../MotionCore-build/ -lMotionCore

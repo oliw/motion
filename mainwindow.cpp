@@ -402,12 +402,12 @@ void MainWindow::on_videoCombobox_activated(const QString &option)
 
 void MainWindow::on_drawGraphButton_clicked()
 {
-//    bool x = ui->showXAxisCheckbox->isChecked();
-//    bool y = ui->showYAxisCheckbox->isChecked();
-//    bool origGlobal = ui->showOriginalGlobalMotionCheckbox->isChecked();
-//    bool origPoint = ui->showOriginalPointMotionCheckbox->isChecked();
-//    bool newGlobal = ui->showNewGlobalMotionCheckbox->isChecked();
-//    emit drawGraphButtonPressed(origPoint,origGlobal,newGlobal,x,y);
+    bool x = ui->showXAxisCheckbox->isChecked();
+    bool y = ui->showYAxisCheckbox->isChecked();
+    bool useOriginalPoint = ui->originalMotionSourceComboBox->currentText() == "Point";
+    bool showOriginal = ui->showOriginalGlobalMotionCheckbox->isChecked();
+    bool showNew = ui->showNewGlobalMotionCheckbox->isChecked();
+    emit drawGraphButtonPressed(useOriginalPoint,showOriginal,showNew,x,y);
 }
 
 void MainWindow::manualTrackingFinished(QMap<int, QPoint> locations) {
