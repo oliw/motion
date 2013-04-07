@@ -65,6 +65,8 @@ private slots:
 
     void on_drawGraphButton_clicked();
 
+    void on_actionMatlab_Function_triggered();
+
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
@@ -74,6 +76,7 @@ signals:
    void graphButtonPressed();
    void saveNewVideoButtonPressed(QString path);
    void pointsSelected(QMap<int, QPoint> locations);
+   void matLabFunctionPathSelected(QString path);
    void drawGraphButtonPressed(bool originalPointMotion, bool originalGlobalMotion, bool newGlobalMotion, bool x, bool y);
 
 protected:

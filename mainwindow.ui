@@ -100,7 +100,7 @@
           <item>
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
-             <number>1</number>
+             <number>3</number>
             </property>
             <widget class="QWidget" name="videoInfoTab">
              <attribute name="title">
@@ -274,6 +274,24 @@
               <string>Matlab</string>
              </attribute>
              <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="0">
+               <widget class="QGroupBox" name="groupBox_4">
+                <property name="title">
+                 <string>Original Motion Source</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_10">
+                 <item>
+                  <widget class="QComboBox" name="originalMotionSourceComboBox">
+                   <item>
+                    <property name="text">
+                     <string>Global</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
               <item row="2" column="0" colspan="2">
                <widget class="QGroupBox" name="groupBox_3">
                 <property name="title">
@@ -370,24 +388,6 @@
                    <property name="text">
                     <string>Draw</string>
                    </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QGroupBox" name="groupBox_4">
-                <property name="title">
-                 <string>Original Motion Source</string>
-                </property>
-                <layout class="QVBoxLayout" name="verticalLayout_10">
-                 <item>
-                  <widget class="QComboBox" name="originalMotionSourceComboBox">
-                   <item>
-                    <property name="text">
-                     <string>Global</string>
-                    </property>
-                   </item>
                   </widget>
                  </item>
                 </layout>
@@ -579,6 +579,7 @@ p, li { white-space: pre-wrap; }
      <string>Edit</string>
     </property>
     <addaction name="actionCrop_Box"/>
+    <addaction name="actionMatlab_Function"/>
    </widget>
    <widget class="QMenu" name="menuEvaluate">
     <property name="title">
@@ -624,6 +625,11 @@ p, li { white-space: pre-wrap; }
   <action name="actionMark_Original_Movement">
    <property name="text">
     <string>Manual Tracker</string>
+   </property>
+  </action>
+  <action name="actionMatlab_Function">
+   <property name="text">
+    <string>Matlab Function Path</string>
    </property>
   </action>
  </widget>

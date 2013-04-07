@@ -448,3 +448,12 @@ void MainWindow::resetUI()
 
 }
 
+
+void MainWindow::on_actionMatlab_Function_triggered()
+{
+    QString path = QFileDialog::getExistingDirectory(this,tr("Select Path For Matlab Function"), QDir::homePath());
+    QFile file(path);
+    if (file.exists()) {
+        emit matLabFunctionPathSelected(path);
+    }
+}
