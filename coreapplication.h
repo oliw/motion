@@ -45,7 +45,7 @@ public slots:
     void saveOriginalGlobalMotionToMatlab();
     void saveNewGlobalMotionToMatlab();
 
-    void drawGraph(bool originalPointMotion, bool originalGlobalMotion, bool newGlobalMotion, bool x, bool y);
+    void drawGraph(bool usePointOriginal, bool showOriginal, bool showNew, bool x, bool y);
 
 
 private:

@@ -77,33 +77,48 @@ void Evaluator::drawData(const DataSet& origData, const DataSet& newData) {
     engEvalString(mEngine, "figure; plot(oldys,oldtime,newys,newtime); xlabel('y'); ylabel('Time /frame'); legend('Original','New')");
 }
 
+string boolToStr(bool b) {
+    return (b ? "true" : "false");
+}
+
+void Evaluator::drawOriginalPath(const QList<Mat>& transforms, bool showX, bool showY) {
+    qDebug() << "Evaluator::drawOriginalPath - Begin";
+
+    // Convert data to Matlab Format
+    mxArray *cellArray = convertToMatlab(transforms);
+
+    // Give values to Matlab
+    engPutVariable(mEngine, "originalTransforms", cellArray);
+
+    // Instruct Matlab to Draw Graphs
+    qDebug() << "Evaluator::drawOriginalPath - Calling Matlab";
+    std::ostringstream stringStream;
+    stringStream << "motionGraphDrawer(originalTransforms, 'showX', " << boolToStr(showX)  << ", 'showY', " << boolToStr(showY) << ");";
+    qDebug() << QString::fromStdString(stringStream.str());
+    engEvalString(mEngine, stringStream.str().c_str());
+}
+
+void Evaluator::drawNewPath(const QList<Mat>& originalTransforms, QList<Mat>& updateTransforms, bool showOriginal, bool showX, bool showY) {
+    qDebug() << "Evaluator::drawNewPath - Begin";
+
+    // Convert data to Matlab Format
+    mxArray *originalPath = convertToMatlab(originalTransforms);
+    mxArray *updateTrans = convertToMatlab(updateTransforms);
+
+    // Give values to Matlab
+    engPutVariable(mEngine, "originalTransforms", originalPath);
+    engPutVariable(mEngine, "updateTransforms", updateTrans);
+
+    // Instruct Matlab to Draw Graphs
+    std::ostringstream stringStream;
+    stringStream << "motionGraphDrawer(originalTransforms, updateTransforms, 'showOriginal'," << boolToStr(showOriginal) << ",'showX', " << boolToStr(showX) << ", 'showY', " << boolToStr(showY) << ");";
+    engEvalString(mEngine, stringStream.str().c_str());
+
+}
+
 void Evaluator::exportMatrices(QList<Mat> matrices, QString filePath, QString name) {
     // Move matrices into a cell array
-    mxArray *cellArray = mxCreateCellMatrix(matrices.size(), 1);
-    for (int i = 0; i < matrices.size(); i++) {
-        Mat m = matrices[i];
-        m.convertTo(m, CV_32F);
-        int rows = m.rows;
-        int cols = m.cols;
-        //Mat data is float, and mxArray uses double, so we need to convert.
-        mxArray *T=mxCreateDoubleMatrix(rows, cols, mxREAL);
-        double *buffer = (double*)mxGetPr(T);
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (i == 0) {
-                    qDebug() << "Setting "<< r << "," << c << " to " << (double)m.at<float>(r,c);
-                }
-                buffer[c*rows+r] = (double)m.at<float>(r,c);
-            }
-        }
-        if (i == 0) {
-            std::stringstream ss;
-            ss << m;
-            qDebug() << "Exporting First Matrix:";
-            qDebug() << QString::fromStdString(ss.str());
-        }
-        mxSetCell(cellArray, i, T);
-    }
+    mxArray *cellArray = convertToMatlab(matrices);
 
     // Save into mat File
     QFile file(filePath);
@@ -116,6 +131,29 @@ void Evaluator::exportMatrices(QList<Mat> matrices, QString filePath, QString na
     assert(matFile != 0);
     matPutVariable(matFile, name.toStdString().c_str(), cellArray);
     matClose(matFile);
+}
+
+mxArray* Evaluator::convertToMatlab(const QList<Mat>& transforms){
+    qDebug() << "Evaluator::convertToMatlab - Begin";
+    // Convert N 2x3 transforms into a cell of 2x3 arrays
+    mxArray *cellArray = mxCreateCellMatrix(transforms.size(), 1);
+    for (int i = 0; i < transforms.size(); i++) {
+        Mat m = transforms[i];
+        m.convertTo(m, CV_32F);
+        int rows = m.rows;
+        int cols = m.cols;
+        //Mat data is float, and mxArray uses double, so we need to convert.
+        mxArray *T=mxCreateDoubleMatrix(rows, cols, mxREAL);
+        double *buffer = (double*)mxGetPr(T);
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                buffer[c*rows+r] = (double)m.at<float>(r,c);
+            }
+        }
+        mxSetCell(cellArray, i, T);
+    }
+    qDebug() << "Evaluator::convertToMatlab - End";
+    return cellArray;
 }
 
 void Evaluator::addFunctionLocationToPath(QString path) {

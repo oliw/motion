@@ -142,23 +142,35 @@ void CoreApplication::setNewGlobalMotion() {
     emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, false);
 }
 
-void CoreApplication::drawGraph(bool originalPointMotion, bool originalGlobalMotion, bool newGlobalMotion, bool x, bool y)
+void CoreApplication::drawGraph(bool usePointOriginal, bool showOriginal, bool showNew, bool x, bool y)
 {
-    if (!(x && y)) {
-        qDebug() << "Evaluator not yet configured to draw individual axis";
+    // Build Original Path Object
+    QList<Mat> original;
+    if (!usePointOriginal) {
+        for (int f = 1; f < originalVideo->getFrameCount(); f++) {
+            Frame* frame = originalVideo->accessFrameAt(f);
+            const Mat& aff = frame->getAffineTransform();
+            original.push_back(aff);
+        }
+    } else {
+        qDebug() << "CoreApplication::drawGraph - Not yet compatible with originalPoint";
+        return;
     }
-    if (originalPointMotion && originalGlobalMotion) {
-        qDebug() << "Evaluator not yet configured to draw both original motions";
-    } else if (originalPointMotion && newGlobalMotion) {
-        ev.drawData(this->originalPointMotion, this->newGlobalMotion);
-    } else if (originalGlobalMotion && newGlobalMotion) {
-        ev.drawData(this->originalGlobalMotion, this->newGlobalMotion);
-    } else if (originalGlobalMotion) {
-        ev.drawData(this->originalGlobalMotion);
-    } else if (originalPointMotion) {
-        ev.drawData(this->originalPointMotion);
-    } else if (newGlobalMotion) {
-        ev.drawData(this->newGlobalMotion);
+
+    // Build Update Transform Object
+    QList<Mat> update;
+    if (showNew) {
+        for (int f = 1; f < originalVideo->getFrameCount(); f++) {
+            Frame* frame = originalVideo->accessFrameAt(f);
+            const Mat& aff = frame->getUpdateTransform();
+            update.push_back(aff);
+        }
+    }
+
+    if (showNew) {
+        ev.drawNewPath(original, update, showOriginal, x, y);
+    } else if (showOriginal) {
+        ev.drawOriginalPath(original, x, y);
     }
 }
 

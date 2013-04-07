@@ -7,6 +7,7 @@
 #include "tools.h"
 
 typedef QMap<int, Point2f> DataSet;
+typedef QList<Mat> TransformData;
 
 class Evaluator : public QObject
 {
@@ -18,9 +19,10 @@ public:
     void drawData(const DataSet& data);
     void drawData(const DataSet& origData, const DataSet& newData);
 
-    void drawOriginal();
-    void drawNew();
-    void drawBoth();
+    void drawOriginalPath(const QList<Mat>& transforms, bool showX, bool showY);
+    void drawNewPath(const QList<Mat>& originalTransforms, QList<Mat>& updateTransforms, bool showOriginal, bool showX, bool showY);
+
+    mxArray* convertToMatlab(const QList<Mat>& transforms);
 
     void exportMatrices(QList<Mat> matrices, QString filePath, QString name);
 
