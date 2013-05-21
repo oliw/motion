@@ -457,3 +457,28 @@ void MainWindow::on_actionMatlab_Function_triggered()
         emit matLabFunctionPathSelected(path);
     }
 }
+
+void MainWindow::on_gfttRadioButton_clicked()
+{
+    emit gfttRadioButtonPressed();
+}
+
+void MainWindow::on_gftthRadioButton_clicked()
+{
+    emit gftthRadioButtonPressed();
+}
+
+void MainWindow::on_siftRadioButton_clicked()
+{
+    emit siftRadioButtonPressed();
+}
+
+void MainWindow::on_surfRadioButton_clicked()
+{
+    emit surfRadioButtonPressed();
+}
+
+void MainWindow::on_fastRadioButton_clicked()
+{
+    emit fastRadioButtonPressed();
+}

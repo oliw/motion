@@ -48,7 +48,6 @@ private slots:
     void on_frameRate_editingFinished();
 
     //// Slots for VP activity
-    // When the processor has finished working on something
     void showProcessStatus(int processCode, bool started);
     void registerOriginalVideo(Video* video);
     void registerNewVideo(Video* video);
@@ -67,6 +66,13 @@ private slots:
 
     void on_actionMatlab_Function_triggered();
 
+    // Slots for Process Tab
+    void on_gfttRadioButton_clicked();
+    void on_gftthRadioButton_clicked();
+    void on_siftRadioButton_clicked();
+    void on_surfRadioButton_clicked();
+    void on_fastRadioButton_clicked();
+
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
@@ -78,6 +84,14 @@ signals:
    void pointsSelected(QMap<int, QPoint> locations);
    void matLabFunctionPathSelected(QString path);
    void drawGraphButtonPressed(bool usePointOriginal, bool showOriginal, bool showNew, bool x, bool y);
+
+   // Video Process Signals
+   void gfttRadioButtonPressed();
+   void gftthRadioButtonPressed();
+   void surfRadioButtonPressed();
+   void siftRadioButtonPressed();
+   void fastRadioButtonPressed();
+
 
 protected:
    void resizeEvent(QResizeEvent *);  // virtual

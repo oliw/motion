@@ -25,22 +25,36 @@ signals:
 
 public slots:
     void applyCropTransform(Video* originalVideo, Video* croppedVideo);
+
     // Processing Functions
     void detectFeatures(Video* v);
+
     void trackFeatures(Video* v);
     void rejectOutliers(Video* v);
+
+    // Estimates and sets the affine transformation for each frame pair
+    // Pre: Frames contain a list of tracked points
+    // Post: Frame's affine transformation Mat is set
     void calculateMotionModel(Video* v);
+
+
+    // Calculates the update transforms needed to reduce movement in the new frame
+    // Pre: Frames have affine transformation's calculated
     void calculateUpdateTransform(Video* v);
+
+    ////////// SETTINGS //////////
+    void setGFTTDetector();
+    void setSURFDetector();
+    void setSIFTDetector();
+    void setFASTDetector();
+    void setGFTTHDetector();
+
 
 private:
     mutable QMutex mutex;
 
-    // Processing Tools
+    Ptr<FeatureDetector> featureDetector;
     LocalRANSACRejector outlierRejector;
-
-    //float scoreStillness(Video* v);
-
-    //void analyseCroppedVideo();
 };
 
 #endif // VIDEOPROCESSOR_H

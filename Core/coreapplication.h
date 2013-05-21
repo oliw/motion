@@ -31,38 +31,46 @@ signals:
     void registerMatlabFunctionPath(QString);
     
 public slots:
+    // Input
     void loadOriginalVideo(QString path);
-    void saveNewVideo(QString path);
+
+    // Process Video
     void calculateOriginalMotion();
     void calculateNewMotion();
+
+    // Evaluate Results
     void evaluateNewMotion();
-    void drawGraph();
-
+    void drawGraph(bool usePointOriginal, bool showOriginal, bool showNew, bool x, bool y);
     void setOriginalPointMotion(QMap<int, QPoint> locations);
-    void setOriginalGlobalMotion();
-    void setNewGlobalMotion();
 
+    // Output
+    void saveNewVideo(QString path);
+
+    // Misc
     void saveOriginalGlobalMotionToMatlab();
     void saveNewGlobalMotionToMatlab();
 
-    void drawGraph(bool usePointOriginal, bool showOriginal, bool showNew, bool x, bool y);
+    // Settings Slots
+    void setGFTTDetector();
+    void setSURFDetector();
+    void setSIFTDetector();
+    void setFASTDetector();
+    void setGFTTHDetector();
 
 
 private:
-    // For Loading Video and Processing it
-    VideoProcessor vp;
+    // Objects Handled
     Video* originalVideo;
     Video* newVideo;
+
+    // For Loading Video and Processing it
+    VideoProcessor vp;
 
     // For Evaluating Video and drawing Graphs
     Evaluator ev;
     QMap<int, Point2f> originalPointMotion;
-    QMap<int, Point2f> originalGlobalMotion;
-    QMap<int, Point2f> newGlobalMotion;
 
     void clear();
-
-
 
 };
 

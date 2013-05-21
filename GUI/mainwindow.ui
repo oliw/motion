@@ -100,7 +100,7 @@
           <item>
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
-             <number>3</number>
+             <number>1</number>
             </property>
             <widget class="QWidget" name="videoInfoTab">
              <attribute name="title">
@@ -163,6 +163,74 @@
               <string>Process</string>
              </attribute>
              <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <widget class="QGroupBox" name="groupBox_5">
+                <property name="title">
+                 <string>Feature Detector</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_11">
+                 <item>
+                  <widget class="QRadioButton" name="gfttRadioButton">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="text">
+                    <string>Good Features To Track</string>
+                   </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">featureDetectionOptions</string>
+                   </attribute>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="gftthRadioButton">
+                   <property name="text">
+                    <string>Good Features To Track (w. Harris)</string>
+                   </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">featureDetectionOptions</string>
+                   </attribute>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="siftRadioButton">
+                   <property name="text">
+                    <string>SIFT</string>
+                   </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">featureDetectionOptions</string>
+                   </attribute>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="surfRadioButton">
+                   <property name="text">
+                    <string>SURF</string>
+                   </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">featureDetectionOptions</string>
+                   </attribute>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="fastRadioButton">
+                   <property name="text">
+                    <string>FAST</string>
+                   </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">featureDetectionOptions</string>
+                   </attribute>
+                  </widget>
+                 </item>
+                </layout>
+                <zorder>gfttRadioButton</zorder>
+                <zorder>gfttRadioButton</zorder>
+                <zorder>fastRadioButton</zorder>
+                <zorder>surfRadioButton</zorder>
+                <zorder>siftRadioButton</zorder>
+                <zorder>gftthRadioButton</zorder>
+               </widget>
+              </item>
               <item>
                <widget class="QPushButton" name="originalMotionButton">
                 <property name="text">
@@ -636,4 +704,7 @@ p, li { white-space: pre-wrap; }
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="featureDetectionOptions"/>
+ </buttongroups>
 </ui>

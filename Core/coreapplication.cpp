@@ -69,7 +69,6 @@ void CoreApplication::calculateOriginalMotion()
     emit processStatusChanged(CoreApplication::ORIGINAL_MOTION, true);
     vp.calculateMotionModel(originalVideo);
     emit processStatusChanged(CoreApplication::ORIGINAL_MOTION, false);
-    setOriginalGlobalMotion();
     saveOriginalGlobalMotionToMatlab();
 }
 
@@ -82,16 +81,11 @@ void CoreApplication::calculateNewMotion() {
     vp.applyCropTransform(originalVideo, newVideo);
     emit newVideoCreated(newVideo);
     emit processStatusChanged(CoreApplication::NEW_VIDEO, false);
-    setNewGlobalMotion();
     saveNewGlobalMotionToMatlab();
 }
 
 void CoreApplication::evaluateNewMotion() {
     qDebug() << "evaluateNewMotion - Not yet implemented";
-}
-
-void CoreApplication::drawGraph() {
-    qDebug() << "drawGraph - Not yet implemented";
 }
 
 void CoreApplication::setOriginalPointMotion(QMap<int, QPoint> locations) {
@@ -107,38 +101,6 @@ void CoreApplication::setOriginalPointMotion(QMap<int, QPoint> locations) {
     }
     // Normalise
     originalPointMotion = Tools::moveToOriginDataSet(originalPointMotion);
-    emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, false);
-}
-
-void CoreApplication::setOriginalGlobalMotion() {
-    emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, true);
-    originalGlobalMotion.clear();
-    // Work backwards
-    Point2f p(0,0);
-    originalGlobalMotion.insert(originalVideo->getFrameCount()-1, p);
-    for (int f = originalVideo->getFrameCount()-1; f > 0; f--) {
-        Frame* frame = originalVideo->accessFrameAt(f);
-        const Mat& aff = frame->getAffineTransform();
-        p = Tools::applyAffineTransformation(aff, p);
-        originalGlobalMotion.insert(f-1, p);
-    }
-    // Normalise
-    originalGlobalMotion = Tools::moveToOriginDataSet(originalGlobalMotion);
-    emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, false);
-}
-
-void CoreApplication::setNewGlobalMotion() {
-    emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, true);
-    // Work backwards
-    assert(originalGlobalMotion[0] == Point2f(0,0));
-    newGlobalMotion.insert(0, Point2f(0,0));
-    for (int f = 1; f < originalVideo->getFrameCount(); f++) {
-        Frame* frame = originalVideo->accessFrameAt(f);
-        const Mat& update = frame->getUpdateTransform();
-        Point2f oldPoint = originalGlobalMotion[f];
-        Point2f newPoint = Tools::applyAffineTransformation(update, oldPoint);
-        newGlobalMotion.insert(f, newPoint);
-    }
     emit processStatusChanged(CoreApplication::PLOTTING_MOVEMENT, false);
 }
 
@@ -201,7 +163,24 @@ void CoreApplication::clear() {
     delete(originalVideo);
     delete(newVideo);
     originalPointMotion.clear();
-    originalGlobalMotion.clear();
-    newGlobalMotion.clear();
 }
 
+void CoreApplication::setGFTTDetector() {
+    vp.setGFTTDetector();
+}
+
+void CoreApplication::setSURFDetector() {
+    vp.setSURFDetector();
+}
+
+void CoreApplication::setSIFTDetector() {
+    vp.setSIFTDetector();
+}
+
+void CoreApplication::setFASTDetector() {
+    vp.setFASTDetector();
+}
+
+void CoreApplication::setGFTTHDetector() {
+    vp.setGFTTHDetector();
+}

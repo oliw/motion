@@ -26,6 +26,12 @@ int main(int argc, char *argv[])
     QObject::connect(&w, SIGNAL(evaluateButtonPressed()),&app, SLOT(evaluateNewMotion()));
     QObject::connect(&w, SIGNAL(drawGraphButtonPressed(bool, bool, bool, bool, bool)),&app, SLOT(drawGraph(bool, bool, bool, bool, bool)));
     QObject::connect(&w, SIGNAL(matLabFunctionPathSelected(QString)), &app, SIGNAL(registerMatlabFunctionPath(QString)));
+    QObject::connect(&w, SIGNAL(gfttRadioButtonPressed()), &app, SLOT(setGFTTDetector()));
+    QObject::connect(&w, SIGNAL(gftthRadioButtonPressed()), &app, SLOT(setGFTTHDetector()));
+    QObject::connect(&w, SIGNAL(surfRadioButtonPressed()), &app, SLOT(setSURFDetector()));
+    QObject::connect(&w, SIGNAL(siftRadioButtonPressed()), &app, SLOT(setSIFTDetector()));
+    QObject::connect(&w, SIGNAL(fastRadioButtonPressed()), &app, SLOT(setFASTDetector()));
+
 
     typedef QMap<int, QPoint> LocationMap;
     qRegisterMetaType<LocationMap>("QMap<int, QPoint>");

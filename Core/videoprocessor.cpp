@@ -30,6 +30,7 @@ using namespace std;
 
 VideoProcessor::VideoProcessor(QObject *parent):QObject(parent),mutex(QMutex::Recursive) {
     QObject::connect(&outlierRejector, SIGNAL(processProgressChanged(float)), this, SIGNAL(processProgressChanged(float)));
+    featureDetector = FeatureDetector::create("GFTT");
 }
 
 VideoProcessor::~VideoProcessor() {
@@ -38,7 +39,6 @@ VideoProcessor::~VideoProcessor() {
 void VideoProcessor::detectFeatures(Video* v) {
     qDebug() << "VideoProcessor::detectFeatures - Feature Detection started";
     int frameCount = v->getFrameCount();
-    FeatureDetector* featureDetector = new GoodFeaturesToTrackDetector();
     vector<KeyPoint> bufferPoints;
     for (int i = 0; i < frameCount; i++) {
         qDebug() << "VideoProcessor::detectFeatures - Detecting features in frame " << i <<"/"<<frameCount-1;
@@ -50,7 +50,6 @@ void VideoProcessor::detectFeatures(Video* v) {
         frame->setFeatures(features);
         qDebug() << "VideoProcessor::detectFeatures - Detected " << bufferPoints.size() << " features";
     }
-    delete featureDetector;
 }
 
 void VideoProcessor::trackFeatures(Video* v) {
@@ -161,47 +160,27 @@ void VideoProcessor::applyCropTransform(Video* originalVideo, Video* croppedVide
     qDebug() << "VideoProcessor::applyCropTransform() - Finished";
 }
 
-//void VideoProcessor::analyseCroppedVideo() {
-//    assert(croppedVideo != 0);
-//    emit processStarted(ANALYSE_CROP_VIDEO);
-//    detectFeatures(croppedVideo);
-//    trackFeatures(croppedVideo);
-//    rejectOutliers(croppedVideo);
-//    calculateMotionModel(croppedVideo);
-//    emit processFinished(ANALYSE_CROP_VIDEO);
-//}
+void VideoProcessor::setGFTTDetector() {
+    featureDetector = FeatureDetector::create("GFTT");
+    qDebug() << "VideoProcessor - using Good Features To Track Feature Detector";
+}
 
+void VideoProcessor::setSURFDetector() {
+    featureDetector = FeatureDetector::create("SURF");
+    qDebug() << "VideoProcessor - using SURF Feature Detector";
+}
 
+void VideoProcessor::setSIFTDetector() {
+    featureDetector = FeatureDetector::create("SIFT");
+    qDebug() << "VideoProcessor - using SIFT Feature Detector";
+}
 
-//QString toString(Scalar m) {
-//    std::stringstream ss;
-//    ss << m[0] << ",";
-//    ss << m[1] << ",";
-//    ss << m[2] << ",";
-//    ss << m[3];
-//    return QString::fromStdString(ss.str());
-//}
+void VideoProcessor::setFASTDetector() {
+    featureDetector = FeatureDetector::create("FAST");
+    qDebug() << "VideoProcessor - using FAST Feature Detector";
+}
 
-//float VideoProcessor::scoreStillness(Video* v) {
-//    qDebug() << "VideoProcessor::scoreStillness - begin";
-//    const Mat& referenceImage = v->getFrameAt(1)->getOriginalData();
-//    int frameCount = v->getFrameCount();
-
-//    // Calculate average error in each frame
-//    vector<float> frameErrors;
-//    frameErrors.reserve(frameCount);
-//    for (int f = 0; f < frameCount; f++) {
-//        const Mat& frame = v->getFrameAt(f)->getOriginalData();
-//        qDebug() << "VideoProcessor::scoreStillness - getting average error in frame: " << f;
-//        Mat difference;
-//        absdiff(referenceImage, frame, difference);
-//        difference.convertTo(difference,CV_32FC3);
-//        Scalar channelMeans = mean(difference);
-//        frameErrors.push_back((channelMeans[0] + channelMeans[1] + channelMeans[2])/3);
-//    }
-
-//    // Calculate average error across all frames
-//    Scalar finalMean = mean(frameErrors);
-//    qDebug() << "VideoProcessor::scoreStillness - end";
-//    return finalMean[0];
-//}
+void VideoProcessor::setGFTTHDetector() {
+    featureDetector = FeatureDetector::create("HARRIS");
+    qDebug() << "VideoProcessor - using Good Features To Track (With Harris Corner Detector) Feature Detector";
+}
