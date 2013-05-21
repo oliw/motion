@@ -1,0 +1,8 @@
+**.user
+**.autosave
+**.DS_STORE
+**.o
+Makefile
+moc_**
+**.app
+**.a
