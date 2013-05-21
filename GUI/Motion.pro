@@ -92,8 +92,8 @@ unix:!macx: {
     DEPENDPATH += /homes/osw09/Motion/Clp-1.14.8/include
 
     # Link to Core Lib
-    LIBS += -L$$PWD/../MotionCore-build/ -lMotionCore
+    LIBS += -L$$PWD/../build/ -lMotionCore
     INCLUDEPATH += $$PWD/../Core
     DEPENDPATH += $$PWD/../Core
-    PRE_TARGETDEPS += $$PWD/../MotionCore-build/libMotionCore.a
+    PRE_TARGETDEPS += $$PWD/../build/libMotionCore.a
 }

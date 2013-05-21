@@ -80,10 +80,4 @@ unix:!macx: {
     PKGCONFIG += osi-clp
     INCLUDEPATH += $$PWD/../Clp-1.14.8/include
     DEPENDPATH += $$PWD/../Clp-1.14.8/include
-
-    # Link to Core Lib
-    LIBS += -L$$PWD/../MotionCore-build/ -lMotionCore
-    INCLUDEPATH += $$PWD/../Core
-    DEPENDPATH += $$PWD/../Core
-    PRE_TARGETDEPS += $$PWD/../MotionCore-build/libMotionCore.a
 }
