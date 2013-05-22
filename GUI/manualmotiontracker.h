@@ -17,7 +17,7 @@ class ManualMotionTracker : public QDialog
     Q_OBJECT
     
 public:
-    explicit ManualMotionTracker(const Video* v, QWidget *parent = 0);
+    explicit ManualMotionTracker(Video* v, QWidget *parent = 0);
     ~ManualMotionTracker();
     
 signals:
@@ -25,7 +25,7 @@ signals:
 
 private:
     Ui::ManualMotionTracker *ui;
-    const Video* v;
+    Video* v;
 
 
     QMap<int, QPoint> locations;

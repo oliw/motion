@@ -17,6 +17,7 @@
 #include "ransacmodel.h"
 #include "tools.h"
 #include "l1model.h"
+#include "l1salientmodel.h"
 #include <stdio.h>
 #include <iostream>
 #include <QDebug>
@@ -104,14 +105,40 @@ void VideoProcessor::calculateMotionModel(Video* v) {
     qDebug() << "VideoProcessor::calculateMotionModel - Original motion detected";
 }
 
+void VideoProcessor::calculateSalientUpdateTransform(Video * video) {
+    qDebug() << "VideoProcessor::calculateSalientUpdateTransform - Start";
+    // Build model
+    L1SalientModel model(video->getFrameCount());
+    model.setDOF(4);
+    model.prepare(video);
+    emit processProgressChanged(1.0f/3);
+    qDebug() << "VideoProcessor::calculateSalientUpdateTransform - Solving L1 Problem";
+    // Solve model
+    model.solve();
+    emit processProgressChanged(2.0f/3);
+    // Extract Results
+    for (int t = 1; t < video->getFrameCount(); t++)
+    {
+        Mat w = Mat::zeros(2,3,DataType<float>::type);
+        for (char letter = 'a'; letter <= 'f'; letter++) {
+            assert(model.getVariableSolution(t,letter) < 1e15);
+            w.at<float>(L1Model::toRow(letter),L1Model::toCol(letter)) = model.getVariableSolution(t, letter);
+        }
+        Frame* f = video->accessFrameAt(t);
+        Mat b;
+        cv::invertAffineTransform(w, b);
+        f->setUpdateTransform(b.clone());
+    }
+    emit processProgressChanged(1);
+    qDebug() << "VideoProcessor::calculateSalientUpdateTransform - Ideal Path Calculated";
+}
 
 void VideoProcessor::calculateUpdateTransform(Video* video) {
     qDebug() << "VideoProcessor::calculateUpdateTransform - Start";
     // Build model
-    L1Model model(video);
-    vector<Mat> affineTransforms = video->getAffineTransforms();
+    L1Model model(video->getFrameCount());
     model.setDOF(4);
-    model.prepare(affineTransforms, video->getCropBox(), video->getWidth(), video->getHeight());
+    model.prepare(video);
     emit processProgressChanged(1.0f/3);
     qDebug() << "VideoProcessor::calculateUpdateTransform - Solving L1 Problem";
     // Solve model
@@ -140,7 +167,7 @@ void VideoProcessor::applyCropTransform(Video* originalVideo, Video* croppedVide
     qDebug() << "VideoProcessor::applyCropTransform() - Started";
     Rect cropWindow = originalVideo->getCropBox();
     for (int f = 0; f < originalVideo->getFrameCount(); f++) {
-        qDebug() << "VideoProcessor::applyCropTransform() - Getting cropped version of frame:" << f;
+        //qDebug() << "VideoProcessor::applyCropTransform() - Getting cropped version of frame:" << f;
         emit processProgressChanged(float(f)/originalVideo->getFrameCount());
         const Frame* frame = originalVideo->getFrameAt(f);
         const Mat& img = frame->getOriginalData();

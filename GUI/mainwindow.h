@@ -73,11 +73,14 @@ private slots:
     void on_surfRadioButton_clicked();
     void on_fastRadioButton_clicked();
 
+    void on_newSalientMotionButton_clicked();
+
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
    void originalMotionButtonPressed();
    void newMotionButtonPressed();
+   void newSalientMotionButtonPressed();
    void evaluateButtonPressed();
    void graphButtonPressed();
    void saveNewVideoButtonPressed(QString path);

@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
     QObject::connect(&w, SIGNAL(saveNewVideoButtonPressed(QString)),&app, SLOT(saveNewVideo(QString)));
     QObject::connect(&w, SIGNAL(originalMotionButtonPressed()),&app, SLOT(calculateOriginalMotion()));
     QObject::connect(&w, SIGNAL(newMotionButtonPressed()),&app, SLOT(calculateNewMotion()));
+    QObject::connect(&w, SIGNAL(newSalientMotionButtonPressed()),&app, SLOT(calculateSalientUpdateTransform()));
     QObject::connect(&w, SIGNAL(evaluateButtonPressed()),&app, SLOT(evaluateNewMotion()));
     QObject::connect(&w, SIGNAL(drawGraphButtonPressed(bool, bool, bool, bool, bool)),&app, SLOT(drawGraph(bool, bool, bool, bool, bool)));
     QObject::connect(&w, SIGNAL(matLabFunctionPathSelected(QString)), &app, SIGNAL(registerMatlabFunctionPath(QString)));

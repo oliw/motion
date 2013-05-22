@@ -13,7 +13,7 @@ using namespace cv;
 class L1Model
 {
 public:
-    L1Model(Video* v);
+    L1Model(int frameCount);
     ~L1Model();
 
     int getWidth();
@@ -29,9 +29,9 @@ public:
     void enableDebug();
     void setDOF(int dof = 6);
     void writeToFile();
-    bool prepare(vector<Mat>& frameMotions, Rect cropBox, int vidWidth, int vidHeight);
+    bool prepare(Video* video);
 
-private:
+protected:
     OsiClpSolverInterface si;
 
     // Objectives
@@ -55,7 +55,7 @@ private:
     int toSlackIndex(int t, char variable);
     int toSlackIndex(int t, int variable);
 
-    void setObjectiveCoefficients();
+    void setObjectives();
     void setSmoothnessConstraints(vector<Mat>& originalTransformations);
     void setInclusionConstraints(Rect cropbox, int videoWidth, int videoHeight);
     void setProximityConstraints();

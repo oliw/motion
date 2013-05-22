@@ -9,7 +9,7 @@
 #include <QMainWindow>
 #include <QFileDialog>
 
-ManualMotionTracker::ManualMotionTracker(const Video* v, QWidget *parent) :
+ManualMotionTracker::ManualMotionTracker(Video* v, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ManualMotionTracker),
     v(v)
@@ -79,8 +79,14 @@ void ManualMotionTracker::on_imageFrame_pointSelected(const QPoint& point)
 
 void ManualMotionTracker::on_buttonBox_accepted()
 {
-    emit pointsSelected(locations);
-    this->accept();
+    if (locations.size() == v->getFrameCount()) {
+        for (int i = 0; i < v->getFrameCount(); i++) {
+            Frame* f = v->accessFrameAt(i);
+            Point2f point = Tools::QPointToPoint2f(locations.value(i));
+            f->setFeature(point);
+        }
+        this->accept();
+    }
 }
 
 void ManualMotionTracker::displayPoint() {

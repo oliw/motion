@@ -57,7 +57,7 @@ void Tools::applyAffineTransformations(Point2f start, vector<Mat> trans, vector<
 }
 
 RotatedRect Tools::transformRectangle(const Mat& affine, const Rect& origRect) {
-    qDebug() << "Tools::transformRectangle - Started";
+//    qDebug() << "Tools::transformRectangle - Started";
     assert(affine.rows == 2 && affine.cols == 3);
     vector<Point2f> verts;
     verts.push_back(Point2f(origRect.x, origRect.y));
@@ -68,17 +68,17 @@ RotatedRect Tools::transformRectangle(const Mat& affine, const Rect& origRect) {
     for (uint i = 0; i < verts.size(); i++) {
         newVerts.push_back(Tools::applyAffineTransformation(affine, verts[i]));
     }
-    qDebug() << "Tools::transformRectangle - Finished";
-    std::stringstream ss;
-    ss << "Affine Trans:" << affine << '\n';
-    ss << "Old Coords: " << verts << '\n';
-    ss << "New Coords: " << newVerts << '\n';
-    qDebug() << QString::fromStdString(ss.str());
+//    qDebug() << "Tools::transformRectangle - Finished";
+//    std::stringstream ss;
+//    ss << "Affine Trans:" << affine << '\n';
+//    ss << "Old Coords: " << verts << '\n';
+//    ss << "New Coords: " << newVerts << '\n';
+//    qDebug() << QString::fromStdString(ss.str());
     return minAreaRect(newVerts);
 }
 
 Mat Tools::getCroppedImage(const Mat& image, const RotatedRect& rect) {
-    qDebug() << "Tools::getCroppedImage - Started";
+//    qDebug() << "Tools::getCroppedImage - Started";
     Mat M, rotated, cropped;
     float angle = rect.angle;
     Size size = rect.size;
@@ -89,11 +89,11 @@ Mat Tools::getCroppedImage(const Mat& image, const RotatedRect& rect) {
         size.width = height;
     }
     M = getRotationMatrix2D(rect.center, angle, 1);
-    qDebug() << "Warping Affine start";
+//    qDebug() << "Warping Affine start";
     warpAffine(image, rotated, M, image.size(), INTER_CUBIC);
-    qDebug() << "Warping Affine end";
+//    qDebug() << "Warping Affine end";
     getRectSubPix(rotated, size, rect.center,cropped);
-    qDebug() << "Tools::getCroppedImage - Finished";
+//    qDebug() << "Tools::getCroppedImage - Finished";
     return cropped;
 }
 
@@ -111,10 +111,9 @@ void Tools::trimVideo(Video* image) {
             area.height = thisArea.height;
         }
     }
-    qDebug() << "Smallest area is " << area.width << "," << area.height;
+    //qDebug() << "Smallest area is " << area.width << "," << area.height;
     // Trim all frames
     for (int i = 0; i < image->getFrameCount(); i++) {
-        qDebug() << "Trimming frame " << i;
         Frame* f = image->accessFrameAt(i);
         f->trim(area);
     }

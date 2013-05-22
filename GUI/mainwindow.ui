@@ -177,6 +177,9 @@
                    <property name="text">
                     <string>Good Features To Track</string>
                    </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
                    <attribute name="buttonGroup">
                     <string notr="true">featureDetectionOptions</string>
                    </attribute>
@@ -224,7 +227,6 @@
                  </item>
                 </layout>
                 <zorder>gfttRadioButton</zorder>
-                <zorder>gfttRadioButton</zorder>
                 <zorder>fastRadioButton</zorder>
                 <zorder>surfRadioButton</zorder>
                 <zorder>siftRadioButton</zorder>
@@ -234,14 +236,21 @@
               <item>
                <widget class="QPushButton" name="originalMotionButton">
                 <property name="text">
-                 <string>Calculate Existing Motion</string>
+                 <string>Process Old Video</string>
                 </property>
                </widget>
               </item>
               <item>
                <widget class="QPushButton" name="newMotionButton">
                 <property name="text">
-                 <string>Calculate Update Transforms</string>
+                 <string>Build New Video</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="newSalientMotionButton">
+                <property name="text">
+                 <string>Build New Video (w. Saliency)</string>
                 </property>
                </widget>
               </item>

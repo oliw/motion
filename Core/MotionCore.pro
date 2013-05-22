@@ -19,7 +19,8 @@ SOURCES += videoprocessor.cpp \
     localransacrejector.cpp \
     l1model.cpp \
     evaluator.cpp \
-    coreapplication.cpp
+    coreapplication.cpp \
+    l1salientmodel.cpp
 
 HEADERS += videoprocessor.h \
     video.h \
@@ -30,7 +31,8 @@ HEADERS += videoprocessor.h \
     localransacrejector.h \
     l1model.h \
     evaluator.h \
-    coreapplication.h
+    coreapplication.h \
+    l1salientmodel.h
 
 macx {
     # OPENCV Library

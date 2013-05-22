@@ -7,12 +7,12 @@
 #include <QDebug>
 
 
-L1Model::L1Model(Video* v)
+L1Model::L1Model(int frameCount)
 {
     varPerFrame = 6;
     slackVarPerFrame = varPerFrame;
     // 0,1,2,3,...,maxT
-    maxT = v->getFrameCount()-1;
+    maxT = frameCount-1;
     isSimilarityTransform = false;
     problemLoaded = false;
 }
@@ -43,14 +43,19 @@ void L1Model::writeToFile()
     }
 }
 
-bool L1Model::prepare(vector<Mat>& frameMotions, Rect cropBox, int vidWidth, int vidHeight)
+bool L1Model::prepare(Video* video)
 {
+    vector<Mat> frameMotions = video->getAffineTransforms();
+    Rect cropBox = video->getCropBox();
+    int vidWidth = video->getWidth();
+    int vidHeight = video->getHeight();
+
     if (problemLoaded) {
         si.reset();
         problemLoaded = false;
     }
 
-    setObjectiveCoefficients();
+    setObjectives();
 
     matrix.setDimensions(0,getWidth());
     setSmoothnessConstraints(frameMotions); // Define what motion is permissible
@@ -100,8 +105,9 @@ double L1Model::getVariableSolution(int t, char ch)
 }
 
 // SET OBJECTIVE
-void L1Model::setObjectiveCoefficients()
+void L1Model::setObjectives()
 {
+    qDebug() << "L1Model::setObjectives - Setting Objectives";
     int width = getWidth();
     objectiveCoefficients.reserve(width);
     colLb.reserve(width);
@@ -132,6 +138,7 @@ void L1Model::setObjectiveCoefficients()
 // CONSTRAINT SETTERS
 void L1Model::setSmoothnessConstraints(vector<Mat>& fs)
 {
+    qDebug() << "L1Model::setSmoothnessConstraints - Setting Smoothness Constraints";
     constraints.reserve(constraints.size()+((maxT-1)*2*6));
     constraintsLb.reserve(constraintsLb.size()+((maxT-1)*2*6));
     constraintsUb.reserve(constraintsUb.size()+((maxT-1)*2*6));
@@ -222,6 +229,7 @@ void L1Model::setSmoothnessConstraints(vector<Mat>& fs)
 
 void L1Model::setProximityConstraints()
 {
+    qDebug() << "L1Model::setProximityConstraints";
     constraints.reserve(constraints.size()+((maxT-1)*6));
     constraintsLb.reserve(constraintsLb.size()+((maxT-1)*6));
     constraintsUb.reserve(constraintsUb.size()+((maxT-1)*6));
@@ -262,6 +270,7 @@ void L1Model::setProximityConstraints()
 }
 
 void L1Model::setInclusionConstraints(Rect cropBox, int videoWidth, int videoHeight) {
+    qDebug() << "L1Model::setInclusionConstraints - Ensuring cropbox stays within frame";
     // Number of Constraints
     int numConstraints = 2 * 4 * maxT;
     constraints.reserve(constraints.size()+numConstraints);
@@ -294,6 +303,7 @@ void L1Model::setInclusionConstraints(Rect cropBox, int videoWidth, int videoHei
 }
 
 void L1Model::setSimilarityConstraints() {
+    qDebug() << "L1Model::setSimilarityConstraints - Ensuring only 4 DOF";
     int numConstraints = 2 * maxT;
     constraints.reserve(constraints.size()+numConstraints);
     constraintsLb.reserve(constraintsLb.size()+numConstraints);

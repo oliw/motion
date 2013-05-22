@@ -42,6 +42,10 @@ public slots:
     // Pre: Frames have affine transformation's calculated
     void calculateUpdateTransform(Video* v);
 
+    // Calculates the update transform ensuring the salient point stays in the frame
+    // Pre: The crop box contains the salient feature, the salient feature has been manually marked in each frame
+    void calculateSalientUpdateTransform(Video * video);
+
     ////////// SETTINGS //////////
     void setGFTTDetector();
     void setSURFDetector();

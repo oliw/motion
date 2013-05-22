@@ -84,6 +84,19 @@ void CoreApplication::calculateNewMotion() {
     saveNewGlobalMotionToMatlab();
 }
 
+void CoreApplication::calculateSalientUpdateTransform() {
+    emit processStatusChanged(CoreApplication::NEW_MOTION, true);
+    vp.calculateSalientUpdateTransform(originalVideo);
+    emit processStatusChanged(CoreApplication::NEW_MOTION, false);
+    emit processStatusChanged(CoreApplication::NEW_VIDEO, true);
+    newVideo = new Video(originalVideo->getFrameCount());
+    vp.applyCropTransform(originalVideo, newVideo);
+    emit newVideoCreated(newVideo);
+    emit processStatusChanged(CoreApplication::NEW_VIDEO, false);
+    saveNewGlobalMotionToMatlab();
+}
+
+
 void CoreApplication::evaluateNewMotion() {
     qDebug() << "evaluateNewMotion - Not yet implemented";
 }

@@ -42,6 +42,9 @@ public:
     void setUpdateTransform(const Mat& update);
     const Mat& getUpdateTransform() const {QMutexLocker locker(&mutex); return update;}
 
+    void setFeature(Point2f feature);
+    Point2f getFeature() {return feature;}
+
     void trim(Size area);
 
 private:
@@ -49,6 +52,9 @@ private:
     mutable QMutex mutex;
 
     Mat image;
+
+    // Manually Selected Feature
+    Point2f feature;
 
     // Detected features
     vector<Point2f> features;
