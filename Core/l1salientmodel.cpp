@@ -9,22 +9,20 @@
 L1SalientModel::L1SalientModel(int frameCount):L1Model(frameCount)
 {
     varPerFrame = 6;
-    salientSlackVarPerFrame = 8;
+    salientSlackVarPerFrame = 4;
     slackVarPerFrame = varPerFrame+salientSlackVarPerFrame;
 }
 
 bool L1SalientModel::prepare(Video* video)
 {
-    qDebug() << "L1SalientModel::prepare - Begin";
     // Convert F into G (the inverse of F)
     vector<Mat> frameMotions = video->getAffineTransforms();
     vector<Mat> gs;
-    for (int f = 0; f < frameMotions.size(); f++) {
+    for (uint f = 0; f < frameMotions.size(); f++) {
         Mat g = Mat::zeros(2,3,DataType<float>::type);
         cv::invertAffineTransform(frameMotions[f], g);
         gs.push_back(g.clone());
     }
-    qDebug() << "HERE";
     Rect cropBox = video->getCropBox();
     int vidWidth = video->getWidth();
     int vidHeight = video->getHeight();
@@ -75,22 +73,12 @@ void L1SalientModel::setObjectives()
             colUb[toSlackIndex(t,i)] = si.getInfinity(); // Slacks can be as big as we like
         }
         // Set coefficients and bounds on salient slack Variables
-        for (int corner = 0; corner < 4; corner++) {
+        for (int corner = 0; corner < 2; corner++) {
             for (char comp = 'x'; comp <= 'y'; comp++) {
                 objectiveCoefficients[toSalientSlackIndex(t,corner,comp)] = 10; //
                 colLb[toSalientSlackIndex(t,corner,comp)] = 0;                 // slacks must be positive
                 colUb[toSalientSlackIndex(t,corner,comp)] = si.getInfinity();  // slacks can be as big as we like
             }
-        }
-    }
-
-    for (char i = 'a'; i <= 'f' ; i++) {
-        if (i == 'a' || i == 'd') {
-            colLb[toIndex(0,i)] = 1;
-            colUb[toIndex(0,i)] = 1;
-        } else {
-            colLb[toIndex(0,i)] = 0;
-            colUb[toIndex(0,i)] = 0;
         }
     }
 }
@@ -104,7 +92,7 @@ int L1SalientModel::toSalientSlackIndex(int t, int corner, char component)
 
 void L1SalientModel::setSalientConstraints(Video* video) {
     qDebug() << "L1SalientModel::setSalientConstraints - Forcing salient feature to stay within crop window";
-    int numConstraints = maxT * 4 * 2;
+    int numConstraints = maxT * 4;
     constraints.reserve(constraints.size()+numConstraints);
     constraintsLb.reserve(constraintsLb.size()+numConstraints);
     constraintsUb.reserve(constraintsUb.size()+numConstraints);
@@ -112,33 +100,43 @@ void L1SalientModel::setSalientConstraints(Video* video) {
     // For each pt
     for (int t = 0; t < maxT; t++) {
         Point2f salientPoint = video->accessFrameAt(t)->getFeature();
-        // For each corner
-        for (int corner = 0; corner < 4; corner++) {
-            int cropCornerX = (corner % 2 == 0) ? cropbox.x : cropbox.x + cropbox.width -1;
-            int cropCornerY = (corner < 2) ? cropbox.y : cropbox.y + cropbox.height -1;
-            //Set inclusion constraints
-            CoinPackedVector const1;
-            const1.insert(toIndex(t, 'a'), salientPoint.x);
-            const1.insert(toIndex(t, 'b'), salientPoint.y);
-            const1.insert(toIndex(t, 'e'), 1);
-            const1.insert(toSalientSlackIndex(t,corner,'x'), 1);
-            constraintsLb.push_back(cropCornerX);
-            constraintsUb.push_back(si.getInfinity());
-            constraints.push_back(const1);
-            CoinPackedVector const2;
-            const2.insert(toIndex(t, 'c'), salientPoint.x);
-            const2.insert(toIndex(t, 'd'), salientPoint.y);
-            const2.insert(toIndex(t,'f'), 1);
-            const2.insert(toSalientSlackIndex(t,corner,'y'), 1);
-            constraintsLb.push_back(cropCornerY);
-            constraintsUb.push_back(si.getInfinity());
-            constraints.push_back(const2);
-        }
-
+        // Add constraint set for TOP LEFT CORNER
+        CoinPackedVector const1;
+        const1.insert(toIndex(t, 'a'), salientPoint.x);
+        const1.insert(toIndex(t, 'b'), salientPoint.y);
+        const1.insert(toIndex(t, 'e'), 1);
+        const1.insert(toSalientSlackIndex(t,0,'x'), 1);
+        constraintsLb.push_back(cropbox.x);
+        constraintsUb.push_back(si.getInfinity());
+        constraints.push_back(const1);
+        CoinPackedVector const2;
+        const2.insert(toIndex(t, 'c'), salientPoint.x);
+        const2.insert(toIndex(t, 'd'), salientPoint.y);
+        const2.insert(toIndex(t,'f'), 1);
+        const2.insert(toSalientSlackIndex(t,0,'y'), 1);
+        constraintsLb.push_back(cropbox.y);
+        constraintsUb.push_back(si.getInfinity());
+        constraints.push_back(const2);
+        // Add constraint set for BOTTOM RIGHT CORNER
+        CoinPackedVector const3;
+        const3.insert(toIndex(t, 'a'), salientPoint.x);
+        const3.insert(toIndex(t, 'b'), salientPoint.y);
+        const3.insert(toIndex(t, 'e'), 1);
+        const3.insert(toSalientSlackIndex(t,1,'x'), -1);
+        constraintsLb.push_back(-1*si.getInfinity());
+        constraintsUb.push_back(cropbox.x+cropbox.width);
+        constraints.push_back(const3);
+        CoinPackedVector const4;
+        const4.insert(toIndex(t, 'c'), salientPoint.x);
+        const4.insert(toIndex(t, 'd'), salientPoint.y);
+        const4.insert(toIndex(t,'f'), 1);
+        const4.insert(toSalientSlackIndex(t,1,'y'), -1);
+        constraintsLb.push_back(-si.getInfinity());
+        constraintsUb.push_back(cropbox.y+cropbox.height);
+        constraints.push_back(const4);
     }
 }
 
-// TODO: Do you need to add constraints on width and height?
 // Ensures the frame transformation always contains the Cropbox
 void L1SalientModel::setInclusionConstraints(Rect cropbox, int frameWidth, int frameHeight)
 {
@@ -150,41 +148,51 @@ void L1SalientModel::setInclusionConstraints(Rect cropbox, int frameWidth, int f
     constraints.reserve(constraints.size()+numConstraints);
     constraintsLb.reserve(constraintsLb.size()+numConstraints);
     constraintsUb.reserve(constraintsUb.size()+numConstraints);
+    int ct = cropbox.y;
+    int cb = cropbox.y+cropbox.height-1;
+    int cl = cropbox.x;
+    int cr = cropbox.x+cropbox.width-1;
     // For each pt
     for (int t = 0; t < maxT; t++) {
         // For each corner
         for (int corner = 0; corner < 4; corner++) {
             int frameCornerX = (corner % 2 == 0) ? 0 : frameWidth-1;
             int frameCornerY = (corner < 2) ? 0 : frameHeight-1;
-            int cropCornerX = (corner % 2 == 0) ? cropbox.x : cropbox.x + cropbox.width -1;
-            int cropCornerY = (corner < 2) ? cropbox.y : cropbox.y + cropbox.height -1;
             CoinPackedVector const1;
             const1.insert(toIndex(t, 'a'),frameCornerX);
             const1.insert(toIndex(t,'b'), frameCornerY);
             const1.insert(toIndex(t,'e'),1);
             constraints.push_back(const1);
-            if (corner == 0 || corner == 2) {
-                // frameCornerX must be less than cropCornerX
-                constraintsLb.push_back(-1*si.getInfinity());
-                constraintsUb.push_back(cropCornerX);
-            } else {
-                // frameCornerX must be more than cropCornerX
-                constraintsLb.push_back(cropCornerX);
-                constraintsUb.push_back(si.getInfinity());
-            }
             CoinPackedVector const2;
             const2.insert(toIndex(t, 'c'),frameCornerX);
             const2.insert(toIndex(t,'d'), frameCornerY);
             const2.insert(toIndex(t,'f'),1);
             constraints.push_back(const2);
-            if (corner == 0 || corner == 1) {
-                // frameCornerY must be less than cropCornerY
+            switch(corner) {
+            case 0:
                 constraintsLb.push_back(-1*si.getInfinity());
-                constraintsUb.push_back(cropCornerY);
-            } else {
-                // frameCornerY must be more than cropCornerY
-                constraintsLb.push_back(cropCornerY);
+                constraintsUb.push_back(cl);
+                constraintsLb.push_back(-1*si.getInfinity());
+                constraintsUb.push_back(ct);
+                break;
+            case 1:
+                constraintsLb.push_back(cr);
                 constraintsUb.push_back(si.getInfinity());
+                constraintsLb.push_back(-1*si.getInfinity());
+                constraintsUb.push_back(ct);
+                break;
+            case 2:
+                constraintsLb.push_back(-1*si.getInfinity());
+                constraintsUb.push_back(cl);
+                constraintsLb.push_back(cb);
+                constraintsUb.push_back(si.getInfinity());
+                break;
+            case 3:
+                constraintsLb.push_back(cr);
+                constraintsUb.push_back(si.getInfinity());
+                constraintsLb.push_back(cb);
+                constraintsUb.push_back(si.getInfinity());
+                break;
             }
         }
 

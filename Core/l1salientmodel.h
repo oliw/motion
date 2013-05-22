@@ -15,13 +15,14 @@ public:
     // This is the entry function
     bool prepare(Video* video);
 
-    // Done
+    // Feature Transform Variables, Slack Variables, Salient Slack Variables
     void setObjectives();
 
-    // Done
+    // Helper Function
     int toSalientSlackIndex(int t, int corner, char component);
 
-    // Done
+    // Overrides L1Model function
+    // Ensures Cropbox is always within transformed frame.
     void setInclusionConstraints(Rect cropbox, int videoWidth, int videoHeight);
 
     // Done
