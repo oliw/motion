@@ -110,7 +110,7 @@ void VideoProcessor::calculateSalientUpdateTransform(Video * video, bool centere
     // Build model
     L1SalientModel model(video->getFrameCount());
     model.setDOF(4);
-    model.prepare(video);
+    model.prepare(video, centered);
     emit processProgressChanged(1.0f/3);
     qDebug() << "VideoProcessor::calculateSalientUpdateTransform - Solving L1 Problem";
     // Solve model

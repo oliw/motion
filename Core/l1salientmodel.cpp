@@ -13,7 +13,7 @@ L1SalientModel::L1SalientModel(int frameCount):L1Model(frameCount)
     slackVarPerFrame = varPerFrame+salientSlackVarPerFrame;
 }
 
-bool L1SalientModel::prepare(Video* video)
+bool L1SalientModel::prepare(Video* video, bool centered)
 {
     // Convert F into G (the inverse of F)
     vector<Mat> frameMotions = video->getAffineTransforms();
@@ -35,7 +35,7 @@ bool L1SalientModel::prepare(Video* video)
     setObjectives();        // Set the objective equation involving transform params, slack error variables, slack salient variables
     setSmoothnessConstraints(gs);                            // Define what motion is permissible
     setInclusionConstraints(cropBox, vidWidth, vidHeight);   // Prevent frame from not containing crop window
-    setSalientConstraints(video);                            // Prevent feature from leaving crop window
+    setSalientConstraints(video,centered);                            // Prevent feature from leaving crop window
     setProximityConstraints();
 
     if (isSimilarityTransform) {
@@ -81,6 +81,17 @@ void L1SalientModel::setObjectives()
             }
         }
     }
+
+    // Anchor first movement to be at location of crop window
+    for (char i = 'a'; i <= 'f' ; i++) {
+        if (i == 'a' || i == 'd') {
+            colLb[toIndex(0,i)] = 1;
+            colUb[toIndex(0,i)] = 1;
+        } else {
+            colLb[toIndex(0,i)] = 0;
+            colUb[toIndex(0,i)] = 0;
+        }
+    }
 }
 
 int L1SalientModel::toSalientSlackIndex(int t, int corner, char component)
@@ -90,13 +101,17 @@ int L1SalientModel::toSalientSlackIndex(int t, int corner, char component)
     return t*(varPerFrame+slackVarPerFrame)+varPerFrame+varPerFrame+salientVarOffset;
 }
 
-void L1SalientModel::setSalientConstraints(Video* video) {
+void L1SalientModel::setSalientConstraints(Video* video, bool centered) {
     qDebug() << "L1SalientModel::setSalientConstraints - Forcing salient feature to stay within crop window";
     int numConstraints = maxT * 4;
     constraints.reserve(constraints.size()+numConstraints);
     constraintsLb.reserve(constraintsLb.size()+numConstraints);
     constraintsUb.reserve(constraintsUb.size()+numConstraints);
     Rect cropbox = video->getCropBox();
+    double tlX = centered ? cropbox.x + (0.5 * cropbox.width) - 2 : cropbox.x ;
+    double tlY = centered ? cropbox.y + (0.5 * cropbox.height) - 2 : cropbox.y ;
+    double brX = centered ? cropbox.x + (0.5 * cropbox.width) + 2 : cropbox.x + cropbox.width - 1;
+    double brY = centered ? cropbox.y + (0.5 * cropbox.height) + 2 : cropbox.y + cropbox.height - 1;
     // For each pt
     for (int t = 0; t < maxT; t++) {
         Point2f* salientPoint = video->accessFrameAt(t)->getFeature();
@@ -106,7 +121,7 @@ void L1SalientModel::setSalientConstraints(Video* video) {
         const1.insert(toIndex(t, 'b'), salientPoint->y);
         const1.insert(toIndex(t, 'e'), 1);
         const1.insert(toSalientSlackIndex(t,0,'x'), 1);
-        constraintsLb.push_back(cropbox.x);
+        constraintsLb.push_back(tlX);
         constraintsUb.push_back(si.getInfinity());
         constraints.push_back(const1);
         CoinPackedVector const2;
@@ -114,7 +129,7 @@ void L1SalientModel::setSalientConstraints(Video* video) {
         const2.insert(toIndex(t, 'd'), salientPoint->y);
         const2.insert(toIndex(t,'f'), 1);
         const2.insert(toSalientSlackIndex(t,0,'y'), 1);
-        constraintsLb.push_back(cropbox.y);
+        constraintsLb.push_back(tlY);
         constraintsUb.push_back(si.getInfinity());
         constraints.push_back(const2);
         // Add constraint set for BOTTOM RIGHT CORNER
@@ -124,7 +139,7 @@ void L1SalientModel::setSalientConstraints(Video* video) {
         const3.insert(toIndex(t, 'e'), 1);
         const3.insert(toSalientSlackIndex(t,1,'x'), -1);
         constraintsLb.push_back(-1*si.getInfinity());
-        constraintsUb.push_back(cropbox.x+cropbox.width);
+        constraintsUb.push_back(brX);
         constraints.push_back(const3);
         CoinPackedVector const4;
         const4.insert(toIndex(t, 'c'), salientPoint->x);
@@ -132,7 +147,7 @@ void L1SalientModel::setSalientConstraints(Video* video) {
         const4.insert(toIndex(t,'f'), 1);
         const4.insert(toSalientSlackIndex(t,1,'y'), -1);
         constraintsLb.push_back(-si.getInfinity());
-        constraintsUb.push_back(cropbox.y+cropbox.height);
+        constraintsUb.push_back(brY);
         constraints.push_back(const4);
     }
 }

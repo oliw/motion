@@ -13,7 +13,7 @@ public:
     L1SalientModel(int frameCount);
 
     // This is the entry function
-    bool prepare(Video* video);
+    bool prepare(Video* video, bool centered);
 
     // Feature Transform Variables, Slack Variables, Salient Slack Variables
     void setObjectives();
@@ -25,8 +25,7 @@ public:
     // Ensures Cropbox is always within transformed frame.
     void setInclusionConstraints(Rect cropbox, int videoWidth, int videoHeight);
 
-    // Done
-    void setSalientConstraints(Video* video);
+    void setSalientConstraints(Video* video, bool centered);
 
 };
 
