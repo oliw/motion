@@ -59,8 +59,8 @@ macx {
     DEPENDPATH += $$PWD/../coin-Clp/include
 
     # Motion Backend Library (Static)
-    INCLUDEPATH += $$PWD/../MotionCore
-    DEPENDPATH += $$PWD/../MotionCore
+    INCLUDEPATH += $$PWD/../Core
+    DEPENDPATH += $$PWD/../Core
     LIBS += -L$$PWD/../MotionCore-build-Desktop_Qt_5_0_0_clang_64bit_SDK-Debug/ -lMotionCore
     PRE_TARGETDEPS += $$PWD/../MotionCore-build-Desktop_Qt_5_0_0_clang_64bit_SDK-Debug/libMotionCore.a
 }
