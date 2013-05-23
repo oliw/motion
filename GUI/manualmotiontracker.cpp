@@ -14,6 +14,15 @@ ManualMotionTracker::ManualMotionTracker(Video* v, QWidget *parent) :
     ui(new Ui::ManualMotionTracker),
     v(v)
 {
+    for (int f = 0; f < v->getFrameCount(); f++) {
+        Frame* frame = v->accessFrameAt(f);
+        if (frame->getFeature()) {
+            QPoint p(frame->getFeature()->x, frame->getFeature()->y);
+            locations.insert(f, p);
+        }
+    }
+
+
     setFocusPolicy ( Qt::StrongFocus );
     ui->setupUi(this);
     setStepRate(1);
@@ -82,7 +91,7 @@ void ManualMotionTracker::on_buttonBox_accepted()
     if (locations.size() == v->getFrameCount()) {
         for (int i = 0; i < v->getFrameCount(); i++) {
             Frame* f = v->accessFrameAt(i);
-            Point2f point = Tools::QPointToPoint2f(locations.value(i));
+            Point2f* point = new Point2f(Tools::QPointToPoint2f(locations.value(i)));
             f->setFeature(point);
         }
         this->accept();
@@ -161,4 +170,9 @@ void ManualMotionTracker::on_stepLineEdit_textChanged(const QString &arg1)
     } else {
         setStepRate(this->stepRate);
     }
+}
+
+void ManualMotionTracker::on_buttonBox_rejected()
+{
+    this->reject();
 }

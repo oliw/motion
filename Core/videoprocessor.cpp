@@ -105,7 +105,7 @@ void VideoProcessor::calculateMotionModel(Video* v) {
     qDebug() << "VideoProcessor::calculateMotionModel - Original motion detected";
 }
 
-void VideoProcessor::calculateSalientUpdateTransform(Video * video) {
+void VideoProcessor::calculateSalientUpdateTransform(Video * video, bool centered) {
     qDebug() << "VideoProcessor::calculateSalientUpdateTransform - Start";
     // Build model
     L1SalientModel model(video->getFrameCount());

@@ -99,19 +99,19 @@ void L1SalientModel::setSalientConstraints(Video* video) {
     Rect cropbox = video->getCropBox();
     // For each pt
     for (int t = 0; t < maxT; t++) {
-        Point2f salientPoint = video->accessFrameAt(t)->getFeature();
+        Point2f* salientPoint = video->accessFrameAt(t)->getFeature();
         // Add constraint set for TOP LEFT CORNER
         CoinPackedVector const1;
-        const1.insert(toIndex(t, 'a'), salientPoint.x);
-        const1.insert(toIndex(t, 'b'), salientPoint.y);
+        const1.insert(toIndex(t, 'a'), salientPoint->x);
+        const1.insert(toIndex(t, 'b'), salientPoint->y);
         const1.insert(toIndex(t, 'e'), 1);
         const1.insert(toSalientSlackIndex(t,0,'x'), 1);
         constraintsLb.push_back(cropbox.x);
         constraintsUb.push_back(si.getInfinity());
         constraints.push_back(const1);
         CoinPackedVector const2;
-        const2.insert(toIndex(t, 'c'), salientPoint.x);
-        const2.insert(toIndex(t, 'd'), salientPoint.y);
+        const2.insert(toIndex(t, 'c'), salientPoint->x);
+        const2.insert(toIndex(t, 'd'), salientPoint->y);
         const2.insert(toIndex(t,'f'), 1);
         const2.insert(toSalientSlackIndex(t,0,'y'), 1);
         constraintsLb.push_back(cropbox.y);
@@ -119,16 +119,16 @@ void L1SalientModel::setSalientConstraints(Video* video) {
         constraints.push_back(const2);
         // Add constraint set for BOTTOM RIGHT CORNER
         CoinPackedVector const3;
-        const3.insert(toIndex(t, 'a'), salientPoint.x);
-        const3.insert(toIndex(t, 'b'), salientPoint.y);
+        const3.insert(toIndex(t, 'a'), salientPoint->x);
+        const3.insert(toIndex(t, 'b'), salientPoint->y);
         const3.insert(toIndex(t, 'e'), 1);
         const3.insert(toSalientSlackIndex(t,1,'x'), -1);
         constraintsLb.push_back(-1*si.getInfinity());
         constraintsUb.push_back(cropbox.x+cropbox.width);
         constraints.push_back(const3);
         CoinPackedVector const4;
-        const4.insert(toIndex(t, 'c'), salientPoint.x);
-        const4.insert(toIndex(t, 'd'), salientPoint.y);
+        const4.insert(toIndex(t, 'c'), salientPoint->x);
+        const4.insert(toIndex(t, 'd'), salientPoint->y);
         const4.insert(toIndex(t,'f'), 1);
         const4.insert(toSalientSlackIndex(t,1,'y'), -1);
         constraintsLb.push_back(-si.getInfinity());

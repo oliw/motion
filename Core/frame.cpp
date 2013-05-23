@@ -5,12 +5,16 @@
 
 Frame::Frame(QObject *parent):QObject(parent),mutex()
 {
+    feature = 0;
 }
 
 Frame::Frame(const Mat& originalData,QObject *parent):QObject(parent),mutex(),image(originalData)
 {
     resize();
+    feature = 0;
 }
+
+//TODO Destructor
 
 void Frame::resize() {
     dx = Mat::zeros(image.rows, image.cols, DataType<float>::type);
@@ -145,7 +149,7 @@ void Frame::trim(Size area)
     resize();
 }
 
-void Frame::setFeature(Point2f feature)
+void Frame::setFeature(Point2f* feature)
 {
     this->feature = feature;
 }

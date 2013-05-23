@@ -44,7 +44,7 @@ public slots:
 
     // Calculates the update transform ensuring the salient point stays in the frame
     // Pre: The crop box contains the salient feature, the salient feature has been manually marked in each frame
-    void calculateSalientUpdateTransform(Video * video);
+    void calculateSalientUpdateTransform(Video * video, bool centered);
 
     ////////// SETTINGS //////////
     void setGFTTDetector();

@@ -72,21 +72,14 @@ void CoreApplication::calculateOriginalMotion()
     saveOriginalGlobalMotionToMatlab();
 }
 
-void CoreApplication::calculateNewMotion() {
+void CoreApplication::calculateNewMotion(bool salient, bool centered)
+{
     emit processStatusChanged(CoreApplication::NEW_MOTION, true);
-    vp.calculateUpdateTransform(originalVideo);
-    emit processStatusChanged(CoreApplication::NEW_MOTION, false);
-    emit processStatusChanged(CoreApplication::NEW_VIDEO, true);
-    newVideo = new Video(originalVideo->getFrameCount());
-    vp.applyCropTransform(originalVideo, newVideo);
-    emit newVideoCreated(newVideo);
-    emit processStatusChanged(CoreApplication::NEW_VIDEO, false);
-    saveNewGlobalMotionToMatlab();
-}
-
-void CoreApplication::calculateSalientUpdateTransform() {
-    emit processStatusChanged(CoreApplication::NEW_MOTION, true);
-    vp.calculateSalientUpdateTransform(originalVideo);
+    if (!salient) {
+        vp.calculateUpdateTransform(originalVideo);
+    } else {
+        vp.calculateSalientUpdateTransform(originalVideo,centered);
+    }
     emit processStatusChanged(CoreApplication::NEW_MOTION, false);
     emit processStatusChanged(CoreApplication::NEW_VIDEO, true);
     newVideo = new Video(originalVideo->getFrameCount());

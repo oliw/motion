@@ -115,7 +115,6 @@ void MainWindow::showProcessStatus(int processCode, bool started)
                 ui->drawGraphButton->setEnabled(true);
                 ui->exportDataToMatlabButton->setEnabled(true);
                 ui->showOriginalGlobalMotionCheckbox->setEnabled(true);
-                ui->newSalientMotionButton->setEnabled(true);
                 break;
             case CoreApplication::NEW_MOTION:
                 cropBox = true;
@@ -273,12 +272,9 @@ void MainWindow::uncheckOtherPlayerButtons(QCheckBox* option)
  */
 void MainWindow::on_newMotionButton_clicked()
 {
-    emit newMotionButtonPressed();
-}
-
-void MainWindow::on_newSalientMotionButton_clicked()
-{
-    emit newSalientMotionButtonPressed();
+    bool showSalient = ui->maintainSalientFeatureCheckbox->isChecked();
+    bool showCenter = ui->centeredSalientFeatureCheckbox->isChecked();
+    emit newMotionButtonPressed(showSalient, showCenter);
 }
 
 void MainWindow::on_originalMotionButton_clicked()

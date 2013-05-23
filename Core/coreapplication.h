@@ -36,8 +36,7 @@ public slots:
 
     // Process Video
     void calculateOriginalMotion();
-    void calculateNewMotion();
-    void calculateSalientUpdateTransform();
+    void calculateNewMotion(bool salient, bool centered);
 
     // Evaluate Results
     void evaluateNewMotion();
