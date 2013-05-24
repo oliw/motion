@@ -15,17 +15,6 @@ public:
 
 private:
 
-    // Command Line Paramter functions
-    bool parseOptions(QStringList options);
-    void showUsage();
-
-    // Program settings
-    QString inputFilePath;
-    QString outputFilePath;
-
-    VideoProcessor vp;
-    QTextStream* console;
-
 
 };
 
