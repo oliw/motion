@@ -8,9 +8,11 @@
 #include <stdio.h>
 #include "coreapplication.h"
 #include <QCoreApplication>
+#include <QFileInfo>
+#include <QDir>
 
-MainApplication::MainApplication(QString src, QString dst, QRect cropbox, bool salient, QString salientDetails, bool gravitate, QObject *parent)
-    : QObject(parent),src(src),dst(dst),cropbox(cropbox),salient(salient), salientDetails(salientDetails), gravitate(gravitate)
+MainApplication::MainApplication(QString src, QString dst, QRect cropbox, bool salient, QString salientDetails, bool gravitate, bool dumpData, QObject *parent)
+    : QObject(parent),src(src),dst(dst),cropbox(cropbox),salient(salient), salientDetails(salientDetails), gravitate(gravitate),dumpData(dumpData)
 {
     QObject::connect(&coreApp, SIGNAL(processProgressChanged(float)), this, SLOT(processProgressChanged(float)));
 }
@@ -25,14 +27,25 @@ void MainApplication::run()
     qWarning() << "Calculating motion in original video";
     coreApp.calculateOriginalMotion();
     if (salient) {
-        qDebug() << "Not yet implemented salient bit";
-        assert(false);
+        qWarning() << "Loading manual markings for salient feature";
+        coreApp.loadFeatures(salientDetails);
+        qWarning() << "Calculating new video, preserving salient feature";
+        coreApp.calculateNewMotion(salient, gravitate);
     } else {
         qWarning() << "Calculating new video";
         coreApp.calculateNewMotion(false, false);
     }
     qWarning() << "Saving new video";
     coreApp.saveNewVideo(dst);
+    if (dumpData) {
+        QFileInfo file(dst);
+        QString directory = file.path()+"/";
+        QString matPath = directory+file.baseName()+".mat";
+        qWarning() << "Saving MATLAB .mat files to " << matPath;
+        coreApp.saveOriginalGlobalMotionMat(matPath);
+        coreApp.saveNewGlobalMotionMat(matPath);
+    }
+    qWarning() << "Finished";
     emit quit();
 }
 

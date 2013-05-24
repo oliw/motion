@@ -47,8 +47,9 @@ public slots:
     void saveNewVideo(QString path);
 
     // Misc
-    void saveOriginalGlobalMotionToMatlab();
-    void saveNewGlobalMotionToMatlab();
+    void saveOriginalGlobalMotionMat(QString path);
+    void saveNewGlobalMotionMat(QString path);
+    void loadFeatures(QString path);
 
     // Settings Slots
     void setGFTTDetector();

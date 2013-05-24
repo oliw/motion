@@ -64,10 +64,11 @@ int main(int argc, char *argv[])
     string outputPath;
     string cropSize;
     string fdMethod;
-    int salientPathTracking;
+    bool salient = false;
     string manualFeatureFilePath;
-    int gravitateToCenter;
+    bool gravitate = false;
     QRect cropWindow;
+    bool dumpData;
 
     ///////// PROGRAM OPTIONS /////////
     po::options_description desc("Allowed options");
@@ -78,9 +79,10 @@ int main(int argc, char *argv[])
             ("crop-tl,C", po::value<string>()->implicit_value(""),"coordinates for top left corner of crop window")
             ("crop-size,S", po::value<string>(&cropSize)->implicit_value(""),"cropped window size")
             ("feature-detector,F", po::value<string>(&fdMethod)->implicit_value(""),"feature detection method")  // TODO Permissable feature detector?
-            ("salient-path-tracking", po::value<int>(&salientPathTracking)->default_value(0),"enable salient feasture tracking")
+            ("salient-path-tracking", po::value<bool>(&salient)->zero_tokens(),"enable salient feasture tracking")
             ("manual-features,M", po::value<string>(&manualFeatureFilePath)->implicit_value(""), "file containing manually tracked salient features")
-            ("gravitate-to-center,G", po::value<int>(&gravitateToCenter)->default_value(1),"gravitate salient point to middle")
+            ("gravitate-to-center,G", po::value<bool>(&gravitate)->zero_tokens(),"gravitate salient point to middle")
+            ("dump-data,D", po::value<bool>(&dumpData)->zero_tokens(),"save .mat files in same folder as output video")
             ("verbose,v", po::value<bool>(&verbose)->zero_tokens(),"show all debug messages");
 
     po::positional_options_description p;
@@ -146,20 +148,16 @@ int main(int argc, char *argv[])
 
     cropWindow = QRect(cropTl.at(0).toInt(), cropTl.at(1).toInt(), sizeList.at(0).toInt(), sizeList.at(1).toInt());
 
-    bool gravitate = false;
-    if (salientPathTracking) {
+    if (salient) {
         if (!vm.count("manual-features")) {
             qCritical() << "No file for manual features given";
             printHelp(desc);
             return 1;
         }
-        gravitate = gravitateToCenter == 1;
-    } else {
-        // Activate main with just
     }
 
     qWarning() << "Starting core application";
-    MainApplication* main = new MainApplication(QString::fromStdString(inputPath), QString::fromStdString(outputPath), cropWindow, salientPathTracking==1, QString::fromStdString(manualFeatureFilePath),gravitate,&a);
+    MainApplication* main = new MainApplication(QString::fromStdString(inputPath), QString::fromStdString(outputPath), cropWindow, salient, QString::fromStdString(manualFeatureFilePath),gravitate,dumpData, &a);
     QObject::connect(main, SIGNAL(quit()), &a, SLOT(quit()));
     QTimer::singleShot(0, main, SLOT(run()));
     return a.exec();

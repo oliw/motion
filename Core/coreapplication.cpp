@@ -70,7 +70,6 @@ void CoreApplication::calculateOriginalMotion()
     emit processStatusChanged(CoreApplication::ORIGINAL_MOTION, true);
     vp.calculateMotionModel(originalVideo);
     emit processStatusChanged(CoreApplication::ORIGINAL_MOTION, false);
-    saveOriginalGlobalMotionToMatlab();
 }
 
 void CoreApplication::calculateNewMotion(bool salient, bool centered)
@@ -87,7 +86,6 @@ void CoreApplication::calculateNewMotion(bool salient, bool centered)
     vp.applyCropTransform(originalVideo, newVideo);
     emit newVideoCreated(newVideo);
     emit processStatusChanged(CoreApplication::NEW_VIDEO, false);
-    saveNewGlobalMotionToMatlab();
 }
 
 
@@ -143,26 +141,24 @@ void CoreApplication::drawGraph(bool usePointOriginal, bool showOriginal, bool s
     }
 }
 
-void CoreApplication::saveOriginalGlobalMotionToMatlab() {
+void CoreApplication::saveOriginalGlobalMotionMat(QString path) {
     qDebug() << "Saving original motion to Matlab";
     QList<Mat> matrices;
     for (int f = 1; f < originalVideo->getFrameCount(); f++) {
         Frame* frame = originalVideo->accessFrameAt(f);
         matrices.push_back(frame->getAffineTransform());
     }
-    QString filePath = QDir::homePath()+QDir::separator()+"motionDump.mat";
-    ev.exportMatrices(matrices, filePath, "originalGlobalMotion");
+    ev.exportMatrices(matrices, path, "originalGlobalMotion");
 }
 
-void CoreApplication::saveNewGlobalMotionToMatlab() {
+void CoreApplication::saveNewGlobalMotionMat(QString path) {
     qDebug() << "Saving new motion to Matlab";
     QList<Mat> matrices;
     for (int f = 1; f < originalVideo->getFrameCount(); f++) {
         Frame* frame = originalVideo->accessFrameAt(f);
         matrices.push_back(frame->getUpdateTransform());
     }
-    QString filePath = QDir::homePath()+QDir::separator()+"motionDump.mat";
-    ev.exportMatrices(matrices, filePath, "newGlobalMotion");
+    ev.exportMatrices(matrices, path, "newGlobalMotion");
 }
 
 
@@ -190,5 +186,27 @@ void CoreApplication::setFASTDetector() {
 
 void CoreApplication::setGFTTHDetector() {
     vp.setGFTTHDetector();
+}
+
+void CoreApplication::loadFeatures(QString path) {
+    QMap<int, Point2f*> locations;
+    QFile file(path);
+    if (file.exists()) {
+        file.open(QIODevice::ReadOnly | QIODevice::Text);
+        QTextStream in(&file);
+        while(!in.atEnd()) {
+            QString line = in.readLine();
+            QStringList lineParts = line.split(",");
+            int frame = lineParts.at(0).toInt();
+            Point2f* p = new Point2f(lineParts.at(1).toInt(), lineParts.at(2).toInt());
+            locations.insert(frame,p);
+        }
+    }
+    QMapIterator<int, Point2f*> i(locations);
+    while (i.hasNext()) {
+        i.next();
+        Frame* f = originalVideo->accessFrameAt(i.key());
+        f->setFeature(i.value());
+    }
 }
 

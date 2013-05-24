@@ -13,7 +13,7 @@ class MainApplication : public QObject
     Q_OBJECT
 
 public:
-    explicit MainApplication(QString src, QString dst, QRect cropbox, bool salient, QString salientDetails, bool gravitate, QObject *parent = 0);
+    explicit MainApplication(QString src, QString dst, QRect cropbox, bool salient, QString salientDetails, bool gravitate, bool dumpData, QObject *parent = 0);
 
 signals:
     void quit();
@@ -31,6 +31,7 @@ private:
     bool salient;
     QString salientDetails;
     bool gravitate;
+    bool dumpData;
 
 };
 
