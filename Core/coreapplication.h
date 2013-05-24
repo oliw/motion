@@ -32,7 +32,7 @@ signals:
     
 public slots:
     // Input
-    void loadOriginalVideo(QString path);
+    Video* loadOriginalVideo(QString path);
 
     // Process Video
     void calculateOriginalMotion();

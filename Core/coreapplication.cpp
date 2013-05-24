@@ -13,7 +13,7 @@ CoreApplication::CoreApplication(QObject *parent) :
     newVideo = 0;
 }
 
-void CoreApplication::loadOriginalVideo(QString path)
+Video* CoreApplication::loadOriginalVideo(QString path)
 {
     emit processStatusChanged(CoreApplication::LOAD_VIDEO, true);
     clear();
@@ -21,7 +21,7 @@ void CoreApplication::loadOriginalVideo(QString path)
     if (!vc.open(path.toStdString())) {
         qDebug() << "VideoProcessor::loadVideo - Video could not be opened";
         emit processStatusChanged(CoreApplication::LOAD_VIDEO, false);
-        return;
+        return 0;
     }
     // Load Video
     int frameCount = vc.get(CV_CAP_PROP_FRAME_COUNT);
@@ -39,6 +39,7 @@ void CoreApplication::loadOriginalVideo(QString path)
     }
     emit originalVideoLoaded(originalVideo);
     emit processStatusChanged(CoreApplication::LOAD_VIDEO, false);
+    return originalVideo;
 }
 
 void CoreApplication::saveNewVideo(QString path)
@@ -190,3 +191,4 @@ void CoreApplication::setFASTDetector() {
 void CoreApplication::setGFTTHDetector() {
     vp.setGFTTHDetector();
 }
+

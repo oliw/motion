@@ -4,8 +4,10 @@
 #include <QTextStream>
 #include "coreapplication.h"
 #include <QFileInfo>
+#include <QTimer>
 #include <iostream>
 #include <videoprocessor.h>
+#include "mainapplication.h"
 #include "boost/program_options.hpp"
 #include "boost/program_options/parsers.hpp"
 #include "boost/program_options/options_description.hpp"
@@ -13,6 +15,40 @@
 #include "boost/program_options/variables_map.hpp"
 
 namespace po = boost::program_options;
+
+bool verbose = false;
+
+void debug_output(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
+    if (verbose) {
+        switch (type) {
+        case QtDebugMsg:
+            std::cerr << msg.toStdString() << std::endl;
+            break;
+        case QtWarningMsg:
+            std::cout << msg.toStdString() << std::endl;
+            break;
+        case QtFatalMsg:
+            std::cerr << msg.toStdString() << std::endl;
+            break;
+        default:
+            std::cout << msg.toStdString() << std::endl;
+            break;
+        }
+    } else {
+        switch (type) {
+        case QtDebugMsg:
+            break;
+        case QtWarningMsg:
+            std::cout << msg.toStdString() << std::endl;
+            break;
+        case QtFatalMsg:
+            std::cerr << msg.toStdString() << std::endl;
+            break;
+        default:
+            break;
+        }
+    }
+}
 
 void printHelp(po::options_description& desc) {
     std::stringstream ss;
@@ -22,11 +58,14 @@ void printHelp(po::options_description& desc) {
 
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler(debug_output);
     QCoreApplication a(argc, argv);
-    QString inputPath;
-    QString outputPath;
+    string inputPath;
+    string outputPath;
+    string cropSize;
+    string fdMethod;
     int salientPathTracking;
-    QString manualFeatureFilePath;
+    string manualFeatureFilePath;
     int gravitateToCenter;
     QRect cropWindow;
 
@@ -34,14 +73,15 @@ int main(int argc, char *argv[])
     po::options_description desc("Allowed options");
     desc.add_options()
             ("help", "produce help message")
-            ("input-video,I", po::value<string>(),"input video")
-            ("output-video,O", po::value<string>(),"output video")
-            ("crop-tl,C", po::value<string>(),"coordinates for top left corner of crop window")
-            ("crop-size,S", po::value<string>(),"cropped window size")
-            ("feature-detector,F", po::value<string>(),"feature detection method")  // TODO Permissable feature detector?
-            ("salient-path-tracking", po::value<int>(&salientPathTracking)->default_value(0));
-            ("manual-features,M", po::value<string>(), "file containing manually tracked salient features")
-            ("gravitate-to-center,G", po::value<int>(&gravitateToCenter)->default_value(1),"gravitate salient point to middle");
+            ("input-video,I", po::value<string>(&inputPath)->implicit_value(""),"input video")
+            ("output-video,O", po::value<string>(&outputPath)->implicit_value(""),"output video")
+            ("crop-tl,C", po::value<string>()->implicit_value(""),"coordinates for top left corner of crop window")
+            ("crop-size,S", po::value<string>(&cropSize)->implicit_value(""),"cropped window size")
+            ("feature-detector,F", po::value<string>(&fdMethod)->implicit_value(""),"feature detection method")  // TODO Permissable feature detector?
+            ("salient-path-tracking", po::value<int>(&salientPathTracking)->default_value(0),"enable salient feasture tracking")
+            ("manual-features,M", po::value<string>(&manualFeatureFilePath)->implicit_value(""), "file containing manually tracked salient features")
+            ("gravitate-to-center,G", po::value<int>(&gravitateToCenter)->default_value(1),"gravitate salient point to middle")
+            ("verbose,v", po::value<bool>(&verbose)->zero_tokens(),"show all debug messages");
 
     po::positional_options_description p;
     p.add("input-video", 1);
@@ -57,32 +97,33 @@ int main(int argc, char *argv[])
 
     // Process Input Video
     if (vm.count("input-video") != 1) {
-        qDebug() << "No input video given";
+        qCritical() << "No input video given";
         printHelp(desc);
         return 1;
     }
-    inputPath = QString::fromStdString(vm['input-video'].as<string>());
+    inputPath = vm["input-video"].as<string>();
 
     // Process Output Video
     if (vm.count("output-video")==1) {
-        outputPath = QString::fromStdString(vm['output-video'].as<string>());
+        outputPath = vm["output-video"].as<string>();
     } else {
-        QFileInfo fileInfo = QFileInfo(inputPath);
-        outputPath = fileInfo.path() + fileInfo.baseName() + "_output.avi";
+        QFileInfo fileInfo = QFileInfo(QString::fromStdString(inputPath));
+        QString defaultPath = fileInfo.path() + fileInfo.baseName() + "_output.avi";
+        outputPath = defaultPath.toStdString();
     }
 
     // Process crop-size
     QStringList sizeList;
     if (vm.count("crop-size")) {
-        QString size = QString::fromStdString(vm['crop-size'].as<string>());
-        sizeList = size.split("\\,");
+        QString size = QString::fromStdString(vm["crop-size"].as<string>());
+        sizeList = size.split(",");
         if (sizeList.size() != 2) {
-            qDebug() << "Invalid crop-size given. Should be w,h";
+            qCritical() << "Invalid crop-size given. Should be w,h";
             printHelp(desc);
             return 1;
         }
     } else {
-        qDebug() << "No crop window size given.";
+        qCritical() << "No crop window size given.";
         printHelp(desc);
         return 1;
     }
@@ -90,36 +131,36 @@ int main(int argc, char *argv[])
     // Process crop-center
     QStringList cropTl;
     if (vm.count("crop-tl")) {
-        QString corner = QString::fromStdString(vm['crop-tl'].as<string>());
-        cropTl = corner.split("\\,");
+        QString corner = QString::fromStdString(vm["crop-tl"].as<string>());
+        cropTl = corner.split(",");
         if (cropTl.size() != 2) {
-            qDebug() << "Invalid crop-tl given. Should be x,y";
+            qCritical() << "Invalid crop-tl given. Should be x,y";
             printHelp(desc);
             return 1;
         }
     } else {
-        qDebug() << "No crop top left coords given.";
+        qCritical() << "No crop top left coords given.";
         printHelp(desc);
         return 1;
     }
 
-    cropWindow = QRect(QString::toInt(cropTl.at(0)), QString::toInt(cropTl.at(1)), QString::toInt(sizeList.at(0)), QString::toInt(sizeList.at(1)));
+    cropWindow = QRect(cropTl.at(0).toInt(), cropTl.at(1).toInt(), sizeList.at(0).toInt(), sizeList.at(1).toInt());
 
+    bool gravitate = false;
     if (salientPathTracking) {
-        QString manualFeatureFilePath;
-        if (vm.count("manual-features")) {
-            manualFeatureFilePath = QString::fromStdString(vm['manual-features'].as<string>());
-        } else {
-            qDebug() << "No file for manual features given";
+        if (!vm.count("manual-features")) {
+            qCritical() << "No file for manual features given";
             printHelp(desc);
             return 1;
         }
-        bool gravitate = gravitateToCenter == 1;
+        gravitate = gravitateToCenter == 1;
     } else {
         // Activate main with just
     }
 
-   // MainApplication main(a.arguments());
-    //main.begin();
+    qWarning() << "Starting core application";
+    MainApplication* main = new MainApplication(QString::fromStdString(inputPath), QString::fromStdString(outputPath), cropWindow, salientPathTracking==1, QString::fromStdString(manualFeatureFilePath),gravitate,&a);
+    QObject::connect(main, SIGNAL(quit()), &a, SLOT(quit()));
+    QTimer::singleShot(0, main, SLOT(run()));
     return a.exec();
 }

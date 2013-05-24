@@ -26,6 +26,9 @@ macx {
     # Application Icon
     ICON = Resources/icons.icns
 
+    INCLUDEPATH += /opt/local/include/
+    LIBS += -L/opt/local/lib/ -lboost_program_options-mt
+
     # OPENCV Library
     INCLUDEPATH += /usr/local/include/
     LIBS += -lopencv_core
