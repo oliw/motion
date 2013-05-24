@@ -31,7 +31,8 @@ int main(int argc, char *argv[])
     QObject::connect(&w, SIGNAL(surfRadioButtonPressed()), &app, SLOT(setSURFDetector()));
     QObject::connect(&w, SIGNAL(siftRadioButtonPressed()), &app, SLOT(setSIFTDetector()));
     QObject::connect(&w, SIGNAL(fastRadioButtonPressed()), &app, SLOT(setFASTDetector()));
-
+    QObject::connect(&w, SIGNAL(exportDataToMatlabPressed(QString)), &app, SLOT(saveOriginalGlobalMotionMat(QString)));
+    QObject::connect(&w, SIGNAL(exportDataToMatlabPressed(QString)), &app, SLOT(saveNewGlobalMotionMat(QString)));
 
     typedef QMap<int, QPoint> LocationMap;
     qRegisterMetaType<LocationMap>("QMap<int, QPoint>");

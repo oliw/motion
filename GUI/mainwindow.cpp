@@ -486,3 +486,9 @@ void MainWindow::on_fastRadioButton_clicked()
 }
 
 
+
+void MainWindow::on_exportDataToMatlabButton_clicked()
+{
+    QString saveFileName = QFileDialog::getSaveFileName(this, "Save Original Affine and Updates", "");
+    emit exportDataToMatlabPressed(saveFileName);
+}

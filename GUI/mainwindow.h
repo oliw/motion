@@ -73,6 +73,8 @@ private slots:
     void on_surfRadioButton_clicked();
     void on_fastRadioButton_clicked();
 
+    void on_exportDataToMatlabButton_clicked();
+
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
@@ -81,6 +83,7 @@ signals:
    void evaluateButtonPressed();
    void graphButtonPressed();
    void saveNewVideoButtonPressed(QString path);
+   void exportDataToMatlabPressed(QString saveFileName);
    void pointsSelected(QMap<int, QPoint> locations);
    void matLabFunctionPathSelected(QString path);
    void drawGraphButtonPressed(bool usePointOriginal, bool showOriginal, bool showNew, bool x, bool y);
