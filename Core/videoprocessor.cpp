@@ -167,7 +167,6 @@ void VideoProcessor::applyCropTransform(Video* originalVideo, Video* croppedVide
     qDebug() << "VideoProcessor::applyCropTransform() - Started";
     Rect cropWindow = originalVideo->getCropBox();
     for (int f = 0; f < originalVideo->getFrameCount(); f++) {
-        //qDebug() << "VideoProcessor::applyCropTransform() - Getting cropped version of frame:" << f;
         emit processProgressChanged(float(f)/originalVideo->getFrameCount());
         const Frame* frame = originalVideo->getFrameAt(f);
         const Mat& img = frame->getOriginalData();

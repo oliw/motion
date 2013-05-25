@@ -212,14 +212,25 @@ void CoreApplication::loadFeatures(QString path) {
 }
 
 void CoreApplication::saveOriginalFrame(QString path, int frame, bool cropped){
-    qDebug() << "Writing to frame " << frame << " to " << path;
     const Frame* f = originalVideo->getFrameAt(frame);
     const Mat& originalData = f->getOriginalData();
-    qDebug() << "about to imwrite";
     if (cropped) {
         Mat cropped = originalData(originalVideo->getCropBox());
         cv::imwrite(path.toStdString(), cropped);
     } else {
         cv::imwrite(path.toStdString(), originalData);
     }
+}
+
+void CoreApplication::saveNewFrame(QString path, int frame) {
+    if (frame == 0) {
+        saveOriginalFrame(path, frame, true);
+        return;
+    }
+    const Frame* f = originalVideo->getFrameAt(frame);
+    const Mat& originalData = f->getOriginalData();
+    const Rect& cropBox = originalVideo->getCropBox();
+    RotatedRect newCropWindow = Tools::transformRectangle(f->getUpdateTransform(), cropBox);
+    const Mat newImage = Tools::getCroppedImage(originalData, newCropWindow);
+    cv::imwrite(path.toStdString(), newImage);
 }

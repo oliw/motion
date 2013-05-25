@@ -510,3 +510,9 @@ void MainWindow::on_exportCurrentCroppedFrameButton_clicked()
     QString saveFileName = QFileDialog::getSaveFileName(this, "Save cropped area of current Frame", "");
     emit saveOriginalFrameButtonPressed(saveFileName, player->getFrameNumber(), true);
 }
+
+void MainWindow::on_exportNewFrameButton_clicked()
+{
+    QString saveFileName = QFileDialog::getSaveFileName(this, "Save stabilised version of current Frame", "");
+    emit saveNewFrameButtonPressed(saveFileName, player->getFrameNumber());
+}

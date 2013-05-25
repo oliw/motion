@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
     QObject::connect(&w, SIGNAL(exportDataToMatlabPressed(QString)), &app, SLOT(saveOriginalGlobalMotionMat(QString)));
     QObject::connect(&w, SIGNAL(exportDataToMatlabPressed(QString)), &app, SLOT(saveNewGlobalMotionMat(QString)));
     QObject::connect(&w, SIGNAL(saveOriginalFrameButtonPressed(QString, int, bool)), &app, SLOT(saveOriginalFrame(QString, int, bool)));
+    QObject::connect(&w, SIGNAL(saveNewFrameButtonPressed(QString, int)), &app, SLOT(saveNewFrame(QString, int)));
 
     typedef QMap<int, QPoint> LocationMap;
     qRegisterMetaType<LocationMap>("QMap<int, QPoint>");

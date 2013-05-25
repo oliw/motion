@@ -78,6 +78,8 @@ private slots:
     void on_exportCurrentFrameButton_clicked();
     void on_exportCurrentCroppedFrameButton_clicked();
 
+    void on_exportNewFrameButton_clicked();
+
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
@@ -91,6 +93,7 @@ signals:
    void matLabFunctionPathSelected(QString path);
    void drawGraphButtonPressed(bool usePointOriginal, bool showOriginal, bool showNew, bool x, bool y);
    void saveOriginalFrameButtonPressed(QString path, int frame, bool cropped);
+   void saveNewFrameButtonPressed(QString path, int frame);
 
    // Video Process Signals
    void gfttRadioButtonPressed();
