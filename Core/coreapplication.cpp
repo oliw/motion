@@ -51,7 +51,7 @@ void CoreApplication::saveNewVideo(QString path)
     for (int f = 0; f < newVideo->getFrameCount(); f++) {
         emit processProgressChanged((float)f/newVideo->getFrameCount());
         const Frame* frame = newVideo->getFrameAt(f);
-        const Mat& img = frame->getOriginalData();
+        Mat img = frame->getOriginalData().clone();
         record << img;
     }
     emit processStatusChanged(CoreApplication::SAVE_VIDEO, false);
@@ -231,6 +231,7 @@ void CoreApplication::saveNewFrame(QString path, int frame) {
     const Mat& originalData = f->getOriginalData();
     const Rect& cropBox = originalVideo->getCropBox();
     RotatedRect newCropWindow = Tools::transformRectangle(f->getUpdateTransform(), cropBox);
-    const Mat newImage = Tools::getCroppedImage(originalData, newCropWindow);
+    Mat newImage = Tools::getCroppedImage(originalData, newCropWindow);
+    resize(newImage,newImage,cropBox.size());
     cv::imwrite(path.toStdString(), newImage);
 }

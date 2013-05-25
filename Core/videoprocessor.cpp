@@ -178,11 +178,11 @@ void VideoProcessor::applyCropTransform(Video* originalVideo, Video* croppedVide
         } else {
             RotatedRect newCropWindow = Tools::transformRectangle(frame->getUpdateTransform(), cropWindow);
             croppedImage = Tools::getCroppedImage(img,newCropWindow);
+            resize(croppedImage, croppedImage, originalVideo->getCropBox().size());
         }
         Frame* croppedF = new Frame(croppedImage, croppedVideo);
         croppedVideo->appendFrame(croppedF);
     }
-    Tools::trimVideo(croppedVideo);
     qDebug() << "VideoProcessor::applyCropTransform() - Finished";
 }
 
