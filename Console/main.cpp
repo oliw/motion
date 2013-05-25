@@ -93,14 +93,14 @@ int main(int argc, char *argv[])
     po::notify(vm);
 
     if (vm.count("help")) {
-        printHelp(desc);
+        std::cout << desc << std::endl;
         return 1;
     }
 
     // Process Input Video
     if (vm.count("input-video") != 1) {
-        qCritical() << "No input video given";
-        printHelp(desc);
+        std::cerr << "No input video given" << std::endl;
+        std::cout << desc << std::endl;
         return 1;
     }
     inputPath = vm["input-video"].as<string>();
@@ -120,13 +120,13 @@ int main(int argc, char *argv[])
         QString size = QString::fromStdString(vm["crop-size"].as<string>());
         sizeList = size.split(",");
         if (sizeList.size() != 2) {
-            qCritical() << "Invalid crop-size given. Should be w,h";
-            printHelp(desc);
+            std::cerr << "Invalid crop-size given. Should be w,h" << std::endl;
+            std::cout << desc << std::endl;
             return 1;
         }
     } else {
-        qCritical() << "No crop window size given.";
-        printHelp(desc);
+        std::cerr << "No crop window size given." << std::endl;
+        std::cout << desc << std::endl;
         return 1;
     }
 
@@ -136,13 +136,13 @@ int main(int argc, char *argv[])
         QString corner = QString::fromStdString(vm["crop-tl"].as<string>());
         cropTl = corner.split(",");
         if (cropTl.size() != 2) {
-            qCritical() << "Invalid crop-tl given. Should be x,y";
-            printHelp(desc);
+            std::cerr << "Invalid crop-tl given. Should be x,y" << std::endl;
+            std::cout << desc << std::endl;
             return 1;
         }
     } else {
-        qCritical() << "No crop top left coords given.";
-        printHelp(desc);
+        std::cerr << "No crop top left coords given." << std::endl;
+        std::cout << desc << std::endl;
         return 1;
     }
 
@@ -150,8 +150,8 @@ int main(int argc, char *argv[])
 
     if (salient) {
         if (!vm.count("manual-features")) {
-            qCritical() << "No file for manual features given";
-            printHelp(desc);
+            std::cerr << "No file for manual features given" << std::endl;
+            std::cout << desc << std::endl;
             return 1;
         }
     }
