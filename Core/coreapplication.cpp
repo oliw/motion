@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QDir>
+#include "frame.h"
 
 CoreApplication::CoreApplication(QObject *parent) :
     QObject(parent)
@@ -210,3 +211,15 @@ void CoreApplication::loadFeatures(QString path) {
     }
 }
 
+void CoreApplication::saveOriginalFrame(QString path, int frame, bool cropped){
+    qDebug() << "Writing to frame " << frame << " to " << path;
+    const Frame* f = originalVideo->getFrameAt(frame);
+    const Mat& originalData = f->getOriginalData();
+    qDebug() << "about to imwrite";
+    if (cropped) {
+        Mat cropped = originalData(originalVideo->getCropBox());
+        cv::imwrite(path.toStdString(), cropped);
+    } else {
+        cv::imwrite(path.toStdString(), originalData);
+    }
+}

@@ -50,6 +50,7 @@ public slots:
     void saveOriginalGlobalMotionMat(QString path);
     void saveNewGlobalMotionMat(QString path);
     void loadFeatures(QString path);
+    void saveOriginalFrame(QString path, int frame, bool cropped);
 
     // Settings Slots
     void setGFTTDetector();

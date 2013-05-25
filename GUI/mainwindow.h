@@ -75,6 +75,9 @@ private slots:
 
     void on_exportDataToMatlabButton_clicked();
 
+    void on_exportCurrentFrameButton_clicked();
+    void on_exportCurrentCroppedFrameButton_clicked();
+
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
@@ -87,6 +90,7 @@ signals:
    void pointsSelected(QMap<int, QPoint> locations);
    void matLabFunctionPathSelected(QString path);
    void drawGraphButtonPressed(bool usePointOriginal, bool showOriginal, bool showNew, bool x, bool y);
+   void saveOriginalFrameButtonPressed(QString path, int frame, bool cropped);
 
    // Video Process Signals
    void gfttRadioButtonPressed();
@@ -112,7 +116,6 @@ private:
 
     bool playing;
     bool featuresDetected, featuresTracked, outliersRejected,originalMotion, cropBox;
-    int currentFrameNumber;
 
     void togglePlayControls(bool show);
     void uncheckOtherPlayerButtons(QCheckBox* option);

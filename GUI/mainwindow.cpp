@@ -331,6 +331,7 @@ void MainWindow::registerNewVideo(Video* video)
     newVideo = video;
     ui->videoCombobox->addItem("New Video");
     ui->videoCombobox->addItem("Both");
+    ui->exportNewFrameButton->setEnabled(true);
 }
 
 void MainWindow::player_stopped()
@@ -432,6 +433,10 @@ void MainWindow::resetUI()
     foreach(QLineEdit* infoLine, list) {
          infoLine->clear();
     }
+    ui->exportCurrentFrameButton->setEnabled(true);
+    ui->exportCurrentCroppedFrameButton->setEnabled(true);
+    ui->exportNewFrameButton->setEnabled(false);
+
     // Reset Process Tab
     QList<QPushButton*>processList = ui->processTab->findChildren<QPushButton*>();
     foreach(QPushButton* button, processList) {
@@ -491,4 +496,17 @@ void MainWindow::on_exportDataToMatlabButton_clicked()
 {
     QString saveFileName = QFileDialog::getSaveFileName(this, "Save Original Affine and Updates", "");
     emit exportDataToMatlabPressed(saveFileName);
+}
+
+void MainWindow::on_exportCurrentFrameButton_clicked()
+{
+    QString saveFileName = QFileDialog::getSaveFileName(this, "Save Current Frame as Image", "");
+    emit saveOriginalFrameButtonPressed(saveFileName, player->getFrameNumber(), false);
+}
+
+
+void MainWindow::on_exportCurrentCroppedFrameButton_clicked()
+{
+    QString saveFileName = QFileDialog::getSaveFileName(this, "Save cropped area of current Frame", "");
+    emit saveOriginalFrameButtonPressed(saveFileName, player->getFrameNumber(), true);
 }
