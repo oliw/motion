@@ -8,8 +8,9 @@ Frame::Frame(QObject *parent):QObject(parent),mutex()
     feature = 0;
 }
 
-Frame::Frame(const Mat& originalData,QObject *parent):QObject(parent),mutex(),image(originalData)
+Frame::Frame(const Mat& originalData,QObject *parent):QObject(parent),mutex()
 {
+    originalData.copyTo(image);
     resize();
     feature = 0;
 }

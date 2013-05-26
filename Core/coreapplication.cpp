@@ -26,10 +26,20 @@ Video* CoreApplication::loadOriginalVideo(QString path)
     }
     // Load Video
     int frameCount = vc.get(CV_CAP_PROP_FRAME_COUNT);
+    qDebug() << "VideoProcessor::loadVideo - Frame count is " << frameCount;
     int fps = vc.get(CV_CAP_PROP_FPS);
     originalVideo = new Video(frameCount,fps);
     QFileInfo fileInfo = QFileInfo(path);
     originalVideo->setVideoName(fileInfo.fileName());
+//    for (int i = 0; i < frameCount; i++) {
+//        vc.set(CV_CAP_PROP_POS_FRAMES, i);
+//        qDebug() << i;
+//        Mat frame;
+//        assert(vc.grab());
+//        vc.retrieve(frame);
+//        Frame* newFrame = new Frame(frame, originalVideo);
+//        originalVideo->appendFrame(newFrame);
+//    }
     int currentFrame = 0;
     Mat buffer;
     while (vc.read(buffer)) {
@@ -37,6 +47,7 @@ Video* CoreApplication::loadOriginalVideo(QString path)
         Frame* newFrame = new Frame(buffer.clone(),originalVideo);
         originalVideo->appendFrame(newFrame);
         currentFrame++;
+        qDebug() << "VideoProcessor::loadVideo - Current frame is " << currentFrame;
     }
     emit originalVideoLoaded(originalVideo);
     emit processStatusChanged(CoreApplication::LOAD_VIDEO, false);
@@ -46,7 +57,7 @@ Video* CoreApplication::loadOriginalVideo(QString path)
 void CoreApplication::saveNewVideo(QString path)
 {
     emit processStatusChanged(CoreApplication::SAVE_VIDEO, true);
-    VideoWriter record(path.toStdString(), CV_FOURCC('D','I','V','X'),originalVideo->getOrigFps(), newVideo->getSize());
+    VideoWriter record(path.toStdString(), CV_FOURCC('M','P','4','V'),originalVideo->getOrigFps(), newVideo->getSize());
     assert(record.isOpened());
     for (int f = 0; f < newVideo->getFrameCount(); f++) {
         emit processProgressChanged((float)f/newVideo->getFrameCount());
@@ -62,7 +73,7 @@ void CoreApplication::saveCroppedOldVideo(QString path)
     emit processStatusChanged(CoreApplication::SAVE_VIDEO, true);
     //qDebug() << "Saving cropped video " << originalVideo->getCropBox().size().width << "," << originalVideo->getCropBox().size().height;
     Size croppedSize(originalVideo->getCropBox().size().width, originalVideo->getCropBox().size().height);
-    VideoWriter record(path.toStdString(), CV_FOURCC('D','I','V','X'),originalVideo->getOrigFps(),croppedSize);
+    VideoWriter record(path.toStdString(), CV_FOURCC('M','P','4','V'),originalVideo->getOrigFps(),croppedSize);
     assert(record.isOpened());
     for (int f = 0; f < originalVideo->getFrameCount(); f++) {
         emit processProgressChanged((float)f/originalVideo->getFrameCount());
