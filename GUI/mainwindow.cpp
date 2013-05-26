@@ -436,6 +436,7 @@ void MainWindow::resetUI()
     ui->exportCurrentFrameButton->setEnabled(true);
     ui->exportCurrentCroppedFrameButton->setEnabled(true);
     ui->exportNewFrameButton->setEnabled(false);
+    ui->exportCroppedVideoButton->setEnabled(true);
 
     // Reset Process Tab
     QList<QPushButton*>processList = ui->processTab->findChildren<QPushButton*>();
@@ -515,4 +516,10 @@ void MainWindow::on_exportNewFrameButton_clicked()
 {
     QString saveFileName = QFileDialog::getSaveFileName(this, "Save stabilised version of current Frame", "");
     emit saveNewFrameButtonPressed(saveFileName, player->getFrameNumber());
+}
+
+void MainWindow::on_exportCroppedVideoButton_clicked()
+{
+    QString saveFileName = QFileDialog::getSaveFileName(this, "Save cropped original video", "");
+    emit saveOriginalCroppedVideo(saveFileName);
 }
