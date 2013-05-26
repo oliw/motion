@@ -50,9 +50,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete ui;
-    delete player;
-    delete manMotionTracker;
+    //delete ui;
+    //delete player;
+    //delete manMotionTracker;
 }
 
 /*

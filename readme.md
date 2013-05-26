@@ -22,3 +22,6 @@ Thanks to Matthias Grundmann http://www.cc.gatech.edu/cpl/projects/videostabiliz
 ## Notes
 This will *not* be readily usable in its current state. It has been configured for my Labs and for my personal computer. When the project is finished I will investigate tidying things up so that it can be easily installed elsewhere.
 
+There is a BUG in OpenCV 2.3 whereby not all frames are read in. Use 2.4 and above.
+
+This project requires QT5.
