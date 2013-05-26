@@ -57,7 +57,7 @@ Video* CoreApplication::loadOriginalVideo(QString path)
 void CoreApplication::saveNewVideo(QString path)
 {
     emit processStatusChanged(CoreApplication::SAVE_VIDEO, true);
-    VideoWriter record(path.toStdString(), CV_FOURCC('M','P','4','V'),originalVideo->getOrigFps(), newVideo->getSize());
+    VideoWriter record(path.toStdString(), CV_FOURCC('M','P','4','V'),25, newVideo->getSize());
     assert(record.isOpened());
     for (int f = 0; f < newVideo->getFrameCount(); f++) {
         emit processProgressChanged((float)f/newVideo->getFrameCount());
@@ -73,7 +73,8 @@ void CoreApplication::saveCroppedOldVideo(QString path)
     emit processStatusChanged(CoreApplication::SAVE_VIDEO, true);
     //qDebug() << "Saving cropped video " << originalVideo->getCropBox().size().width << "," << originalVideo->getCropBox().size().height;
     Size croppedSize(originalVideo->getCropBox().size().width, originalVideo->getCropBox().size().height);
-    VideoWriter record(path.toStdString(), CV_FOURCC('M','P','4','V'),originalVideo->getOrigFps(),croppedSize);
+
+    VideoWriter record(path.toStdString(), CV_FOURCC('M','P','4','V'),25,croppedSize);
     assert(record.isOpened());
     for (int f = 0; f < originalVideo->getFrameCount(); f++) {
         emit processProgressChanged((float)f/originalVideo->getFrameCount());
