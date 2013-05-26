@@ -195,6 +195,9 @@
               </item>
               <item>
                <widget class="QPushButton" name="exportCroppedVideoButton">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
                  <string>Export Cropped Video</string>
                 </property>

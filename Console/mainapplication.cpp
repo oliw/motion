@@ -44,6 +44,9 @@ void MainApplication::run()
         qWarning() << "Saving MATLAB .mat files to " << matPath;
         coreApp.saveOriginalGlobalMotionMat(matPath);
         coreApp.saveNewGlobalMotionMat(matPath);
+        qWarning() << "Saving Original Cropped Video";
+        QString oldCroppedVideoPath = directory+file.baseName()+"_original"+".avi";
+        coreApp.saveCroppedOldVideo(oldCroppedVideoPath);
     }
     qWarning() << "Finished";
     emit quit();
