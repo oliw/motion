@@ -15,6 +15,13 @@ Video::~Video()
 {
 }
 
+void Video::reset()
+{
+    for (int f = 0; f < frames.size(); f++) {
+        Frame* frame = frames[f];
+        frame->reset();
+    }
+}
 
 void Video::initCropBox()
 {

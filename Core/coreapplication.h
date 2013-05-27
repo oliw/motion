@@ -35,7 +35,7 @@ public slots:
     Video* loadOriginalVideo(QString path);
 
     // Process Video
-    void calculateOriginalMotion();
+    void calculateOriginalMotion(int radius);
     void calculateNewMotion(bool salient, bool centered);
 
     // Evaluate Results

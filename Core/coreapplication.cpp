@@ -89,10 +89,11 @@ void CoreApplication::saveCroppedOldVideo(QString path)
 }
 
 
-void CoreApplication::calculateOriginalMotion()
+void CoreApplication::calculateOriginalMotion(int radius)
 {
+    originalVideo->reset();
     emit processStatusChanged(CoreApplication::FEATURE_DETECTION, true);
-    vp.detectFeatures(originalVideo);
+    vp.detectFeatures(originalVideo, radius);
     emit processStatusChanged(CoreApplication::FEATURE_DETECTION, false);
     emit processStatusChanged(CoreApplication::FEATURE_TRACKING, true);
     vp.trackFeatures(originalVideo);

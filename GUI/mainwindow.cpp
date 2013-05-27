@@ -108,7 +108,6 @@ void MainWindow::showProcessStatus(int processCode, bool started)
                 break;
             case CoreApplication::ORIGINAL_MOTION:
                 originalMotion = true;
-                ui->originalMotionButton->setEnabled(false);
                 ui->newMotionButton->setEnabled(true);
                 ui->showOriginalGlobalMotionCheckbox->setEnabled(true);
                 ui->originalMotionSourceComboBox->addItem("Global");
@@ -279,7 +278,14 @@ void MainWindow::on_newMotionButton_clicked()
 
 void MainWindow::on_originalMotionButton_clicked()
 {
-    emit originalMotionButtonPressed();
+    QString radiusText = ui->salientFeatureRadius->text();
+    bool success = false;
+    int permissableFeatureRadius = radiusText.toInt(&success);
+    qDebug() << "Permissable :" << permissableFeatureRadius;
+    if (!success) {
+        permissableFeatureRadius = 0;
+    }
+    emit originalMotionButtonPressed(permissableFeatureRadius);
 }
 
 void MainWindow::updatePlayerUI(QImage img, int frameNumber)

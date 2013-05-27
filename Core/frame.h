@@ -16,6 +16,7 @@ class Frame : public QObject
 public:
     Frame(QObject *parent = 0);
     Frame(const Mat& image, QObject *parent = 0);
+    void reset();
 
     void resize();
 

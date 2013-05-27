@@ -88,7 +88,11 @@ void ManualMotionTracker::on_imageFrame_pointSelected(const QPoint& point)
 
 void ManualMotionTracker::on_buttonBox_accepted()
 {
-    if (locations.size() == v->getFrameCount()) {
+    if (locations.size() >= v->getFrameCount()) {
+        if (locations.size() != v->getFrameCount()) {
+            qWarning() << "Warning! The manual file has recordings for a greater number of frames than the number of frames grabbed by OpenCV.";
+            qWarning() << "Advice: Make sure you are using OpenCV 2.4+";
+        }
         for (int i = 0; i < v->getFrameCount(); i++) {
             Frame* f = v->accessFrameAt(i);
             Point2f* point = new Point2f(Tools::QPointToPoint2f(locations.value(i)));

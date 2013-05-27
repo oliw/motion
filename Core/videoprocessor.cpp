@@ -37,15 +37,32 @@ VideoProcessor::VideoProcessor(QObject *parent):QObject(parent),mutex(QMutex::Re
 VideoProcessor::~VideoProcessor() {
 }
 
-void VideoProcessor::detectFeatures(Video* v) {
-    qDebug() << "VideoProcessor::detectFeatures - Feature Detection started";
+void VideoProcessor::detectFeatures(Video* v, int radius) {
+    qDebug() << "VideoProcessor::detectFeatures - Feature Detection started.";
     int frameCount = v->getFrameCount();
     vector<KeyPoint> bufferPoints;
     for (int i = 0; i < frameCount; i++) {
         qDebug() << "VideoProcessor::detectFeatures - Detecting features in frame " << i <<"/"<<frameCount-1;
         emit processProgressChanged((float)i/frameCount-1);
         Frame* frame = v->accessFrameAt(i);
-        featureDetector->detect(frame->getOriginalData(), bufferPoints);
+        if (frame->getFeature() != 0 && radius > 0){
+            // Add mask around salient feature
+            qDebug() << "VideoProcessor::detectFeatures - Only detecting features around the salient feature";
+            Point2f* point = frame->getFeature();
+            const Mat& data = frame->getOriginalData();
+            cv::Mat mask = Mat::zeros(data.size(), CV_8UC1);
+            qDebug() << "VideoProcessor::detectFeatures";
+            for (int x = (point->x)-radius; x < (point->x)+radius; x++) {
+                for (int y = (point->y)-radius; y < (point->y)+radius; y++) {
+                    if (x >= 0 && x < mask.size().width && y >= 0 && y < mask.size().height) {
+                        mask.at<char>(Point2f(x,y)) = 1;
+                    }
+                }
+            }
+            featureDetector->detect(data, bufferPoints,mask);
+        } else {
+            featureDetector->detect(frame->getOriginalData(), bufferPoints);
+        }
         vector<Point2f> features;
         KeyPoint::convert(bufferPoints, features);
         frame->setFeatures(features);
@@ -99,6 +116,9 @@ void VideoProcessor::calculateMotionModel(Video* v) {
         Frame* frame = v->accessFrameAt(i);
         vector<Point2f> srcPoints, destPoints;
         frame->getInliers(srcPoints,destPoints);
+        // Weight towards salient point
+
+
         Mat affineTransform = estimateRigidTransform(srcPoints, destPoints, true);
         frame->setAffineTransform(affineTransform);
     }

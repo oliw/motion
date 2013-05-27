@@ -41,6 +41,8 @@ public:
     void setVideoName(const QString& name) {videoName = name;}
     QString getVideoName() {return videoName;}
 
+    void reset();
+
 private:
     mutable QMutex mutex;
 

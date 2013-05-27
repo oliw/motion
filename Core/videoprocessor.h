@@ -27,7 +27,7 @@ public slots:
     void applyCropTransform(Video* originalVideo, Video* croppedVideo);
 
     // Processing Functions
-    void detectFeatures(Video* v);
+    void detectFeatures(Video* v, int radius);
 
     void trackFeatures(Video* v);
     void rejectOutliers(Video* v);

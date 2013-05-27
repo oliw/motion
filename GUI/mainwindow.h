@@ -85,7 +85,7 @@ private slots:
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
-   void originalMotionButtonPressed();
+   void originalMotionButtonPressed(int radius);
    void newMotionButtonPressed(bool salient, bool centered);
    void evaluateButtonPressed();
    void graphButtonPressed();

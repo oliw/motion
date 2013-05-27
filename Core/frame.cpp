@@ -15,6 +15,17 @@ Frame::Frame(const Mat& originalData,QObject *parent):QObject(parent),mutex()
     feature = 0;
 }
 
+void Frame::reset()
+{
+    features.clear();
+    displacements.clear();
+    dx = Mat::zeros(image.rows, image.cols, DataType<float>::type);
+    dy = Mat::zeros(image.rows, image.cols, DataType<float>::type);
+    displacementMask = Mat::zeros(image.rows, image.cols, DataType<int>::type);
+    outlierMask = Mat::zeros(image.rows, image.cols, DataType<int>::type);
+}
+
+
 //TODO Destructor
 
 void Frame::resize() {
