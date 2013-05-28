@@ -18,8 +18,6 @@ public:
     Frame(const Mat& image, QObject *parent = 0);
     void reset();
 
-    void resize();
-
     const Mat& getOriginalData() const {QMutexLocker locker(&mutex); return image;}
 
     void setFeatures (const vector<Point2f>& features);
@@ -36,6 +34,7 @@ public:
     vector<Point2f> getInliers() const;
 
     void getInliers(vector<Point2f>& srcPoints, vector<Point2f>& destPoints) const;
+    void getInliersAndOutliers(vector<Point2f>& srcPoints, vector<Point2f>& destPoints) const;
 
     void setAffineTransform(const Mat& affine);
     const Mat& getAffineTransform() const {QMutexLocker locker(&mutex); return affine;}
@@ -45,8 +44,6 @@ public:
 
     void setFeature(Point2f* feature);
     Point2f* getFeature() {return feature;}
-
-    void trim(Size area);
 
 private:
 

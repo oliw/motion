@@ -11,7 +11,7 @@ Frame::Frame(QObject *parent):QObject(parent),mutex()
 Frame::Frame(const Mat& originalData,QObject *parent):QObject(parent),mutex()
 {
     originalData.copyTo(image);
-    resize();
+    reset();
     feature = 0;
 }
 
@@ -23,18 +23,10 @@ void Frame::reset()
     dy = Mat::zeros(image.rows, image.cols, DataType<float>::type);
     displacementMask = Mat::zeros(image.rows, image.cols, DataType<int>::type);
     outlierMask = Mat::zeros(image.rows, image.cols, DataType<int>::type);
+    affine = Mat::zeros(2,3,DataType<float>::type);
+    update = Mat::zeros(2,3,DataType<float>::type);
 }
 
-
-//TODO Destructor
-
-void Frame::resize() {
-    dx = Mat::zeros(image.rows, image.cols, DataType<float>::type);
-    dy = Mat::zeros(image.rows, image.cols, DataType<float>::type);
-    displacements.clear();
-    displacementMask = Mat::zeros(image.rows, image.cols, DataType<int>::type);
-    outlierMask = Mat::zeros(image.rows, image.cols, DataType<int>::type);
-}
 
 void Frame::registerDisplacement(const Displacement& displacement) {
     QMutexLocker locker(&mutex);
@@ -114,6 +106,20 @@ vector<Point2f> Frame::getInliers() const
     return inliers;
 }
 
+void Frame::getInliersAndOutliers(vector<Point2f>& srcPoints, vector<Point2f>& destPoints) const
+{
+    QMutexLocker locker(&mutex);
+    assert(srcPoints.size() == 0 && destPoints.size() == 0);
+    for (uint i = 0; i < displacements.size(); i++) {
+        const Displacement& disp = displacements.at(i);
+        const Point2f src = disp.getFrom();
+        const Point2f dest = disp.getTo();
+        srcPoints.push_back(src);
+        destPoints.push_back(dest);
+    }
+    assert(srcPoints.size() == destPoints.size());
+}
+
 void Frame::getInliers(vector<Point2f>& srcPoints, vector<Point2f>& destPoints) const
 {
     QMutexLocker locker(&mutex);
@@ -122,25 +128,25 @@ void Frame::getInliers(vector<Point2f>& srcPoints, vector<Point2f>& destPoints) 
         const Displacement& disp = displacements.at(i);
         const Point2f src = disp.getFrom();
         const Point2f dest = disp.getTo();
-        if (outlierMask.at<float>(src) != 1) {
+        if (outlierMask.at<int>(src) != 1) {
             srcPoints.push_back(src);
             destPoints.push_back(dest);
         }
     }
     assert(srcPoints.size() == destPoints.size());
-    assert(((uint) cv::countNonZero(displacementMask)) == destPoints.size());
+    assert(((uint) cv::countNonZero(outlierMask)) + destPoints.size() == displacements.size());
 }
 
 void Frame::setAffineTransform(const Mat& affine)
 {
     QMutexLocker locker(&mutex);
-    this->affine = affine;
+    affine.copyTo(this->affine);
 }
 
 void Frame::setUpdateTransform(const Mat& update)
 {
     QMutexLocker locker(&mutex);
-    this->update = update;
+    update.copyTo(this->update);
 }
 
 
@@ -148,17 +154,6 @@ void Frame::setFeatures (const vector<Point2f>& features)
 {
     QMutexLocker locker(&mutex);
     this->features = features;
-}
-
-void Frame::trim(Size area)
-{
-    QMutexLocker locker(&mutex);
-    Rect rect(Point2f(0,0),area);
-//    qDebug() << "Rectangle size:" << rect.width << "," << rect.height;
-//    qDebug() << "Old Rectangle size:" << image.size().width << "," << image.size().height;
-    image = image(rect).clone();
-//    qDebug() << "New Rectangle size:" << image.size().width << "," << image.size().height;
-    resize();
 }
 
 void Frame::setFeature(Point2f* feature)
