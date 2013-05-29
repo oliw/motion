@@ -2,7 +2,7 @@
 #define SUBSELECTIMAGE_H
 
 #include <QLabel>
-#include <opencv2/core/core.hpp>
+#include "opencv2/core/core.hpp"
 
 class SubSelectImage : public QLabel
 {

@@ -8,12 +8,16 @@
 #include <stdio.h>
 #include <videoprocessor.h>
 
+namespace Motion {
+    enum FEATUREDMETHOD {GOODTT, GOODTTH, SIFT, FAST, SURF};
+}
+
 class MainApplication : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit MainApplication(QString src, QString dst, QRect cropbox, bool salient, QString salientDetails, bool gravitate, bool dumpData, QObject *parent = 0);
+    explicit MainApplication(QString src, QString dst, QRect cropbox, Motion::FEATUREDMETHOD fdmethod, bool salient, int window, QString salientDetails, bool gravitate, bool dumpData, QObject *parent = 0);
 
 signals:
     void quit();
@@ -28,7 +32,9 @@ private:
     QString src;
     QString dst;
     QRect cropbox;
+    Motion::FEATUREDMETHOD fdmethod;
     bool salient;
+    int window;
     QString salientDetails;
     bool gravitate;
     bool dumpData;

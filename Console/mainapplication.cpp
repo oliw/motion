@@ -11,21 +11,42 @@
 #include <QFileInfo>
 #include <QDir>
 
-MainApplication::MainApplication(QString src, QString dst, QRect cropbox, bool salient, QString salientDetails, bool gravitate, bool dumpData, QObject *parent)
-    : QObject(parent),src(src),dst(dst),cropbox(cropbox),salient(salient), salientDetails(salientDetails), gravitate(gravitate),dumpData(dumpData)
+MainApplication::MainApplication(QString src, QString dst, QRect cropbox, Motion::FEATUREDMETHOD fdmethod, bool salient, int window, QString salientDetails, bool gravitate, bool dumpData, QObject *parent)
+    : QObject(parent),src(src),dst(dst),cropbox(cropbox), fdmethod(fdmethod), salient(salient),window(window), salientDetails(salientDetails), gravitate(gravitate),dumpData(dumpData)
 {
     QObject::connect(&coreApp, SIGNAL(processProgressChanged(float)), this, SLOT(processProgressChanged(float)));
 }
 
 void MainApplication::run()
 {
+    switch (fdmethod) {
+    case Motion::GOODTT:
+        coreApp.setGFTTDetector();
+        break;
+    case Motion::GOODTTH:
+        coreApp.setGFTTHDetector();
+        break;
+    case Motion::FAST:
+        coreApp.setFASTDetector();
+        break;
+    case Motion::SIFT:
+        coreApp.setSIFTDetector();
+        break;
+    case Motion::SURF:
+        coreApp.setSURFDetector();
+        break;
+    default:
+        coreApp.setGFTTDetector();
+        break;
+    }
+
     qWarning() << "Starting run";
     Video* video;
     qWarning() << "Loading original video";
     video = coreApp.loadOriginalVideo(src);
     video->setCropBox(cropbox.x(), cropbox.y(), cropbox.width(), cropbox.height());
     qWarning() << "Calculating motion in original video";
-    coreApp.calculateOriginalMotion();
+    coreApp.calculateOriginalMotion(window);
     if (salient) {
         qWarning() << "Loading manual markings for salient feature";
         coreApp.loadFeatures(salientDetails);

@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
     bool gravitate = false;
     QRect cropWindow;
     bool dumpData;
+    int radius;
 
     ///////// PROGRAM OPTIONS /////////
     po::options_description desc("Allowed options");
@@ -78,7 +79,8 @@ int main(int argc, char *argv[])
             ("output-video,O", po::value<string>(&outputPath)->implicit_value(""),"output video")
             ("crop-tl,C", po::value<string>()->implicit_value(""),"coordinates for top left corner of crop window")
             ("crop-size,S", po::value<string>(&cropSize)->implicit_value(""),"cropped window size")
-            ("feature-detector,F", po::value<string>(&fdMethod)->implicit_value(""),"feature detection method")  // TODO Permissable feature detector?
+            ("feature-detector,F", po::value<string>(&fdMethod)->implicit_value("goodtt"),"feature detection method")
+            ("feature-window,W", po::value<int>(&radius)->default_value(0),"window around salient feature to search for features")
             ("salient-path-tracking", po::value<bool>(&salient)->zero_tokens(),"enable salient feasture tracking")
             ("manual-features,M", po::value<string>(&manualFeatureFilePath)->implicit_value(""), "file containing manually tracked salient features")
             ("gravitate-to-center,G", po::value<bool>(&gravitate)->zero_tokens(),"gravitate salient point to middle")
@@ -148,6 +150,22 @@ int main(int argc, char *argv[])
 
     cropWindow = QRect(cropTl.at(0).toInt(), cropTl.at(1).toInt(), sizeList.at(0).toInt(), sizeList.at(1).toInt());
 
+    // Process feature detection method
+    Motion::FEATUREDMETHOD fdmethod;
+    if (fdMethod == "goodtt") {
+        fdmethod = Motion::GOODTT;
+    } else if (fdMethod == "goodtth") {
+        fdmethod = Motion::GOODTTH;
+    } else if (fdMethod == "sift") {
+        fdmethod = Motion::SIFT;
+    } else if (fdMethod == "surf") {
+        fdmethod = Motion::SURF;
+    } else if (fdMethod == "fast") {
+        fdmethod = Motion::FAST;
+    } else {
+        fdmethod = Motion::GOODTT;
+    }
+
     if (salient) {
         if (!vm.count("manual-features")) {
             std::cerr << "No file for manual features given" << std::endl;
@@ -157,7 +175,7 @@ int main(int argc, char *argv[])
     }
 
     qWarning() << "Starting core application";
-    MainApplication* main = new MainApplication(QString::fromStdString(inputPath), QString::fromStdString(outputPath), cropWindow, salient, QString::fromStdString(manualFeatureFilePath),gravitate,dumpData, &a);
+    MainApplication* main = new MainApplication(QString::fromStdString(inputPath), QString::fromStdString(outputPath), cropWindow, fdmethod, salient, radius, QString::fromStdString(manualFeatureFilePath),gravitate,dumpData, &a);
     QObject::connect(main, SIGNAL(quit()), &a, SLOT(quit()));
     QTimer::singleShot(0, main, SLOT(run()));
     return a.exec();

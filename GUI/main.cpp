@@ -4,7 +4,7 @@
 #include <QObject>
 #include <video.h>
 #include <coreapplication.h>
-
+#include <iostream>
 #include <QDebug>
 int main(int argc, char *argv[])
 {
