@@ -51,7 +51,6 @@ void VideoProcessor::detectFeatures(Video* v, int radius) {
             Point2f* point = frame->getFeature();
             const Mat& data = frame->getOriginalData();
             cv::Mat mask = Mat::zeros(data.size(), CV_8UC1);
-            qDebug() << "VideoProcessor::detectFeatures";
             for (int x = (point->x)-radius; x < (point->x)+radius; x++) {
                 for (int y = (point->y)-radius; y < (point->y)+radius; y++) {
                     if (x >= 0 && x < mask.size().width && y >= 0 && y < mask.size().height) {
@@ -117,8 +116,7 @@ void VideoProcessor::calculateMotionModel(Video* v) {
         vector<Point2f> srcPoints, destPoints;
         frame->getInliers(srcPoints,destPoints);
         // Weight towards salient point
-
-
+        // Estimate Rigid Transform DOES RANSAC too!
         Mat affineTransform = estimateRigidTransform(srcPoints, destPoints, true);
         frame->setAffineTransform(affineTransform);
     }

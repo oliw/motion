@@ -17,8 +17,6 @@ public:
     static RotatedRect transformRectangle(const Mat& affine, const Rect& origRect);
     static Mat getCroppedImage(const Mat& image, const RotatedRect& rect);
     static Point2f QPointToPoint2f(QPoint p);
-    static void trimVideo(Video* image);
-
 
     // Move coordinates to start from 0,0
     static QMap<int, Point2f> moveToOriginDataSet(const QMap<int, Point2f>& dataSet);
