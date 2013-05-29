@@ -77,7 +77,7 @@ unix:!macx: {
 
     # OPENCV Library
     PKGCONFIG += opencv
-    INCLUDEPATH += /usr/include/
+    INCLUDEPATH += /vol/bitbucket/osw09/opencv-build-2.4.0/include
 
     # MATLAB Engine Library
     LIBS += -L/usr/lib/matlab/R2012a/bin/glnxa64 -lm -lmat -lmx -leng

@@ -76,7 +76,11 @@ unix:!macx: {
 
     # OPENCV Library
     PKGCONFIG += opencv
-    INCLUDEPATH += /usr/include/
+    INCLUDEPATH += /vol/bitbucket/osw09/opencv-build-2.4.0/include
+
+    # OPENCV Library
+    #INCLUDEPATH += /vol/bitbucket/osw09/opencv-build/include
+    #LIBS += -L/vol/bitbucket/osw09/opencv-build/lib -lopencv_core -lopencv_highgui -lopencv_video -lopencv_imgproc -lopencv_features2d
 
     # COIN LP
     PKGCONFIG += osi-clp

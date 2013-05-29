@@ -1,2 +1,2 @@
-setenv PKG_CONFIG_PATH /homes/osw09/Motion/Clp-1.14.8/lib/pkgconfig
-setenv LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:/usr/lib/gcc/x86_64-linux-gnu/4.6:/usr/lib/matlab/R2012a/bin/glnxa64:/homes/osw09/Motion/Clp-1.14.8/lib:$LD_LIBRARY_PATH
+setenv PKG_CONFIG_PATH /homes/osw09/Motion/Clp-1.14.8/lib/pkgconfig:/vol/bitbucket/osw09/opencv-build-2.4.0/lib/pkgconfig
+setenv LD_LIBRARY_PATH /vol/bitbucket/osw09/opencv-build-2.4.0/lib:/usr/lib/x86_64-linux-gnu:/usr/lib/gcc/x86_64-linux-gnu/4.6:/usr/lib/matlab/R2012a/bin/glnxa64:/homes/osw09/Motion/Clp-1.14.8/lib:$LD_LIBRARY_PATH
