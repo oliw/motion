@@ -25,3 +25,6 @@ This will *not* be readily usable in its current state. It has been configured f
 There is a BUG in OpenCV 2.3 whereby not all frames are read in. Use 2.4 and above.
 
 This project requires QT5.
+
+## Useful Tools
+There is also a PERL script for batch processing which cycles through all possible parameters (defined in the script).
