@@ -62,9 +62,11 @@ if showNew
       newPoints(i+1,:) = newpoint;
     end
 end
-    
-time = 0:length(frameTransforms);
 
+% The origin in the video is the top left corner.
+% We need to flip the Y coords
+
+time = 0:length(frameTransforms);
 if showBoth
     if showX
         figure;
@@ -77,7 +79,7 @@ if showBoth
     
     if showY 
         figure;
-        plot(originalPoints(:,2), time', newPoints(:,2), time');
+        plot(originalPoints(:,2), time', -1*newPoints(:,2), time');
         title('Movement in Y Direction');
         xlabel('Movement');
         ylabel('Time');
@@ -103,7 +105,7 @@ else
     
     if showY 
         figure;
-        plot(data(:,2), time');
+        plot(-1*data(:,2), time');
         title('Movement in Y Direction');
         xlabel('Movement');
         ylabel('Time');
