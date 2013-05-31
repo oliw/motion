@@ -25,36 +25,6 @@ Point2f Tools::applyAffineTransformation(Mat affine, Point2f src)
     return Point2f(dstMat.at<float>(0,0),dstMat.at<float>(1,0));
 }
 
-void Tools::applyAffineTransformations(Point2f start, vector<Mat> trans, vector<double>& time, vector<double>& x, vector<double>& y)
-{
-    // Work Backwards
-    time.reserve(trans.size()+1);
-    x.reserve(trans.size()+1);
-    y.reserve(trans.size()+1);
-    time.push_back(trans.size());
-    x.push_back(0);
-    y.push_back(0);
-    Point2f curr(start);
-    for (int i = trans.size()-1; i >= 0; i--) {
-        time.push_back(i);
-        std::stringstream str;
-        str << "Applying transformation " << trans[i] << " to " << curr;
-        curr = Tools::applyAffineTransformation(trans[i], curr);
-        x.push_back(curr.x);
-        y.push_back(curr.y);
-    }
-    std::reverse(time.begin(), time.end());
-    std::reverse(x.begin(), x.end());
-    std::reverse(y.begin(), y.end());
-    // Shift everything
-    int shiftX = x[0];
-    int shiftY = y[0];
-    for (uint i = 0; i <= trans.size(); i++) {
-        x[i] = x[i] - shiftX;
-        y[i] = y[i] - shiftY;
-    }
-}
-
 // Apply affine transformation to a Rect
 RotatedRect Tools::transformRectangle(const Mat& affine, const Rect& origRect) {
     assert(affine.rows == 2 && affine.cols == 3);

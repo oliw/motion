@@ -187,7 +187,9 @@ void VideoProcessor::applyCropTransform(Video* originalVideo, Video* croppedVide
         if (f == 0) {
             croppedImage = img(cropWindow);
         } else {
+            // Rotate Crop Window
             RotatedRect newCropWindow = Tools::transformRectangle(frame->getUpdateTransform(), cropWindow);
+            // Crop original video using Rotated Crop Window
             croppedImage = Tools::getCroppedImage(img,newCropWindow);
             resize(croppedImage, croppedImage, originalVideo->getCropBox().size());
         }
