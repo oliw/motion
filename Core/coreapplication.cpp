@@ -38,7 +38,9 @@ Video* CoreApplication::loadOriginalVideo(QString path)
         originalVideo->appendFrame(newFrame);
         currentFrame++;
     }
-    assert(currentFrame == frameCount);
+    if(currentFrame != frameCount) {
+        qWarning() << "Warning: May not have read in all frames";
+    }
     emit originalVideoLoaded(originalVideo);
     emit processStatusChanged(CoreApplication::LOAD_VIDEO, false);
     return originalVideo;
