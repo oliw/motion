@@ -50,7 +50,7 @@ public:
     void refresh();
     bool isStopped() const;
     void setFrameRate(int frameRate);
-    const int getFrameRate() const;
+    int getFrameRate() const;
     int getFrameNumber() {return frameNumber;}
 
     void setFeaturesEnabled(bool enabled);

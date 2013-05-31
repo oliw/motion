@@ -36,7 +36,6 @@ void Player::play()
         if (isStopped()){
             stopped = false;
         }
-        qDebug() << "Player::play - playing video on a new thread";
         start(LowPriority);
     }
 }
@@ -60,7 +59,6 @@ void Player::showImage(int frameNumber)
     {
         return;
     }
-    qDebug() << "Player::showImage - Showing frameNumber:"<<frameNumber;
     const Frame* frame = video->getFrameAt(frameNumber);
     const Mat& originalData = frame->getOriginalData();
     Mat image;
@@ -123,7 +121,6 @@ void Player::run()
             rewind();
         }
         else {
-            qDebug() << "Player::run - playing frame " << frameNumber;
             showImage(frameNumber);
             frameNumber++;
             this->msleep(delay);
@@ -162,7 +159,6 @@ void Player::stop()
 {
     stopped = true;
     emit playerStopped();
-    qDebug() << "Player::stop - Playing stopped";
 }
 
 void Player::msleep(int ms) {
@@ -175,7 +171,7 @@ void Player::setFrameRate(int frameRate)
     this->frameRate = frameRate;
 }
 
-const int Player::getFrameRate() const {
+int Player::getFrameRate() const {
     return frameRate;
 }
 

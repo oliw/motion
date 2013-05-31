@@ -29,7 +29,7 @@ public:
     void enableDebug();
     void setDOF(int dof = 6);
     void writeToFile();
-    bool prepare(Video* video);
+    void prepare(Video* video);
 
 protected:
     OsiClpSolverInterface si;

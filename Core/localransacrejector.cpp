@@ -7,10 +7,11 @@ LocalRANSACRejector::LocalRANSACRejector(QObject *parent) :
 {
     gridSize = 50;
     localRansacTolerance = 2;
+    newInliersThreshold = 0;
 }
 
-LocalRANSACRejector::LocalRANSACRejector(int gridSize, int localRansacTolerance, QObject *parent):
-    QObject(parent), gridSize(gridSize), localRansacTolerance(localRansacTolerance)
+LocalRANSACRejector::LocalRANSACRejector(int gridSize, int localRansacTolerance, int newInliersThreshold, QObject *parent):
+    QObject(parent), gridSize(gridSize), localRansacTolerance(localRansacTolerance),newInliersThreshold(newInliersThreshold)
 {
 
 }
@@ -74,7 +75,6 @@ RansacModel LocalRANSACRejector::localRansac(const std::vector<Displacement>& po
         // Step 3: Compare each of remaining points with the new model
         // Step 4: If a point lies within a tolerance make it an inlier also
         int newInliers = 0;
-        int newInliersThreshold;
         vector<Displacement>::iterator it = outliers.begin();
         while (it != outliers.end()) {
             const Displacement& disp = *it;
@@ -90,7 +90,7 @@ RansacModel LocalRANSACRejector::localRansac(const std::vector<Displacement>& po
             }
         }
         // Step 5: If num of inliers is above a certain threshold, fit a new model
-        if (newInliers <= newInliersThreshold)
+        if (newInliers > newInliersThreshold)
         {
             model = fitTranslationModel(inliers);
         }

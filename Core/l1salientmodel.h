@@ -13,7 +13,7 @@ public:
     L1SalientModel(int frameCount);
 
     // This is the entry function
-    bool prepare(Video* video, bool centered);
+    void prepare(Video* video, bool centered);
 
     // Feature Transform Variables, Slack Variables, Salient Slack Variables
     void setObjectives();

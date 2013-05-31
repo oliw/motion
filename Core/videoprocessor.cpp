@@ -46,7 +46,7 @@ void VideoProcessor::detectFeatures(Video* v, int radius) {
         emit processProgressChanged((float)i/frameCount-1);
         Frame* frame = v->accessFrameAt(i);
         if (frame->getFeature() != 0 && radius > 0){
-            // Add mask around salient feature
+            // Build mask around salient feature
             qDebug() << "VideoProcessor::detectFeatures - Only detecting features around the salient feature";
             Point2f* point = frame->getFeature();
             const Mat& data = frame->getOriginalData();
@@ -139,7 +139,6 @@ void VideoProcessor::calculateSalientUpdateTransform(Video * video, bool centere
     {
         Mat w = Mat::zeros(2,3,DataType<float>::type);
         for (char letter = 'a'; letter <= 'f'; letter++) {
-            assert(model.getVariableSolution(t,letter) < 1e15);
             w.at<float>(L1Model::toRow(letter),L1Model::toCol(letter)) = model.getVariableSolution(t, letter);
         }
         Frame* f = video->accessFrameAt(t);
@@ -167,12 +166,8 @@ void VideoProcessor::calculateUpdateTransform(Video* video) {
     {
         Mat m = Mat::zeros(2,3,DataType<float>::type);
         for (char letter = 'a'; letter <= 'f'; letter++) {
-            assert(model.getVariableSolution(t,letter) < 1e15);
             m.at<float>(L1Model::toRow(letter),L1Model::toCol(letter)) = model.getVariableSolution(t, letter);
         }
-        std::stringstream ss;
-        ss << "F:"<<t<<" - "<<m;
-        qDebug() << QString::fromStdString(ss.str());
         Frame* f = video->accessFrameAt(t);
         f->setUpdateTransform(m);
     }

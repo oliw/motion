@@ -43,7 +43,7 @@ void L1Model::writeToFile()
     }
 }
 
-bool L1Model::prepare(Video* video)
+void L1Model::prepare(Video* video)
 {
     vector<Mat> frameMotions = video->getAffineTransforms();
     Rect cropBox = video->getCropBox();
@@ -66,7 +66,7 @@ bool L1Model::prepare(Video* video)
         setSimilarityConstraints(); // Restrict transformation to 4 DOF
     }
 
-    for (int i = 0; i < constraints.size(); i++) {
+    for (uint i = 0; i < constraints.size(); i++) {
         matrix.appendRow(constraints[i]);
     }
 

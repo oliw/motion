@@ -13,7 +13,7 @@ L1SalientModel::L1SalientModel(int frameCount):L1Model(frameCount)
     slackVarPerFrame = varPerFrame+salientSlackVarPerFrame;
 }
 
-bool L1SalientModel::prepare(Video* video, bool centered)
+void L1SalientModel::prepare(Video* video, bool centered)
 {
     // Convert F into G (the inverse of F)
     vector<Mat> frameMotions = video->getAffineTransforms();
@@ -49,7 +49,6 @@ bool L1SalientModel::prepare(Video* video, bool centered)
     }
     si.loadProblem(matrix,&colLb[0],&colUb[0],&objectiveCoefficients[0],&constraintsLb[0],&constraintsUb[0]);
     problemLoaded = true;
-    return true;
 }
 
 void L1SalientModel::setObjectives()
