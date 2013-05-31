@@ -10,7 +10,7 @@ public:
     int salientSlackVarPerFrame;
 
 
-    L1SalientModel(int frameCount);
+    L1SalientModel(int dof);
 
     // This is the entry function
     void prepare(Video* video, bool centered);

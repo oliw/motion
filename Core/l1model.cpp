@@ -7,14 +7,13 @@
 #include <QDebug>
 
 
-L1Model::L1Model(int frameCount)
+L1Model::L1Model(int dof)
 {
     varPerFrame = 6;
     slackVarPerFrame = varPerFrame;
-    // 0,1,2,3,...,maxT
-    maxT = frameCount-1;
     isSimilarityTransform = false;
     problemLoaded = false;
+    setDOF(dof);
 }
 
 L1Model::~L1Model()
@@ -49,6 +48,7 @@ void L1Model::prepare(Video* video)
     Rect cropBox = video->getCropBox();
     int vidWidth = video->getWidth();
     int vidHeight = video->getHeight();
+    maxT = video->getFrameCount()-1;
 
     if (problemLoaded) {
         si.reset();

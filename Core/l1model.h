@@ -13,7 +13,7 @@ using namespace cv;
 class L1Model
 {
 public:
-    L1Model(int frameCount);
+    L1Model(int dof = 4);
     ~L1Model();
 
     int getWidth();

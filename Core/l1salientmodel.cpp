@@ -6,7 +6,7 @@
 #include <coin/CoinModel.hpp>
 #include <coin/OsiClpSolverInterface.hpp>
 
-L1SalientModel::L1SalientModel(int frameCount):L1Model(frameCount)
+L1SalientModel::L1SalientModel(int dof):L1Model(dof)
 {
     varPerFrame = 6;
     salientSlackVarPerFrame = 4;
@@ -15,6 +15,8 @@ L1SalientModel::L1SalientModel(int frameCount):L1Model(frameCount)
 
 void L1SalientModel::prepare(Video* video, bool centered)
 {
+    maxT = video->getFrameCount()-1;
+
     // Convert F into G (the inverse of F)
     vector<Mat> frameMotions = video->getAffineTransforms();
     vector<Mat> gs;
