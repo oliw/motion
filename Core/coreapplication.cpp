@@ -20,26 +20,16 @@ Video* CoreApplication::loadOriginalVideo(QString path)
     clear();
     cv::VideoCapture vc;
     if (!vc.open(path.toStdString())) {
-        qDebug() << "VideoProcessor::loadVideo - Video could not be opened";
+        qDebug() << "CoreApplication::loadVideo - Video could not be opened";
         emit processStatusChanged(CoreApplication::LOAD_VIDEO, false);
         return 0;
     }
     // Load Video
     int frameCount = vc.get(CV_CAP_PROP_FRAME_COUNT);
-    qDebug() << "VideoProcessor::loadVideo - Frame count is " << frameCount;
     int fps = vc.get(CV_CAP_PROP_FPS);
     originalVideo = new Video(frameCount,fps);
     QFileInfo fileInfo = QFileInfo(path);
     originalVideo->setVideoName(fileInfo.fileName());
-//    for (int i = 0; i < frameCount; i++) {
-//        vc.set(CV_CAP_PROP_POS_FRAMES, i);
-//        qDebug() << i;
-//        Mat frame;
-//        assert(vc.grab());
-//        vc.retrieve(frame);
-//        Frame* newFrame = new Frame(frame, originalVideo);
-//        originalVideo->appendFrame(newFrame);
-//    }
     int currentFrame = 0;
     Mat buffer;
     while (vc.read(buffer)) {
@@ -47,8 +37,8 @@ Video* CoreApplication::loadOriginalVideo(QString path)
         Frame* newFrame = new Frame(buffer.clone(),originalVideo);
         originalVideo->appendFrame(newFrame);
         currentFrame++;
-        qDebug() << "VideoProcessor::loadVideo - Current frame is " << currentFrame;
     }
+    assert(currentFrame == frameCount);
     emit originalVideoLoaded(originalVideo);
     emit processStatusChanged(CoreApplication::LOAD_VIDEO, false);
     return originalVideo;
