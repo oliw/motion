@@ -17,8 +17,7 @@ float Tools::eucDistance(Point2f a, Point2f b) {
 
 Point2f Tools::applyAffineTransformation(Mat affine, Point2f src)
 {
-    std::stringstream ss;
-    affine.convertTo(affine,CV_32FC1,1,0); //NOW A IS FLOAT
+    //affine.convertTo(affine,CV_32FC1,1,0); //NOW A IS FLOAT
     vector<Point3f> vec;
     vec.push_back(Point3f(src.x,src.y,1));
     Mat srcMat = Mat(vec).reshape(1).t();
@@ -56,6 +55,7 @@ void Tools::applyAffineTransformations(Point2f start, vector<Mat> trans, vector<
     }
 }
 
+// Apply affine transformation to a Rect
 RotatedRect Tools::transformRectangle(const Mat& affine, const Rect& origRect) {
     assert(affine.rows == 2 && affine.cols == 3);
     vector<Point2f> verts;
