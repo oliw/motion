@@ -32,7 +32,8 @@ public:
     void prepare(Video* video);
 
 protected:
-    OsiClpSolverInterface si;
+    ClpSimplex si;
+    OsiClpSolverInterface osiInterface;
 
     // Objectives
     vector<double> objectiveCoefficients, colLb, colUb;

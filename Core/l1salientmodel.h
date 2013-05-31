@@ -9,7 +9,6 @@ class L1SalientModel : public L1Model
 public:
     int salientSlackVarPerFrame;
 
-
     L1SalientModel(int dof);
 
     // This is the entry function

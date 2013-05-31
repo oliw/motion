@@ -30,7 +30,7 @@ void L1SalientModel::prepare(Video* video, bool centered)
     int vidHeight = video->getHeight();
 
     if (problemLoaded) {
-        si.reset();
+        si = ClpSimplex(false);
         problemLoaded = false;
     }
 
@@ -64,21 +64,21 @@ void L1SalientModel::setObjectives()
         // Set coefficients and bounds on variables
         for (int i = 0; i < varPerFrame; i++) {
             objectiveCoefficients[toIndex(t,i)] = 0;      // We don't mind about what p is
-            colLb[toIndex(t,i)] = -1 * si.getInfinity(); // p can be as small
-            colUb[toIndex(t,i)] = si.getInfinity();      // p can be as big as we like
+            colLb[toIndex(t,i)] = -1 * osiInterface.getInfinity(); // p can be as small
+            colUb[toIndex(t,i)] = osiInterface.getInfinity();      // p can be as big as we like
         }
         // Set coefficients and bounds on error variables
         for (int i = 0; i < varPerFrame; i++) {
             objectiveCoefficients[toSlackIndex(t,i)] = 1; // Minimise the sum of the slacks
             colLb[toSlackIndex(t,i)] = 0;                 // slacks must be positive
-            colUb[toSlackIndex(t,i)] = si.getInfinity(); // Slacks can be as big as we like
+            colUb[toSlackIndex(t,i)] = osiInterface.getInfinity(); // Slacks can be as big as we like
         }
         // Set coefficients and bounds on salient slack Variables
         for (int corner = 0; corner < 2; corner++) {
             for (char comp = 'x'; comp <= 'y'; comp++) {
                 objectiveCoefficients[toSalientSlackIndex(t,corner,comp)] = 10; //
                 colLb[toSalientSlackIndex(t,corner,comp)] = 0;                 // slacks must be positive
-                colUb[toSalientSlackIndex(t,corner,comp)] = si.getInfinity();  // slacks can be as big as we like
+                colUb[toSalientSlackIndex(t,corner,comp)] = osiInterface.getInfinity();  // slacks can be as big as we like
             }
         }
     }
@@ -123,7 +123,7 @@ void L1SalientModel::setSalientConstraints(Video* video, bool centered) {
         const1.insert(toIndex(t, 'e'), 1);
         const1.insert(toSalientSlackIndex(t,0,'x'), 1);
         constraintsLb.push_back(tlX);
-        constraintsUb.push_back(si.getInfinity());
+        constraintsUb.push_back(osiInterface.getInfinity());
         constraints.push_back(const1);
         CoinPackedVector const2;
         const2.insert(toIndex(t, 'c'), salientPoint->x);
@@ -131,7 +131,7 @@ void L1SalientModel::setSalientConstraints(Video* video, bool centered) {
         const2.insert(toIndex(t,'f'), 1);
         const2.insert(toSalientSlackIndex(t,0,'y'), 1);
         constraintsLb.push_back(tlY);
-        constraintsUb.push_back(si.getInfinity());
+        constraintsUb.push_back(osiInterface.getInfinity());
         constraints.push_back(const2);
         // Add constraint set for BOTTOM RIGHT CORNER
         CoinPackedVector const3;
@@ -139,7 +139,7 @@ void L1SalientModel::setSalientConstraints(Video* video, bool centered) {
         const3.insert(toIndex(t, 'b'), salientPoint->y);
         const3.insert(toIndex(t, 'e'), 1);
         const3.insert(toSalientSlackIndex(t,1,'x'), -1);
-        constraintsLb.push_back(-1*si.getInfinity());
+        constraintsLb.push_back(-1*osiInterface.getInfinity());
         constraintsUb.push_back(brX);
         constraints.push_back(const3);
         CoinPackedVector const4;
@@ -147,7 +147,7 @@ void L1SalientModel::setSalientConstraints(Video* video, bool centered) {
         const4.insert(toIndex(t, 'd'), salientPoint->y);
         const4.insert(toIndex(t,'f'), 1);
         const4.insert(toSalientSlackIndex(t,1,'y'), -1);
-        constraintsLb.push_back(-si.getInfinity());
+        constraintsLb.push_back(-osiInterface.getInfinity());
         constraintsUb.push_back(brY);
         constraints.push_back(const4);
     }
@@ -186,28 +186,28 @@ void L1SalientModel::setInclusionConstraints(Rect cropbox, int frameWidth, int f
             constraints.push_back(const2);
             switch(corner) {
             case 0:
-                constraintsLb.push_back(-1*si.getInfinity());
+                constraintsLb.push_back(-1*osiInterface.getInfinity());
                 constraintsUb.push_back(cl);
-                constraintsLb.push_back(-1*si.getInfinity());
+                constraintsLb.push_back(-1*osiInterface.getInfinity());
                 constraintsUb.push_back(ct);
                 break;
             case 1:
                 constraintsLb.push_back(cr);
-                constraintsUb.push_back(si.getInfinity());
-                constraintsLb.push_back(-1*si.getInfinity());
+                constraintsUb.push_back(osiInterface.getInfinity());
+                constraintsLb.push_back(-1*osiInterface.getInfinity());
                 constraintsUb.push_back(ct);
                 break;
             case 2:
-                constraintsLb.push_back(-1*si.getInfinity());
+                constraintsLb.push_back(-1*osiInterface.getInfinity());
                 constraintsUb.push_back(cl);
                 constraintsLb.push_back(cb);
-                constraintsUb.push_back(si.getInfinity());
+                constraintsUb.push_back(osiInterface.getInfinity());
                 break;
             case 3:
                 constraintsLb.push_back(cr);
-                constraintsUb.push_back(si.getInfinity());
+                constraintsUb.push_back(osiInterface.getInfinity());
                 constraintsLb.push_back(cb);
-                constraintsUb.push_back(si.getInfinity());
+                constraintsUb.push_back(osiInterface.getInfinity());
                 break;
             }
         }

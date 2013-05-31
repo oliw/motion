@@ -4,10 +4,13 @@
 #include <coin/CoinModel.hpp>
 #include <coin/CoinPackedMatrix.hpp>
 #include <coin/CoinPackedVector.hpp>
+#include <coin/ClpDualRowSteepest.hpp>
+#include <coin/ClpPrimalColumnSteepest.hpp>
+#include <coin/ClpPresolve.hpp>
 #include <QDebug>
 
 
-L1Model::L1Model(int dof)
+L1Model::L1Model(int dof):si(ClpSimplex(false))
 {
     varPerFrame = 6;
     slackVarPerFrame = varPerFrame;
@@ -51,7 +54,7 @@ void L1Model::prepare(Video* video)
     maxT = video->getFrameCount()-1;
 
     if (problemLoaded) {
-        si.reset();
+        si = ClpSimplex(false);
         problemLoaded = false;
     }
 
@@ -70,16 +73,39 @@ void L1Model::prepare(Video* video)
         matrix.appendRow(constraints[i]);
     }
 
-    si.loadProblem(matrix,&colLb[0],&colUb[0],&objectiveCoefficients[0],&constraintsLb[0],&constraintsUb[0]);
-    problemLoaded = true;
+
 }
 
 bool L1Model::solve()
 {
-    assert(problemLoaded);
     qDebug() << "L1Model::solve() - Solving ";
-    si.initialSolve();
-    // Check Is Optimal
+    si.loadProblem(matrix,&colLb[0],&colUb[0],&objectiveCoefficients[0],&constraintsLb[0],&constraintsUb[0]);
+
+    ClpDualRowSteepest dualSteep(1);
+    si.setDualRowPivotAlgorithm(dualSteep);
+
+    ClpPrimalColumnSteepest primalSteep(1);
+    si.setPrimalColumnPivotAlgorithm(primalSteep);
+
+    si.scaling(1);
+
+    ClpPresolve presolveInfo;
+    Ptr<ClpSimplex> presolvedModel = presolveInfo.presolvedModel(si);
+
+    if (!presolvedModel.empty())
+    {
+        presolvedModel->dual();
+        presolveInfo.postsolve(true);
+        si.checkSolution();
+        si.primal(1);
+    }
+    else
+    {
+        si.dual();
+        si.checkSolution();
+        si.primal(1);
+    }
+
     if (si.isProvenOptimal()) {
         qDebug() << "L1Model::solve - Found optimal solution";
     } else {
@@ -116,10 +142,10 @@ void L1Model::setObjectives()
         for (int i = 0; i < varPerFrame; i++) {
             objectiveCoefficients[toIndex(t,i)] = 0;      // We don't mind about what p is
             objectiveCoefficients[toSlackIndex(t,i)] = 1; // Minimise the sum of the slacks
-            colLb[toIndex(t,i)] = -1 * si.getInfinity(); // p can be as small
+            colLb[toIndex(t,i)] = -1 * osiInterface.getInfinity(); // p can be as small
             colLb[toSlackIndex(t,i)] = 0;                 // slacks must be positive
-            colUb[toIndex(t,i)] = si.getInfinity();      // p can be as big as we like
-            colUb[toSlackIndex(t,i)] = si.getInfinity(); // Slacks can be as big as we like
+            colUb[toIndex(t,i)] = osiInterface.getInfinity();      // p can be as big as we like
+            colUb[toSlackIndex(t,i)] = osiInterface.getInfinity(); // Slacks can be as big as we like
         }
     }
 
@@ -210,20 +236,20 @@ void L1Model::setSmoothnessConstraints(vector<Mat>& fs)
         constraints.push_back(f2);
 
         for (int i = 0; i < 4; i++) {
-            constraintsLb.push_back(-1 * si.getInfinity());
+            constraintsLb.push_back(-1 * osiInterface.getInfinity());
             constraintsUb.push_back(0);
             constraintsLb.push_back(0);
-            constraintsUb.push_back(si.getInfinity());
+            constraintsUb.push_back(osiInterface.getInfinity());
         }
-        constraintsLb.push_back(-1 * si.getInfinity());
+        constraintsLb.push_back(-1 * osiInterface.getInfinity());
         constraintsUb.push_back(-1 * getElem(aff,'e'));
         constraintsLb.push_back(-1 * getElem(aff,'e'));
-        constraintsUb.push_back(si.getInfinity());
+        constraintsUb.push_back(osiInterface.getInfinity());
 
-        constraintsLb.push_back(-1 * si.getInfinity());
+        constraintsLb.push_back(-1 * osiInterface.getInfinity());
         constraintsUb.push_back(-1 * getElem(aff,'f'));
         constraintsLb.push_back(-1 * getElem(aff,'f'));
-        constraintsUb.push_back(si.getInfinity());
+        constraintsUb.push_back(osiInterface.getInfinity());
     }
 }
 
