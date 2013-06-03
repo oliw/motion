@@ -160,3 +160,25 @@ void Frame::setFeature(Point2f* feature)
 {
     this->feature = feature;
 }
+
+vector<Point2f> Frame::getFrom() const
+{
+    vector<Point2f> points;
+    const vector<Displacement> displacements = getDisplacements();
+    for (uint i = 0; i < displacements.size(); i++) {
+        const Displacement d = displacements.at(i);
+        points.push_back(d.getFrom());
+    }
+    return points;
+}
+
+vector<Point2f> Frame::getTo() const
+{
+    vector<Point2f> points;
+    const vector<Displacement> displacements = getDisplacements();
+    for (uint i = 0; i < displacements.size(); i++) {
+        const Displacement d = displacements.at(i);
+        points.push_back(d.getTo());
+    }
+    return points;
+}

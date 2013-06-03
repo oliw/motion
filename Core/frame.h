@@ -30,6 +30,9 @@ public:
     void registerOutliers(const vector<Displacement>& outliers);
     const Mat& getOutlierMask();
 
+    vector<Point2f> getFrom() const;
+    vector<Point2f> getTo() const;
+
     vector<Point2f> getOutliers() const;
     vector<Point2f> getInliers() const;
 
@@ -44,6 +47,8 @@ public:
 
     void setFeature(Point2f* feature);
     Point2f* getFeature() {return feature;}
+
+    Size getSize() {return image.size();}
 
 private:
 

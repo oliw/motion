@@ -73,7 +73,6 @@ void L1Model::prepare(Video* video)
         matrix.appendRow(constraints[i]);
     }
 
-
 }
 
 bool L1Model::solve()

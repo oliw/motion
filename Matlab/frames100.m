@@ -4,10 +4,11 @@ function frames100( input, output )
 
 readerObj = VideoReader(input);
 writerObj = VideoWriter(output);
+writerObj.Quality = 100;
 
 open(writerObj);
 
-for k = 1:50
+for k = 1:100
    img = read(readerObj,k);
    writeVideo(writerObj,img);
 end

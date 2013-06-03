@@ -27,6 +27,7 @@ for t=1:length(frameTransforms)
    originalPath{t} = path;
    prev = path;
 end
+% Post Ct = C1C2C3..Ct
 
 if showNew
     % Build Pt
@@ -123,8 +124,7 @@ end
 
 end
 
-function [ cellArr ] = invertArrs (cellArr)
-% Convert from 2x3 to 3x3    
+function [ cellArr ] = invertArrs (cellArr) 
 for t=1:length(cellArr)
     cellArr{t} = inv(cellArr{t});
 end

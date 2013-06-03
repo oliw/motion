@@ -84,15 +84,15 @@ void L1SalientModel::setObjectives()
     }
 
     // Anchor first movement to be at location of crop window
-    for (char i = 'a'; i <= 'f' ; i++) {
-        if (i == 'a' || i == 'd') {
-            colLb[toIndex(0,i)] = 1;
-            colUb[toIndex(0,i)] = 1;
-        } else {
-            colLb[toIndex(0,i)] = 0;
-            colUb[toIndex(0,i)] = 0;
-        }
-    }
+//    for (char i = 'a'; i <= 'f' ; i++) {
+//        if (i == 'a' || i == 'd') {
+//            colLb[toIndex(0,i)] = 1;
+//            colUb[toIndex(0,i)] = 1;
+//        } else {
+//            colLb[toIndex(0,i)] = 0;
+//            colUb[toIndex(0,i)] = 0;
+//        }
+//    }
 }
 
 int L1SalientModel::toSalientSlackIndex(int t, int corner, char component)
