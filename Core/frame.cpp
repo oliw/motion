@@ -31,17 +31,17 @@ void Frame::reset()
 void Frame::registerDisplacement(const Displacement& displacement) {
     QMutexLocker locker(&mutex);
     const Point2f& feature = displacement.getFrom();
-    assert(displacementMask.at<int>(feature) == 0);
+    //assert(displacementMask.at<int>(feature) == 0);
     displacementMask.at<int>(feature) = 1;
     dx.at<float>(feature) = displacement.getDisplacement().x;
     dy.at<float>(feature) = displacement.getDisplacement().y;
     displacements.push_back(displacement);
-    assert(((uint) cv::countNonZero(displacementMask)) == displacements.size());
+    //assert(((uint) cv::countNonZero(displacementMask)) == displacements.size());
 }
 
 const vector<Displacement>& Frame::getDisplacements() const {
     QMutexLocker locker(&mutex);
-    assert( ((uint) cv::countNonZero(displacementMask)) == displacements.size());
+    //assert( ((uint) cv::countNonZero(displacementMask)) == displacements.size());
     return displacements;
 }
 
