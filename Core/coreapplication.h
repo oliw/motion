@@ -67,6 +67,8 @@ private:
     Video* originalVideo;
     Video* newVideo;
 
+    int videoFourCCCodec;
+
     // For Loading Video and Processing it
     VideoProcessor vp;
 
