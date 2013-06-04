@@ -35,6 +35,7 @@ Video* CoreApplication::loadOriginalVideo(QString path)
     int currentFrame = 0;
     Mat buffer;
     while (true) {
+        emit processProgressChanged((float)currentFrame/frameCount);
         vc >> buffer;
         if (buffer.empty()) {
             break;
