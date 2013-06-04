@@ -6,6 +6,8 @@
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/videostab/videostab.hpp>
+#include <opencv2/videostab/global_motion.hpp>
 #include <coin/ClpSimplex.hpp>
 #include <coin/ClpModel.hpp>
 #include <coin/OsiSolverInterface.hpp>
@@ -131,10 +133,23 @@ void VideoProcessor::calculateMotionModel(Video* v) {
         frame->getInliers(srcPoints,destPoints);
         // Weight towards salient point
         // Estimate Rigid Transform DOES RANSAC too!
-        Mat affineTransform = estimateRigidTransform(srcPoints, destPoints, true);
-        frame->setAffineTransform(affineTransform);
+        Mat affineTransform = videostab::estimateGlobalMotionRobust(srcPoints, destPoints);
+        Mat smallTransform = affineTransform.rowRange(0, affineTransform.rows-1);
+        //Mat affineTransform = estimateRigidTransform(srcPoints, destPoints, true);
+        frame->setAffineTransform(smallTransform.clone());
     }
     qDebug() << "VideoProcessor::calculateMotionModel - Original motion detected";
+//    videostab::PyrLkRobustMotionEstimator motionEstimator;
+//    motionEstimator.setDetector(Ptr<FeatureDetector>(new GoodFeaturesToTrackDetector()));
+//    motionEstimator.setMinInlierRatio(2);
+
+//    motionEstimator.setMotionModel(videostab::AFFINE);
+//    for (int i = v->getFrameCount()-1; i > 0; i++) {
+//        Frame* frame = v->accessFrameAt(i);
+//        Frame* prevFrame = v->accessFrameAt(i-1);
+//        Mat affineTransformation = motionEstimator.estimate(frame->getOriginalData(), prevFrame->getOriginalData());
+//        frame->setAffineTransform(affineTransformation);
+//    }
 }
 
 void VideoProcessor::calculateSalientUpdateTransform(Video * video, bool centered) {

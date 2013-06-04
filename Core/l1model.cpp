@@ -401,5 +401,5 @@ int L1Model::toSlackIndex(int t, int var)
 
 double L1Model::getElem(const Mat& affine, char c)
 {
-    return affine.at<double>(toRow(c),toCol(c));
+    return affine.at<float>(toRow(c),toCol(c));
 }
