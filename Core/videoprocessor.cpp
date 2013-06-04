@@ -63,7 +63,7 @@ void VideoProcessor::detectFeatures(Video* v, int radius) {
             featureDetector->detect(data, bufferPoints,mask);
         } else {
             cv::Mat edgeMask = Mat::zeros(data.size(), CV_8UC1);
-            for (int x = 2; x < v->getWidth()-2; x++) {
+            for (int x = 2; x < v->getWidth()-7; x++) {
                 for (int y = 2; y < v->getHeight()-2; y++) {
                     edgeMask.at<char>(Point2f(x,y)) = 1;
                 }
