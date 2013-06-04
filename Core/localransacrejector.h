@@ -22,7 +22,7 @@ public slots:
 private:
     // Settings
     int gridSize;
-    int localRansacTolerance;
+    double localRansacTolerance;
     int newInliersThreshold;
 
     int iterations;

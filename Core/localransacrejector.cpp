@@ -69,7 +69,7 @@ void LocalRANSACRejector::process(Size frameSize, InputArray from, InputArray to
                     x1 = from_[cell[i]].x + dx;
                     y1 = from_[cell[i]].y + dy;
                     if (pow((x1 - to_[cell[i]].x),2) + pow((y1 - to_[cell[i]].y),2) <
-                        pow((localRansacTolerance),2))
+                        pow((localRansacTolerance),2.0))
                     {
                         ninliers++;
                     }
@@ -119,7 +119,7 @@ void LocalRANSACRejector::process(Size frameSize, InputArray from, InputArray to
                 x1 = from_[cell[i]].x + dxBest;
                 y1 = from_[cell[i]].y + dyBest;
                 if (pow((x1 - to_[cell[i]].x),2) + pow((y1 - to_[cell[i]].y),2) <
-                    pow((localRansacTolerance),2))
+                    std::pow((localRansacTolerance),2))
                 {
                     mask_[cell[i]] = 1;
                 }
