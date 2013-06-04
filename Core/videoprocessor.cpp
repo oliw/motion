@@ -47,11 +47,11 @@ void VideoProcessor::detectFeatures(Video* v, int radius) {
         qDebug() << "VideoProcessor::detectFeatures - Detecting features in frame " << i <<"/"<<frameCount-1;
         emit processProgressChanged((float)i/frameCount-1);
         Frame* frame = v->accessFrameAt(i);
+        const Mat& data = frame->getOriginalData();
         if (frame->getFeature() != 0 && radius > 0){
             // Build mask around salient feature
             qDebug() << "VideoProcessor::detectFeatures - Only detecting features around the salient feature";
             Point2f* point = frame->getFeature();
-            const Mat& data = frame->getOriginalData();
             cv::Mat mask = Mat::zeros(data.size(), CV_8UC1);
             for (int x = (point->x)-radius; x < (point->x)+radius; x++) {
                 for (int y = (point->y)-radius; y < (point->y)+radius; y++) {
@@ -62,7 +62,13 @@ void VideoProcessor::detectFeatures(Video* v, int radius) {
             }
             featureDetector->detect(data, bufferPoints,mask);
         } else {
-            featureDetector->detect(frame->getOriginalData(), bufferPoints);
+            cv::Mat edgeMask = Mat::zeros(data.size(), CV_8UC1);
+            for (int x = 2; x < v->getWidth()-2; x++) {
+                for (int y = 2; y < v->getHeight()-2; y++) {
+                    edgeMask.at<char>(Point2f(x,y)) = 1;
+                }
+            }
+            featureDetector->detect(data, bufferPoints, edgeMask);
         }
         vector<Point2f> features;
         KeyPoint::convert(bufferPoints, features);
