@@ -31,7 +31,8 @@ using namespace std;
 
 VideoProcessor::VideoProcessor(QObject *parent):QObject(parent),mutex(QMutex::Recursive) {
     QObject::connect(&outlierRejector, SIGNAL(processProgressChanged(float)), this, SIGNAL(processProgressChanged(float)));
-    featureDetector = FeatureDetector::create("GFTT");
+    //featureDetector = FeatureDetector::create("GFTT");
+    featureDetector = Ptr<FeatureDetector>(new GoodFeaturesToTrackDetector(1000,0.01,1.,3,false,0.04));
 }
 
 VideoProcessor::~VideoProcessor() {
@@ -40,6 +41,7 @@ VideoProcessor::~VideoProcessor() {
 void VideoProcessor::detectFeatures(Video* v, int radius) {
     qDebug() << "VideoProcessor::detectFeatures - Feature Detection started.";
     int frameCount = v->getFrameCount();
+    int numFeaturesDetected = 0;
     vector<KeyPoint> bufferPoints;
     for (int i = 0; i < frameCount; i++) {
         qDebug() << "VideoProcessor::detectFeatures - Detecting features in frame " << i <<"/"<<frameCount-1;
@@ -64,19 +66,22 @@ void VideoProcessor::detectFeatures(Video* v, int radius) {
         }
         vector<Point2f> features;
         KeyPoint::convert(bufferPoints, features);
+        numFeaturesDetected += features.size();
         frame->setFeatures(features);
         qDebug() << "VideoProcessor::detectFeatures - Detected " << bufferPoints.size() << " features";
     }
+    float avgNumberDetected = numFeaturesDetected / (float)frameCount;
+    qDebug() << "VideoProcessor::detectFeatures - Average num Features detected per frame: "<< avgNumberDetected;
 }
 
 void VideoProcessor::trackFeatures(Video* v) {
     qDebug() << "VideoProcessor::trackFeatures - Feature Tracking started";
+    int avgTrackedFeatures = 0;
     for (int i = v->getFrameCount()-1; i > 0; i--) {
         Frame* frameT = v->accessFrameAt(i);
         const Frame* framePrev = v->accessFrameAt(i-1);
         const vector<Point2f>& features = frameT->getFeatures();
-        int featuresToTrack = frameT->getFeatures().size();
-        qDebug() << "VideoProcessor::trackFeatures - Tracking " << featuresToTrack << " features from frame " << i << " to frame "<<i-1;
+        //qDebug() << "VideoProcessor::trackFeatures - Tracking " << featuresToTrack << " features from frame " << i << " to frame "<<i-1;
         emit processProgressChanged(float(v->getFrameCount()-i)/v->getFrameCount());
         vector<Point2f> nextPositions;
         vector<uchar> status;
@@ -96,12 +101,15 @@ void VideoProcessor::trackFeatures(Video* v) {
             } else {
                 // Feature was tracked
                 featuresCorrectlyTracked++;
+                avgTrackedFeatures++;
                 Displacement d = Displacement(features[j], nextPositions[j]);
                 frameT->registerDisplacement(d);
             }
         }
-        qDebug() << "VideoProcessor::trackFeatures - " << featuresCorrectlyTracked << "/" << featuresToTrack << "successfully tracked";
+        //qDebug() << "VideoProcessor::trackFeatures - " << featuresCorrectlyTracked << "/" << featuresToTrack << "successfully tracked";
     }
+    avgTrackedFeatures /= (float) v->getFrameCount();
+    qDebug() << "VideoProcessor::trackFeatures - Avg tracked" << avgTrackedFeatures;
 }
 
 void VideoProcessor::rejectOutliers(Video* v) {
