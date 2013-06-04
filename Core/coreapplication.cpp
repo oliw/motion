@@ -41,6 +41,7 @@ Video* CoreApplication::loadOriginalVideo(QString path)
     if(currentFrame != frameCount) {
         qWarning() << "Warning: May not have read in all frames";
     }
+    videoFourCCCodec = static_cast<int>(vc.get(CV_CAP_PROP_FOURCC));
     emit originalVideoLoaded(originalVideo);
     emit processStatusChanged(CoreApplication::LOAD_VIDEO, false);
     return originalVideo;
@@ -49,7 +50,7 @@ Video* CoreApplication::loadOriginalVideo(QString path)
 void CoreApplication::saveNewVideo(QString path)
 {
     emit processStatusChanged(CoreApplication::SAVE_VIDEO, true);
-    VideoWriter record(path.toStdString(), CV_FOURCC('M','P','4','V'),25, newVideo->getSize());
+    VideoWriter record(path.toStdString(), videoFourCCCodec,25, newVideo->getSize());
     assert(record.isOpened());
     for (int f = 0; f < newVideo->getFrameCount(); f++) {
         emit processProgressChanged((float)f/newVideo->getFrameCount());
@@ -66,7 +67,7 @@ void CoreApplication::saveCroppedOldVideo(QString path)
     //qDebug() << "Saving cropped video " << originalVideo->getCropBox().size().width << "," << originalVideo->getCropBox().size().height;
     Size croppedSize(originalVideo->getCropBox().size().width, originalVideo->getCropBox().size().height);
 
-    VideoWriter record(path.toStdString(), CV_FOURCC('M','P','4','V'),25,croppedSize);
+    VideoWriter record(path.toStdString(), videoFourCCCodec,25,croppedSize);
     assert(record.isOpened());
     for (int f = 0; f < originalVideo->getFrameCount(); f++) {
         emit processProgressChanged((float)f/originalVideo->getFrameCount());
