@@ -27,17 +27,29 @@ Video* CoreApplication::loadOriginalVideo(QString path)
     // Load Video
     int frameCount = vc.get(CV_CAP_PROP_FRAME_COUNT);
     int fps = vc.get(CV_CAP_PROP_FPS);
+    int frameWidth = vc.get(CV_CAP_PROP_FRAME_WIDTH);
+    int frameHeight = vc.get(CV_CAP_PROP_FRAME_HEIGHT);
     originalVideo = new Video(frameCount,fps);
     QFileInfo fileInfo = QFileInfo(path);
     originalVideo->setVideoName(fileInfo.fileName());
     int currentFrame = 0;
     Mat buffer;
-    while (vc.read(buffer)) {
-        emit processProgressChanged((float)currentFrame/frameCount);
+    while (true) {
+        vc >> buffer;
+        if (buffer.empty()) {
+            break;
+        }
         Frame* newFrame = new Frame(buffer.clone(),originalVideo);
         originalVideo->appendFrame(newFrame);
         currentFrame++;
     }
+//    while (vc.read(buffer)) {
+//        buffer.resize(Size(frameWidth, frameHeight));
+//        emit processProgressChanged((float)currentFrame/frameCount);
+//        Frame* newFrame = new Frame(buffer.clone(),originalVideo);
+//        originalVideo->appendFrame(newFrame);
+//        currentFrame++;
+//    }
     if(currentFrame != frameCount) {
         qWarning() << "Warning: May not have read in all frames";
     }
