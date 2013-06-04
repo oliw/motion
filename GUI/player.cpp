@@ -84,7 +84,7 @@ void Player::showImage(int frameNumber)
 //        KeyPoint::convert(features1, featuresk1);
 //        KeyPoint::convert(features2, featuresk2);
 //        cv::drawMatches(prevFrameImg, featuresk1, originalData, featuresk2, matches, image);
-        image = prevFrameImg;
+        image = prevFrameImg.clone();
         for (uint i = 0; i < disps.size(); i++) {
             Displacement d = disps[i];
             cv::circle(image, d.getTo(), 1, Scalar(140,255,0));
