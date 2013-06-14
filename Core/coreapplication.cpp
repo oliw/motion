@@ -65,6 +65,31 @@ void CoreApplication::saveNewVideo(QString path)
     emit processStatusChanged(CoreApplication::SAVE_VIDEO, false);
 }
 
+void CoreApplication::saveOldVideo(QString path) {
+    emit processStatusChanged(CoreApplication::SAVE_VIDEO, true);
+    VideoWriter record(path.toStdString(), videoFourCCCodec,25,originalVideo->getSize());
+    assert(record.isOpened());
+    for (int f = 0; f < originalVideo->getFrameCount(); f++) {
+        emit processProgressChanged((float)f/originalVideo->getFrameCount());
+        const Frame* frame = originalVideo->getFrameAt(f);
+        Mat image = frame->getOriginalData().clone();
+        const Rect_<int>& cropBox = originalVideo->getCropBox();
+        if (f == 0) {
+            cv::rectangle(image, cropBox, Scalar(0,255,0), 3);
+        } else {
+            const Mat& update = frame->getUpdateTransform();
+            RotatedRect newCrop = Tools::transformRectangle(update, cropBox);
+            Point2f verts[4];
+            newCrop.points(verts);
+            for (int i = 0; i < 4; i++) {
+                line(image, verts[i], verts[(i+1)%4], Scalar(0,255,0),3);
+            }
+        }
+        record << image;
+    }
+    emit processStatusChanged(CoreApplication::SAVE_VIDEO, false);
+}
+
 void CoreApplication::saveCroppedOldVideo(QString path)
 {
     emit processStatusChanged(CoreApplication::SAVE_VIDEO, true);

@@ -46,6 +46,8 @@ public slots:
     // Output
     void saveNewVideo(QString path);
     void saveCroppedOldVideo(QString path);
+    void saveOldVideo(QString path);
+
 
     // Misc
     void saveOriginalGlobalMotionMat(QString path);

@@ -155,7 +155,7 @@ void VideoProcessor::calculateMotionModel(Video* v) {
 void VideoProcessor::calculateSalientUpdateTransform(Video * video, bool centered) {
     qDebug() << "VideoProcessor::calculateSalientUpdateTransform - Start";
     // Build model
-    L1SalientModel model(4);
+    L1SalientModel model(6);
     model.prepare(video, centered);
     emit processProgressChanged(1.0f/3);
     qDebug() << "VideoProcessor::calculateSalientUpdateTransform - Solving L1 Problem";
@@ -181,10 +181,9 @@ void VideoProcessor::calculateSalientUpdateTransform(Video * video, bool centere
 void VideoProcessor::calculateUpdateTransform(Video* video) {
     qDebug() << "VideoProcessor::calculateUpdateTransform - Start";
     // Build model
-    L1Model model(4);
+    L1Model model(6);
     model.prepare(video);
     emit processProgressChanged(1.0f/3);
-    qDebug() << "VideoProcessor::calculateUpdateTransform - Solving L1 Problem";
     // Solve model
     model.solve();
     emit processProgressChanged(2.0f/3);

@@ -8,7 +8,7 @@ writerObj.Quality = 100;
 
 open(writerObj);
 
-for k = 1:100
+for k = 1:50
    img = read(readerObj,k);
    writeVideo(writerObj,img);
 end

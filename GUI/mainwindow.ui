@@ -100,7 +100,7 @@
           <item>
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
-             <number>1</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="videoInfoTab">
              <attribute name="title">
@@ -190,6 +190,13 @@
                 </property>
                 <property name="text">
                  <string>Export New Frame</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="exportOriginalVideoButton">
+                <property name="text">
+                 <string>Export Original Video With CropBox</string>
                 </property>
                </widget>
               </item>

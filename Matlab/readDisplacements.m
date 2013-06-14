@@ -1,4 +1,4 @@
-function [ points, l1distance ] = readDisplacements( file )
+function [ points ] = readDisplacements( file )
 %READDISPLACEMENTS Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -6,11 +6,11 @@ function [ points, l1distance ] = readDisplacements( file )
 
 points = [x y];
 
-points(1:2,:) = []; 
+%points(1:2,:) = []; 
 
 points = bsxfun(@minus, points, points(1,:));
 
-l1distance = sqrt(sum(points.^2,2));
+%l1distance = sqrt(sum(points.^2,2));
 
 end
 
