@@ -1,4 +1,4 @@
-function [ desiredPath ] = motionGraphDrawer(frameTransforms, varargin)
+function [originalPoints ] = motionGraphDrawer(frameTransforms, varargin)
 %MOTIONGRAPHDRAWER Draw graphs from Data
  
 p = inputParser;
@@ -73,16 +73,16 @@ if showBoth
         figure;
         plot(originalPoints(:,1), time', newPoints(:,1), time');
         title('Movement in X Direction');
-        xlabel('Movement');
+        xlabel('Motion in X');
         ylabel('Time');
         legend('Original Motion','New Motion');
     end
     
     if showY 
         figure;
-        plot(originalPoints(:,2), time', -1*newPoints(:,2), time');
+        plot(-1*originalPoints(:,2), time', -1*newPoints(:,2), time');
         title('Movement in Y Direction');
-        xlabel('Movement');
+        xlabel('Motion in Y');
         ylabel('Time');
         legend('Original Motion','New Motion');
     end
@@ -99,7 +99,7 @@ else
         figure;
         plot(data(:,1), time');
         title('Movement in X Direction');
-        xlabel('Movement');
+        xlabel('Motion in X');
         ylabel('Time');
         legend(legendText);
     end
@@ -108,7 +108,7 @@ else
         figure;
         plot(-1*data(:,2), time');
         title('Movement in Y Direction');
-        xlabel('Movement');
+        xlabel('Motion in Y');
         ylabel('Time');
         legend(legendText);
     end            

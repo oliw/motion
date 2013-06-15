@@ -529,3 +529,9 @@ void MainWindow::on_exportCroppedVideoButton_clicked()
     QString saveFileName = QFileDialog::getSaveFileName(this, "Save cropped original video", "");
     emit saveOriginalCroppedVideo(saveFileName);
 }
+
+void MainWindow::on_exportOriginalVideoButton_clicked()
+{
+    QString saveFileName = QFileDialog::getSaveFileName(this, "Save original video with crop box showing", "");
+    emit saveOriginalVideo(saveFileName);
+}

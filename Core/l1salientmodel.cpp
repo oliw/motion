@@ -109,10 +109,10 @@ void L1SalientModel::setSalientConstraints(Video* video, bool centered) {
     constraintsLb.reserve(constraintsLb.size()+numConstraints);
     constraintsUb.reserve(constraintsUb.size()+numConstraints);
     Rect cropbox = video->getCropBox();
-    double tlX = centered ? cropbox.x + (0.5 * cropbox.width) - 2 : cropbox.x ;
-    double tlY = centered ? cropbox.y + (0.5 * cropbox.height) - 2 : cropbox.y ;
-    double brX = centered ? cropbox.x + (0.5 * cropbox.width) + 2 : cropbox.x + cropbox.width - 1;
-    double brY = centered ? cropbox.y + (0.5 * cropbox.height) + 2 : cropbox.y + cropbox.height - 1;
+    double tlX = centered ? cropbox.x + (0.5 * cropbox.width) - 10 : cropbox.x ;
+    double tlY = centered ? cropbox.y + (0.5 * cropbox.height) - 10 : cropbox.y ;
+    double brX = centered ? cropbox.x + (0.5 * cropbox.width) + 10 : cropbox.x + cropbox.width - 1;
+    double brY = centered ? cropbox.y + (0.5 * cropbox.height) + 10 : cropbox.y + cropbox.height - 1;
     // For each pt
     for (int t = 0; t < maxT; t++) {
         Point2f* salientPoint = video->accessFrameAt(t)->getFeature();

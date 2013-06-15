@@ -82,6 +82,8 @@ private slots:
 
     void on_exportCroppedVideoButton_clicked();
 
+    void on_exportOriginalVideoButton_clicked();
+
 signals:
    void signalResize(QResizeEvent *);
    void videoChosen(QString path);
@@ -97,6 +99,7 @@ signals:
    void saveOriginalFrameButtonPressed(QString path, int frame, bool cropped);
    void saveNewFrameButtonPressed(QString path, int frame);
    void saveOriginalCroppedVideo(QString path);
+   void saveOriginalVideo(QString path);
 
    // Video Process Signals
    void gfttRadioButtonPressed();
