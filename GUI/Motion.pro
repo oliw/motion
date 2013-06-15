@@ -46,6 +46,7 @@ macx {
     LIBS += -lopencv_video
     LIBS += -lopencv_imgproc
     LIBS += -lopencv_features2d
+    LIBS += -lopencv_videostab
 
     # MATLAB Engine Library
     INCLUDEPATH += /Applications/MATLAB_R2012b.app/extern/include
