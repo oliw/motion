@@ -12,6 +12,13 @@
 #include <string>
 using namespace std;
 
+/*
+ *
+ *  This is the main object that performs the motion stabilisation
+ *  method
+ *
+ *
+ */
 class VideoProcessor : public QObject
 {
     Q_OBJECT

@@ -12,6 +12,12 @@
 
 using namespace cv;
 
+/*
+ *
+ *  This is the internal representation of the video file
+ *  read in (and the video file created).
+ *
+ */
 class Video : public QObject
 {
     Q_OBJECT

@@ -6,6 +6,13 @@
 #include "evaluator.h"
 #include <QMap>
 
+/*
+ *
+ * This is the entry object into the core framework.
+ *  Calls made via frontends are connected to slots in this class.
+ *
+ */
+
 class CoreApplication : public QObject
 {
     Q_OBJECT
@@ -69,6 +76,7 @@ private:
     Video* originalVideo;
     Video* newVideo;
 
+    // The codec of the last video read in
     int videoFourCCCodec;
 
     // For Loading Video and Processing it

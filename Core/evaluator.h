@@ -9,6 +9,10 @@
 typedef QMap<int, Point2f> DataSet;
 typedef QList<Mat> TransformData;
 
+/*
+ *  This class exports Mat data to the Matlab Engine
+ *
+ */
 class Evaluator : public QObject
 {
     Q_OBJECT

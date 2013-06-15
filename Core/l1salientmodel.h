@@ -4,6 +4,14 @@
 #include "video.h"
 #include "l1model.h"
 
+/*
+ *
+ *  This is an extension of the main L1Model and
+ *  reorganises the problem and allows constraints
+ *  based on the location of manually tracked features
+ *
+ */
+
 class L1SalientModel : public L1Model
 {
 public:
